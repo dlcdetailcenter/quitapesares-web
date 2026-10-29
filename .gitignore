@@ -2,6 +2,7 @@
 node_modules/
 dist/
 .wrangler/
+.astro/
 
 # Variables de entorno y secretos locales (incluidos los de Wrangler)
 .env*
