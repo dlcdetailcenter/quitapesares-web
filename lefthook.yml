@@ -1,0 +1,11 @@
+# Hooks de git locales. Se instalan solos al hacer `npm install` (en la CI no).
+# Para quitarlos si bloquean por error: npx lefthook uninstall
+#
+# Importante: en un repositorio público, lo que se sube a una rama ya es visible aunque la CI falle.
+# Estos hooks son la barrera ANTES de publicar; la CI es la barrera antes de fusionar.
+pre-commit:
+  jobs:
+    - name: gitleaks
+      run: node scripts/hooks/gitleaks.mjs
+    - name: check-media
+      run: node scripts/check-media.mjs --staged
