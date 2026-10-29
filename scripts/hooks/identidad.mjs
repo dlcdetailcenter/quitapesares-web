@@ -15,6 +15,10 @@ import { spawnSync } from 'node:child_process';
 
 const PERMITIDOS = ['274641643+dlcdetailcenter@users.noreply.github.com', 'noreply@anthropic.com'];
 const CORREO_PROYECTO = PERMITIDOS[0];
+// Solo como committer: asi firma GitHub los commits que hace el propio GitHub, como el de fusion de
+// una PR. No es un correo personal y no se puede cambiar sin renunciar a fusionar por PR. Como autor
+// no vale: un commit escrito aqui no lo ha hecho GitHub.
+const PERMITIDOS_COMMITTER = [...PERMITIDOS, 'noreply@github.com'];
 
 /** @param {'GIT_AUTHOR_IDENT' | 'GIT_COMMITTER_IDENT'} cual */
 function identidad(cual) {
@@ -35,9 +39,9 @@ function identidad(cual) {
 const autor = identidad('GIT_AUTHOR_IDENT');
 const committer = identidad('GIT_COMMITTER_IDENT');
 const mal = [
-  ['autor', autor],
-  ['committer', committer],
-].filter(([, i]) => !PERMITIDOS.includes(i.correo));
+  ['autor', autor, PERMITIDOS],
+  ['committer', committer, PERMITIDOS_COMMITTER],
+].filter(([, i, permitidos]) => !permitidos.includes(i.correo));
 
 if (mal.length > 0) {
   console.error('✗ identidad no permitida en este repositorio: commit bloqueado.');
@@ -46,6 +50,7 @@ if (mal.length > 0) {
     '\n  Este repositorio es público: ese correo quedaría a la vista en el historial para siempre.\n' +
       '  Identidades permitidas:\n' +
       PERMITIDOS.map((c) => `    · ${c}`).join('\n') +
+      '\n    · noreply@github.com (solo como committer, lo pone GitHub al fusionar)' +
       '\n\n  Para arreglarlo, solo en este repositorio (no en tu git global):\n' +
       `    git config user.name "Quitapesares Web"\n` +
       `    git config user.email "${CORREO_PROYECTO}"\n`,

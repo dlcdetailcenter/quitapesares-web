@@ -22,6 +22,8 @@ Instrucciones para Claude Code en este repositorio. **Son instrucciones, no gara
 ### Identidad de los commits
 - El repositorio es **público**: el nombre y el correo de cada commit quedan a la vista para siempre, y reescribir la historia no los borra (las PR conservan los commits viejos).
 - Solo dos identidades: `Quitapesares Web <274641643+dlcdetailcenter@users.noreply.github.com>` (el noreply de la cuenta, pensado para ser público) y `Claude <noreply@anthropic.com>`. **Ningún correo personal.**
+- Excepción, **solo como committer**: `GitHub <noreply@github.com>`. Es lo que firma GitHub en el commit de fusión de una PR; no es un correo personal y no se puede cambiar sin renunciar a fusionar por PR. Como autor no vale.
+- En la cuenta de GitHub tiene que estar activado **Keep my email addresses private** ([github.com/settings/emails](https://github.com/settings/emails)). Si no, el commit de fusión que hace GitHub lleva el correo personal de quien fusiona, y ese commit el hook no lo ve: lo crea GitHub, no tu git.
 - Se configura **solo en este repositorio**, nunca con `--global`:
   `git config user.name "Quitapesares Web"` · `git config user.email "274641643+dlcdetailcenter@users.noreply.github.com"`
 - El hook de pre-commit `identidad` bloquea el commit si el autor o el committer son otro correo.
@@ -66,7 +68,7 @@ Estado al 29-10-2026. En un repositorio **público**, lo que se sube a cualquier
 | Datos solo en el JSON | — | Que un dato o un plato se copie en otro archivo |
 | Secretos | **pre-commit: gitleaks bloquea el commit**, y también si gitleaks no está instalado · push protection de GitHub · gitleaks 8.30.1 en la CI | Un secreto con formato que gitleaks no reconozca |
 | Material | **pre-commit: `check:media --staged` bloquea el commit** por tamaño (>10 MB), originales versionados o GPS, y también si hay imágenes o vídeos preparados sin exiftool instalado · `check:media` en la CI, donde exiftool es obligatorio | Caras identificables y audio |
-| Identidad de los commits | **pre-commit: `identidad` bloquea el commit** si el autor o el committer no son el noreply de la cuenta o `Claude <noreply@anthropic.com>` | Un commit hecho en otro clon donde no se hayan instalado los hooks |
+| Identidad de los commits | **pre-commit: `identidad` bloquea el commit** si el autor no es el noreply de la cuenta o `Claude <noreply@anthropic.com>`, o si el committer no es uno de esos dos ni `GitHub <noreply@github.com>` | El commit de fusión lo crea GitHub, no tu git: ahí el hook no llega y depende de que la cuenta tenga «Keep my email addresses private» activado |
 | Apagar las barreras | **Hook de Claude Code** (`.claude/settings.json`, `PreToolUse` con `onFailure: "block"`): deniega `--no-verify`, `LEFTHOOK=0`, `core.hooksPath`, `lefthook uninstall` y `git push --force` | Vigila a Claude Code, no a una persona escribiendo en su terminal |
 | Rendimiento y accesibilidad | Lighthouse CI y Playwright + axe en la CI | — |
 | Historial de `main` | **Pendiente**: hasta que Kara active la regla de `main` (PR obligatoria, los 7 trabajos de la CI, sin force-push ni borrado, sin excepciones para administradores) nada impide un push directo a `main` | — |
