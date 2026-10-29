@@ -3,7 +3,9 @@
 //   2. hay material original versionado (.mov, .heic, .heif o una carpeta material/), aunque se haya
 //      saltado el .gitignore con `git add -f`;
 //   3. alguna imagen o vídeo lleva coordenadas GPS (lo comprueba exiftool).
-// exiftool es obligatorio en la CI. En local, si no está instalado, el GPS no se comprueba y se avisa.
+// exiftool es obligatorio en la CI, y también en el hook de pre-commit (--staged) en cuanto hay
+// imágenes o vídeos preparados: entonces el commit se bloquea. En una revisión manual de todo el
+// repositorio, si no está instalado, el GPS no se comprueba y se avisa.
 // Para usar un exiftool que no esté en el PATH: variable de entorno EXIFTOOL con su ruta.
 //
 // Uso: node scripts/check-media.mjs            → todos los archivos del repositorio
@@ -108,8 +110,20 @@ function comprobarGps(rutas) {
   if (!exiftool) {
     if (EN_CI) {
       fallos.push('exiftool no está instalado: en la CI es obligatorio para comprobar el GPS.');
+    } else if (soloPreparados) {
+      // Hook pre-commit: hay imágenes o vídeos preparados y nadie puede comprobar si llevan GPS.
+      // Se bloquea en vez de avisar: una vez subido, el GPS ya es visible aunque la CI falle después.
+      fallos.push(
+        `exiftool no está instalado (${process.env.EXIFTOOL || 'exiftool'}): no se puede comprobar el GPS de ` +
+          `${rutas.length} imagen(es) o vídeo(s) preparados para el commit.\n` +
+          '  Cómo instalarlo (versión fijada y SHA-256 comprobada): docs/instalacion/herramientas.md\n' +
+          '  Si ya lo tienes fuera del PATH: EXIFTOOL=<ruta a exiftool> git commit …',
+      );
     } else {
-      avisos.push(`GPS sin comprobar en ${rutas.length} imagen(es) o vídeo(s): exiftool no está instalado. La CI sí lo comprueba.`);
+      avisos.push(
+        `GPS sin comprobar en ${rutas.length} imagen(es) o vídeo(s): exiftool no está instalado. ` +
+          'El hook del commit y la CI sí lo comprueban.',
+      );
     }
     return;
   }
