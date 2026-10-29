@@ -1,0 +1,9 @@
+# Falsos positivos de gitleaks revisados a mano.
+# Cada línea ignora UN hallazgo concreto (commit:archivo:regla:línea). Si el archivo cambia
+# o el mismo texto aparece en otro sitio, gitleaks lo vuelve a marcar.
+
+# Skill workers-best-practices de Cloudflare (copia sin modificar): en la línea 82 usa
+# "sk-live-abc123..." como ejemplo de lo que NO hay que hacer. No es una clave real.
+# Primera línea: escaneo del historial (CI). Segunda: escaneo de archivos (pre-commit y `gitleaks dir`).
+babb3e26cec4cbde1df4d5fc04ef38dba56cd97e:.claude/skills/workers-best-practices/references/configuration.md:generic-api-key:82
+.claude/skills/workers-best-practices/references/configuration.md:generic-api-key:82
