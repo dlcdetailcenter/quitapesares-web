@@ -4,6 +4,11 @@ dist/
 .wrangler/
 .astro/
 
+# Resultados de las pruebas
+test-results/
+playwright-report/
+blob-report/
+
 # Variables de entorno y secretos locales (incluidos los de Wrangler)
 .env*
 .dev.vars*
