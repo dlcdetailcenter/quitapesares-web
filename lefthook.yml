@@ -5,6 +5,8 @@
 # Estos hooks son la barrera ANTES de publicar; la CI es la barrera antes de fusionar.
 pre-commit:
   jobs:
+    - name: identidad
+      run: node scripts/hooks/identidad.mjs
     - name: gitleaks
       run: node scripts/hooks/gitleaks.mjs
     - name: check-media

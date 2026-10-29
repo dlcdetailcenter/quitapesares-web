@@ -19,6 +19,13 @@ Instrucciones para Claude Code en este repositorio. **Son instrucciones, no gara
 - Al repositorio solo entra material procesado, sin GPS, sin audio y sin caras identificables.
 - El material original vive fuera del repositorio (`~/proyectos/quitapesares-material`) y nunca entra en él.
 
+### Identidad de los commits
+- El repositorio es **público**: el nombre y el correo de cada commit quedan a la vista para siempre, y reescribir la historia no los borra (las PR conservan los commits viejos).
+- Solo dos identidades: `Quitapesares Web <274641643+dlcdetailcenter@users.noreply.github.com>` (el noreply de la cuenta, pensado para ser público) y `Claude <noreply@anthropic.com>`. **Ningún correo personal.**
+- Se configura **solo en este repositorio**, nunca con `--global`:
+  `git config user.name "Quitapesares Web"` · `git config user.email "274641643+dlcdetailcenter@users.noreply.github.com"`
+- El hook de pre-commit `identidad` bloquea el commit si el autor o el committer son otro correo.
+
 ### Las barreras no se apagan
 - **Nunca** `--no-verify` (ni `-n` en `git commit` o `git push`), `LEFTHOOK=0`, `core.hooksPath`, `lefthook uninstall` ni `git push --force`. El hook de Claude Code (`.claude/settings.json`) **deniega** esos comandos antes de ejecutarlos.
 - Un hook que bloquea no es un obstáculo que rodear: es la barrera funcionando. Si bloquea por error, se dice y **lo decide Kara** (ella lo quita con `npx lefthook uninstall`).
@@ -59,6 +66,7 @@ Estado al 29-10-2026. En un repositorio **público**, lo que se sube a cualquier
 | Datos solo en el JSON | — | Que un dato o un plato se copie en otro archivo |
 | Secretos | **pre-commit: gitleaks bloquea el commit**, y también si gitleaks no está instalado · push protection de GitHub · gitleaks 8.30.1 en la CI | Un secreto con formato que gitleaks no reconozca |
 | Material | **pre-commit: `check:media --staged` bloquea el commit** por tamaño (>10 MB), originales versionados o GPS, y también si hay imágenes o vídeos preparados sin exiftool instalado · `check:media` en la CI, donde exiftool es obligatorio | Caras identificables y audio |
+| Identidad de los commits | **pre-commit: `identidad` bloquea el commit** si el autor o el committer no son el noreply de la cuenta o `Claude <noreply@anthropic.com>` | Un commit hecho en otro clon donde no se hayan instalado los hooks |
 | Apagar las barreras | **Hook de Claude Code** (`.claude/settings.json`, `PreToolUse` con `onFailure: "block"`): deniega `--no-verify`, `LEFTHOOK=0`, `core.hooksPath`, `lefthook uninstall` y `git push --force` | Vigila a Claude Code, no a una persona escribiendo en su terminal |
 | Rendimiento y accesibilidad | Lighthouse CI y Playwright + axe en la CI | — |
 | Historial de `main` | **Pendiente**: hasta que Kara active la regla de `main` (PR obligatoria, los 7 trabajos de la CI, sin force-push ni borrado, sin excepciones para administradores) nada impide un push directo a `main` | — |
