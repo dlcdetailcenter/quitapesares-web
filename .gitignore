@@ -1,0 +1,19 @@
+# Dependencias y compilación
+node_modules/
+dist/
+.wrangler/
+
+# Variables de entorno y secretos locales (incluidos los de Wrangler)
+.env*
+.dev.vars*
+
+# Material original: nunca entra en el repositorio
+material/
+*.mov
+*.MOV
+*.heic
+*.HEIC
+# Cualquier combinación de mayúsculas, y también HEIF
+*.[mM][oO][vV]
+*.[hH][eE][iI][cC]
+*.[hH][eE][iI][fF]
