@@ -8,6 +8,7 @@ dist/
 test-results/
 playwright-report/
 blob-report/
+.lighthouseci/
 
 # Variables de entorno y secretos locales (incluidos los de Wrangler)
 .env*
