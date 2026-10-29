@@ -41,7 +41,11 @@ $tmp = Join-Path $env:TEMP 'herramientas-quitapesares'
 New-Item -ItemType Directory -Force $tmp | Out-Null
 
 function Get-Verificado($url, $destino, $esperada) {
-  Invoke-WebRequest -Uri $url -OutFile $destino
+  # curl.exe viene con Windows 10 y 11. Con Invoke-WebRequest, SourceForge responde su página
+  # intermedia en HTML en vez del archivo y la descarga sale mal (lo cazaría la SHA-256, pero
+  # para entonces ya has perdido el rato).
+  & curl.exe -fsSL -o $destino $url
+  if ($LASTEXITCODE -ne 0) { throw "la descarga de $url ha fallado (curl $LASTEXITCODE)" }
   $real = (Get-FileHash $destino -Algorithm SHA256).Hash.ToLower()
   if ($real -ne $esperada) { throw "SHA-256 distinta de la oficial en $destino`n  esperada: $esperada`n  real:     $real" }
   Write-Host "SHA-256 correcta: $(Split-Path $destino -Leaf)"
