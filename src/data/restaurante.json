@@ -1,0 +1,77 @@
+{
+  "nombre": {
+    "valor": "Restaurante Quitapesares",
+    "fuente": "ficha de Google",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "direccion": {
+    "valor": "C. la Florida, 32, 28670 Villaviciosa de Odón, Madrid",
+    "fuente": "ficha de Google y carta de Google Sites",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "telefono": {
+    "valor": "+34 627 95 80 92",
+    "fuente": "ficha de Google y carta de Google Sites",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "horario": {
+    "valor": {
+      "lunes": "06:30–17:00",
+      "martes": "06:30–17:00",
+      "miercoles": "06:30–17:00",
+      "jueves": "06:30–17:00",
+      "viernes": "06:30–17:00",
+      "sabado": "11:00–17:00",
+      "domingo": "cerrado"
+    },
+    "fuente": "ficha de Google",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "menuDiario": {
+    "valor": {
+      "incluye": ["primero", "segundo", "postre o café", "bebida"],
+      "precio": 14.80,
+      "moneda": "EUR"
+    },
+    "fuente": "carta de Google Sites",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "menuFinDeSemana": {
+    "valor": {
+      "precio": 16.00,
+      "moneda": "EUR"
+    },
+    "fuente": "carta de Google Sites",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null,
+    "nota": "Choca con el domingo cerrado de la ficha de Google: pendiente de aclarar con el restaurante."
+  },
+  "coordenadas": {
+    "valor": {
+      "lat": 40.3497543,
+      "lng": -3.8995833
+    },
+    "fuente": "ficha de Google",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  },
+  "placeId": {
+    "valor": "ChIJlcDu9COOQQ0RR1ShqgTi0YQ",
+    "fuente": "ficha de Google",
+    "fechaConsulta": "2026-10-28",
+    "estado": "NO VERIFICABLE AÚN",
+    "confirmadoPor": null
+  }
+}

@@ -1,0 +1,24 @@
+id,categoria,nombre_es,nombre_en,disponible,orden
+sopa-de-cocido,Primeros,Sopa de cocido,,TRUE,1
+pisto-manchego-con-huevo,Primeros,Pisto manchego con huevo,,TRUE,2
+macarrones-con-chorizo-y-bacon,Primeros,Macarrones con chorizo y bacón,,TRUE,3
+crema-de-verduras-con-jamon-tostado,Primeros,Crema de verduras con jamón tostado,,TRUE,4
+ensalada-mixta,Primeros,Ensalada mixta,,TRUE,5
+ensalada-de-pasta,Primeros,Ensalada de pasta,,TRUE,6
+ensalada-campera,Primeros,Ensalada campera,,TRUE,7
+ensalada-de-cangrejo,Primeros,Ensalada de cangrejo,,TRUE,8
+ensaladilla-ucraniana-casera,Primeros,Ensaladilla ucraniana casera,,TRUE,9
+arroz-a-la-cubana,Primeros,Arroz a la cubana,,TRUE,10
+judias-verdes-con-jamon,Primeros,Judías verdes con jamón,,TRUE,11
+filete-de-pollo-a-la-plancha-o-empanado,Segundos · Carnes y pollo,Filete de pollo a la plancha o empanado,,TRUE,1
+filete-de-pavo-a-la-plancha,Segundos · Carnes y pollo,Filete de pavo a la plancha,,TRUE,2
+carne-adobada-a-la-plancha-con-patatas,Segundos · Carnes y pollo,Carne adobada a la plancha con patatas,,TRUE,3
+chuletas-de-cerdo-a-la-plancha,Segundos · Carnes y pollo,Chuletas de cerdo a la plancha,,TRUE,4
+cocido-madrileno,Segundos · Carnes y pollo,Cocido madrileño,,TRUE,5
+filete-de-ternera-a-la-plancha,Segundos · Carnes y pollo,Filete de ternera a la plancha,,TRUE,6
+cinta-de-lomo-a-la-plancha,Segundos · Carnes y pollo,Cinta de lomo a la plancha,,TRUE,7
+escalope-de-cerdo-con-patatas,Segundos · Carnes y pollo,Escalope de cerdo con patatas,,TRUE,8
+emperador-a-la-plancha,Segundos · Pescados,Emperador a la plancha,,TRUE,1
+salmon-a-la-plancha,Segundos · Pescados,Salmón a la plancha,,TRUE,2
+lubina-a-la-plancha,Segundos · Pescados,Lubina a la plancha,,TRUE,3
+mero-a-la-plancha,Segundos · Pescados,Mero a la plancha,,TRUE,4
