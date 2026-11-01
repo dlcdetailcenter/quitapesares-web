@@ -70,18 +70,20 @@ Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al
 
 ## Barreras: qué vigila cada regla
 
-Estado al 29-10-2026. En un repositorio **público**, lo que se sube a cualquier rama ya es visible aunque la CI falle. **La CI impide fusionar, no publicar.** Antes de publicar solo frenan los hooks de pre-commit y push protection de GitHub.
+Estado al 1-11-2026. En un repositorio **público**, lo que se sube a cualquier rama ya es visible aunque la CI falle. **La CI impide fusionar, no publicar.** Antes de publicar solo frenan los hooks de pre-commit y push protection de GitHub.
 
 | Regla | Barrera real | Sin barrera (depende de revisión humana) |
 |---|---|---|
 | Datos confirmados | `astro build` en modo producción falla si hay datos sin CONFIRMADO | — |
 | Datos solo en el JSON | — | Que un dato o un plato se copie en otro archivo |
+| Estado público (`docs/ESTADO.md`) | — | Sin barrera: nada comprueba lo que dice ni que no se le cuelen datos personales, rutas locales o datos del restaurante. Claude lo revisa antes de cada push |
 | Secretos | **pre-commit: gitleaks bloquea el commit**, y también si gitleaks no está instalado · push protection de GitHub · gitleaks 8.30.1 en la CI | Un secreto con formato que gitleaks no reconozca |
 | Material | **pre-commit: `check:media --staged` bloquea el commit** por tamaño (>10 MB), originales versionados o GPS, y también si hay imágenes o vídeos preparados sin exiftool instalado · `check:media` en la CI, donde exiftool es obligatorio | Caras identificables y audio |
 | Identidad de los commits | **pre-commit: `identidad` bloquea el commit** si el autor no es el noreply de la cuenta o `Claude <noreply@anthropic.com>`, o si el committer no es uno de esos dos ni `GitHub <noreply@github.com>` | El commit de fusión lo crea GitHub, no tu git: ahí el hook no llega y depende de que la cuenta tenga «Keep my email addresses private» activado |
 | Apagar las barreras | **Hook de Claude Code** (`.claude/settings.json`, `PreToolUse` con `onFailure: "block"`): deniega `--no-verify`, `LEFTHOOK=0`, `core.hooksPath`, `lefthook uninstall` y `git push --force` | Vigila a Claude Code, no a una persona escribiendo en su terminal |
 | Rendimiento y accesibilidad | Lighthouse CI y Playwright + axe en la CI | — |
-| Historial de `main` | **Pendiente**: hasta que Kara active la regla de `main` (PR obligatoria, los 7 trabajos de la CI, sin force-push ni borrado, sin excepciones para administradores) nada impide un push directo a `main` | — |
+| Historial de `main` | **Regla de repositorio «main protegida»: activa, sin excepciones** (`bypass_actors` vacío, así que tampoco para administradores). Comprobada con `gh api repos/dlcdetailcenter/quitapesares-web/rules/branches/main`: `pull_request` con fusión solo por *merge* (`allowed_merge_methods: ["merge"]`, sin aplastar), `required_status_checks` con los 7 trabajos de la CI, y `non_fast_forward`, `deletion` y `creation`: no se reescribe, no se borra y no se recrea la rama | — |
+| Publicar (push y `gh`) | — | Sin barrera: depende de la instrucción de la sección «Estado y traspaso» y de que los push y los comandos `gh` que escriben en GitHub los lanza Kara |
 | Producción | Sin credenciales de despliegue en el repositorio ni en la CI | — |
 
 Los 7 trabajos de la CI: `build (ubuntu-latest)`, `build (windows-latest)`, `check`, `test`, `lighthouse`, `gitleaks`, `media`.
