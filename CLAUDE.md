@@ -2,6 +2,16 @@
 
 Instrucciones para Claude Code en este repositorio. **Son instrucciones, no garantías**: lo que de verdad impide errores son las barreras de la tabla final (compilación, CI, hooks y ajustes de GitHub).
 
+## Estado y traspaso
+
+@docs/ESTADO.md
+
+Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al empezar la sesión. Va **sin comillas invertidas**: entre comillas invertidas el archivo no se importa, solo se menciona.
+
+- **Al empezar sesión**: di en 3 líneas la fase, lo que está a medias y el siguiente paso. Si `docs/ESTADO.md` contradice al repositorio o a GitHub, avísalo: manda lo comprobado y se corrige el archivo.
+- **Cuando Kara diga «cerramos»**, y antes de pedirle un push: actualiza `docs/ESTADO.md` en la rama de trabajo, en su propio commit.
+- Los `git push` y los comandos `gh` que escriben en GitHub (`pr create`, `pr merge`, `repo archive`, `api` con `-X`, `-f` o `-F`…) los lanza Kara: tú los preparas y se los das en bloques, diciendo en qué terminal. Leer sí: `git fetch`, `gh pr view`, `gh pr checks`, `gh api` con GET. **Es una instrucción, no una barrera.**
+
 ## Reglas
 
 ### Datos del restaurante
