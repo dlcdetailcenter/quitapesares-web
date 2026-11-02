@@ -6,12 +6,14 @@
 // Astro 7 manda `astro preview` a segundo plano si detecta un agente de IA; aquí debe quedarse en primer plano.
 process.env.ASTRO_PREVIEW_BACKGROUND = '0';
 
-const BASE = 'http://localhost:4321';
+// 4321 por defecto (CI). En local se puede usar otro si ese puerto ya está ocupado: PUERTO_PRUEBAS=4330 npm run lhci
+const PUERTO = Number(process.env.PUERTO_PRUEBAS ?? 4321);
+const BASE = `http://localhost:${PUERTO}`;
 const KB = 1024;
 const MB = 1024 * KB;
 
-// /carta se activa en F1: poner `true` cuando exista la página.
-const CARTA_ACTIVA = false;
+// /carta existe desde F1: se mide con la plantilla de docs/carta/ como dato de prueba (en local no hay URL de la hoja).
+const CARTA_ACTIVA = true;
 
 /** @param {number} max */
 const maximo = (max) => ['error', { maxNumericValue: max, aggregationMethod: 'median' }];
@@ -44,12 +46,12 @@ module.exports = {
     collect: {
       url: CARTA_ACTIVA ? [`${BASE}/`, `${BASE}/carta`] : [`${BASE}/`],
       // Necesita compilar antes (`npm run build`); `astro preview` sirve la compilación con workerd.
-      startServerCommand: 'npm run preview',
+      startServerCommand: `npm run preview -- --port ${PUERTO}`,
       numberOfRuns: 3,
     },
     assert: {
       assertMatrix: [
-        { matchingUrlPattern: '^http://localhost:4321/$', assertions: presupuestoPortada },
+        { matchingUrlPattern: `^${BASE}/$`, assertions: presupuestoPortada },
         ...(CARTA_ACTIVA ? [{ matchingUrlPattern: '/carta/?$', assertions: presupuestoCarta }] : []),
       ],
     },
