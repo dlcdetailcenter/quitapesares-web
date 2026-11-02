@@ -1,0 +1,49 @@
+---
+// Esqueleto común de todas las páginas: idioma, noindex, fuentes del propio sitio, cabecera con el nombre
+// y el cambio de idioma. Sin JavaScript en el navegador.
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import { TEXTOS } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+  /** Título de la pestaña; sin él, solo el nombre del local. */
+  titulo?: string;
+  /** Ruta de la misma página en el otro idioma. */
+  rutaOtroIdioma: string;
+}
+
+const { idioma, titulo, rutaOtroIdioma } = Astro.props;
+const t = TEXTOS[idioma];
+const otroIdioma: Idioma = idioma === 'es' ? 'en' : 'es';
+const inicio = idioma === 'es' ? '/' : '/en/';
+---
+
+<!doctype html>
+<html lang={idioma}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Demo privada con datos provisionales: no se indexa (también la cabecera X-Robots-Tag). -->
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#8e1b2a" />
+    <title>{titulo ? `${titulo} | ${local.nombre}` : local.nombre}</title>
+    <Font cssVariable="--fuente-rotulo" preload />
+    <Font cssVariable="--fuente-texto" preload={[{ weight: 400 }]} />
+    <slot name="head" />
+  </head>
+  <body>
+    <a class="saltar" href="#contenido">{t.saltarAlContenido}</a>
+    <header class="cabecera">
+      <a class="cabecera__nombre" href={inicio} aria-label={`${local.nombre}: ${t.inicio}`}>{local.nombreCorto}</a>
+      <nav aria-label={t.navIdioma}>
+        <a class="cabecera__idioma" href={rutaOtroIdioma} hreflang={otroIdioma} lang={otroIdioma}>{t.otroIdioma}</a>
+      </nav>
+    </header>
+    <main id="contenido">
+      <slot />
+    </main>
+  </body>
+</html>

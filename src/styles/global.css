@@ -1,0 +1,213 @@
+/* Estilos comunes. Paleta sacada del fotograma de la portada (IMG_4595, segundo 3):
+   burdeos de las puertas, crema del toldo, ocre del revoco, ladrillo de la fachada y madera de la escalera.
+   Contraste comprobado (WCAG AA): madera sobre crema 13:1, crema sobre burdeos 7:1, texto suave sobre crema 6,5:1. */
+:root {
+  --burdeos: #8e1b2a;
+  --burdeos-oscuro: #6e1420;
+  --crema: #f1e3b8;
+  --crema-clara: #f8efd4;
+  --ocre: #d7b46a;
+  --ladrillo: #a9532f;
+  --madera: #2e1c13;
+  --texto-suave: #5e4a3c;
+
+  --fuente-rotulo-pila: var(--fuente-rotulo), 'Old English Text MT', serif;
+  --fuente-texto-pila: var(--fuente-texto), 'Segoe UI', system-ui, sans-serif;
+
+  --hueco: 1rem;
+  --ancho: 40rem;
+  --toque: 3rem; /* 48 px: por encima de los 44 px mínimos para el dedo */
+
+  color-scheme: light;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--crema);
+  color: var(--madera);
+  font-family: var(--fuente-texto-pila);
+  font-size: 1.125rem;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--burdeos);
+  text-underline-offset: 0.15em;
+}
+
+:focus-visible {
+  outline: 3px solid var(--madera);
+  outline-offset: 2px;
+}
+
+h1,
+h2,
+h3 {
+  line-height: 1.15;
+  margin: 0;
+}
+
+.saltar {
+  position: absolute;
+  left: var(--hueco);
+  top: -10rem;
+  z-index: 10;
+  padding: 0.75rem 1rem;
+  background: var(--madera);
+  color: var(--crema);
+}
+
+.saltar:focus {
+  top: var(--hueco);
+}
+
+.cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--hueco);
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0.5rem var(--hueco);
+}
+
+.cabecera__nombre {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--toque);
+  font-family: var(--fuente-rotulo-pila);
+  font-size: 1.75rem;
+  color: var(--burdeos);
+  text-decoration: none;
+}
+
+.cabecera__idioma {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  min-width: var(--toque);
+  padding: 0 0.75rem;
+  color: var(--madera);
+  font-weight: 700;
+}
+
+.contenedor {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 0 var(--hueco);
+}
+
+/* Botones de acción: rellenos (principales) y con borde (secundarios). */
+.boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--toque);
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--burdeos);
+  border-radius: 0.25rem;
+  background: var(--burdeos);
+  color: var(--crema);
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+}
+
+.boton:hover {
+  background: var(--burdeos-oscuro);
+  border-color: var(--burdeos-oscuro);
+}
+
+.boton--borde {
+  background: transparent;
+  color: var(--burdeos);
+}
+
+.boton--borde:hover {
+  background: var(--crema-clara);
+  color: var(--burdeos-oscuro);
+}
+
+/* La pizarra: el menú del día escrito como en la pizarra de la entrada. */
+.pizarra {
+  background: var(--madera);
+  color: var(--crema);
+  border: 0.375rem solid #5a3a26;
+  border-radius: 0.25rem;
+  padding: 1.25rem var(--hueco);
+}
+
+.pizarra :focus-visible {
+  outline-color: var(--crema);
+}
+
+.pizarra h2 {
+  font-family: var(--fuente-rotulo-pila);
+  font-weight: 400;
+  font-size: 1.75rem;
+  color: var(--ocre);
+}
+
+.pizarra__precio {
+  margin: 0.25rem 0 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.pizarra__incluye {
+  margin: 0.5rem 0 0;
+}
+
+.pizarra__otro {
+  margin: 1rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--ocre);
+}
+
+.alergenos {
+  margin: 2rem 0;
+  border-top: 2px solid var(--ocre);
+  border-bottom: 2px solid var(--ocre);
+}
+
+.alergenos summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--toque);
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.alergenos p {
+  margin: 0 0 1rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

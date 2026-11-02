@@ -1,0 +1,4 @@
+# Demo privada con datos provisionales: nada se indexa. Las respuestas del Worker llevan la misma cabecera
+# desde src/middleware.ts (este archivo solo se aplica a los archivos estáticos).
+/*
+  X-Robots-Tag: noindex, nofollow
