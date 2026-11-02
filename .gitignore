@@ -24,3 +24,6 @@ material/
 *.[mM][oO][vV]
 *.[hH][eE][iI][cC]
 *.[hH][eE][iI][fF]
+
+# Ajustes locales de Claude Code de cada equipo: nunca se publican
+.claude/settings.local.json

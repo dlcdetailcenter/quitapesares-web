@@ -3,48 +3,50 @@
 Reglas de este archivo:
 - Es **público**. Nada sobre la cuenta de GitHub ni sus ajustes.
 - Ni datos personales, ni rutas locales, ni datos del restaurante (esos solo en `src/data/restaurante.json`).
+- Ni la URL de la hoja de la carta ni la de la demo.
 - Si contradice al repositorio o a GitHub, manda lo comprobado y se corrige este archivo.
 
 | | |
 |---|---|
 | Actualizado | 2026-11-02 |
-| `main` al escribirlo | `c61031b` |
-| Fase | **F0** (base y barreras), cerrándose |
+| `main` al escribirlo | `eebd1d3` |
+| Fase | **F1** (carta funcional y portada estática, demo privada), en curso |
 
 ## Ramas y PR
 
 - `main`: protegida por la regla de repositorio «main protegida», activa y sin excepciones. VERIFICADO
-- `f0-base`: fusionada en la PR #1, sin commits por delante de `main`. VERIFICADO
-- `f0-contexto`: rama que añadió este archivo; si ya no aparece como PR abierta, está fusionada.
-- Ninguna otra PR abierta. VERIFICADO
+- `f0-base` y `f0-contexto`: fusionadas (PR #1 y PR #5). VERIFICADO
+- `f1-carta`: rama de F1, creada desde `main` (`eebd1d3`). Una sola PR a `main`, fusionada sin aplastar.
 
-## Hecho en F0
+## F0: cerrada
 
-- Esqueleto de Astro 7 con `@astrojs/cloudflare` y portada marcador. VERIFICADO
-- Datos del local etiquetados (`valor`, `fuente`, `fechaConsulta`, `estado`, `confirmadoPor`) y barrera de
-  compilación: `build:produccion` falla si algo no está CONFIRMADO. VERIFICADO
-- Ningún campo de datos está CONFIRMADO: los 8 siguen en `NO VERIFICABLE AÚN`. VERIFICADO
-- Plantilla y guía de la hoja de la carta en `docs/carta/`. VERIFICADO
-- Hooks de pre-commit con lefthook: `identidad`, `gitleaks`, `check:media --staged`. VERIFICADO
-- Hook de Claude Code que deniega los comandos que apagan las barreras. VERIFICADO
-- CI con 7 trabajos obligatorios para fusionar. VERIFICADO
-- Skill `workers-best-practices` copiada de la organización oficial de Cloudflare con su commit de
-  origen en `.claude/skills/ORIGEN.md`. VERIFICADO
-- MCP del proyecto `astro-docs` y `cloudflare-docs`, conectados. VERIFICADO
-- Despliegue: sin credenciales en el repositorio ni en la CI; nada publicado todavía. VERIFICADO
+Esqueleto de Astro 7 con `@astrojs/cloudflare`, datos del local etiquetados con barrera de compilación,
+hooks de pre-commit (`identidad`, `gitleaks`, `check:media --staged`), hook de Claude Code contra los
+comandos que apagan las barreras, CI con 7 trabajos obligatorios y skill `workers-best-practices`.
+Ningún dato del restaurante está CONFIRMADO: `build:produccion` sigue fallando a propósito. VERIFICADO
+
+## F1: en curso
+
+Decidido en el plan aprobado por Kara (2-11-2026):
+- La carta se lee de la hoja de Google por el endpoint gviz. Medido: un cambio de «disponible» aparece en
+  gviz en menos de 6 s (3 mediciones). VERIFICADO
+- Caché: KV + tarea programada cada minuto; se escribe en KV solo si algo cambió.
+- La URL de la hoja va como secreto del Worker, nunca en el repositorio.
+- Rutas: `/` y `/carta` en español, `/en/` y `/en/carta` en inglés. Todo con noindex.
+- Skills de diseño: solo `frontend-design` (Anthropic). Impeccable no cumple las condiciones y no se usa.
 
 ## A medias
 
-- Revisión del cierre de F0 (Kara). PARCIAL
-- Prueba de la hoja de Google de la carta (criterio 7 de F0): pendiente de Kara.
-  NO VERIFICABLE AÚN desde el repositorio.
+- Implementación de F1 en `f1-carta`. PARCIAL
+- Nombres en inglés de los platos (columna `nombre_en` de la hoja): pendientes de Kara.
 
 ## Siguiente paso
 
-Revisión del cierre de F0 por Kara. Después, F1: carta funcional leída de la hoja de Google y portada
-estática, como demo privada con datos provisionales (los datos confirmados por el restaurante son de F3).
+Implementar F1 en `f1-carta`, un commit por cambio; desplegar la demo con el OK de Kara y medir en ella
+que un agotado aparece en 5 minutos o menos.
 
 ## Cómo trabajamos
 
 - Un cambio, un commit. Nada a producción sin aprobación de Kara.
-- Los push, las PR y las fusiones los ejecuta Claude Code con el OK explícito de Kara en el chat (las reglas `ask` están sin verificar).
+- Antes de cada push, PR, fusión o despliegue, Claude Code lo resume en el chat en 3 líneas y espera el
+  OK explícito de Kara (las reglas `ask` siguen sin verificar, A-06).
