@@ -48,4 +48,4 @@ y datos confirmados por el restaurante.
 ## Cómo trabajamos
 
 - Un cambio, un commit. Nada a producción sin aprobación de Kara.
-- Los `git push` y los comandos `gh` que escriben en GitHub los lanza Kara; Claude los prepara.
+- Los push, las PR y las fusiones los ejecuta Claude Code tras un informe y la confirmación de Kara en el aviso de permisos.

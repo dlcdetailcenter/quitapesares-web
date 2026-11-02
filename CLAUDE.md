@@ -10,7 +10,11 @@ Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al
 
 - **Al empezar sesión**: di en 3 líneas la fase, lo que está a medias y el siguiente paso. Si `docs/ESTADO.md` contradice al repositorio o a GitHub, avísalo: manda lo comprobado y se corrige el archivo.
 - **Cuando Kara diga «cerramos»**, y antes de pedirle un push: actualiza `docs/ESTADO.md` en la rama de trabajo, en su propio commit.
-- Los `git push` y los comandos `gh` que escriben en GitHub (`pr create`, `pr merge`, `repo archive`, `api` con `-X`, `-f` o `-F`…) los lanza Kara: tú los preparas y se los das en bloques, diciendo en qué terminal. Leer sí: `git fetch`, `gh pr view`, `gh pr checks`, `gh api` con GET. **Es una instrucción, no una barrera.**
+- **Publicar** (`git push`, `gh pr create`, `gh pr merge`, `gh repo`, `gh api`…) lo ejecuta Claude Code, nunca sin pasar por estos tres pasos, en este orden:
+  1. Un informe con la herramienta Write en `~/proyectos/quitapesares-informes/AAAA-MM-DD-<accion>.md`: qué se publica (rama, destino, commits con hash, autor y committer, mensaje, y `git diff --stat`), verificaciones hechas y su resultado, qué queda a la vista en público, riesgos y cómo volver atrás. Ese informe se queda en el equipo de Kara y puede llevar rutas locales; lo que se publica, no.
+  2. En el chat, un resumen de 5 líneas como máximo y la ruta del informe.
+  3. El comando. Claude Code pide confirmación (regla `ask` de `.claude/settings.json`) y **Kara aprueba o rechaza en ese aviso**. Si rechaza, no se repite el comando ni se busca otra forma de lanzarlo.
+- Leer GitHub no pide aviso: `git fetch`, `git ls-remote`, `gh pr view`, `gh pr checks`. `gh api` pide confirmación siempre, también para leer. Los commits locales no pasan por este proceso: los vigilan los hooks de pre-commit y no publican nada.
 
 ## Reglas
 
@@ -70,7 +74,7 @@ Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al
 
 ## Barreras: qué vigila cada regla
 
-Estado al 1-11-2026. En un repositorio **público**, lo que se sube a cualquier rama ya es visible aunque la CI falle. **La CI impide fusionar, no publicar.** Antes de publicar solo frenan los hooks de pre-commit y push protection de GitHub.
+Estado al 2-11-2026. En un repositorio **público**, lo que se sube a cualquier rama ya es visible aunque la CI falle. **La CI impide fusionar, no publicar.** Antes de publicar frenan los hooks de pre-commit, push protection de GitHub y la confirmación de Kara en el aviso de permisos de Claude Code.
 
 | Regla | Barrera real | Sin barrera (depende de revisión humana) |
 |---|---|---|
@@ -83,7 +87,7 @@ Estado al 1-11-2026. En un repositorio **público**, lo que se sube a cualquier 
 | Apagar las barreras | **Hook de Claude Code** (`.claude/settings.json`, `PreToolUse` con `onFailure: "block"`): deniega `--no-verify`, `LEFTHOOK=0`, `core.hooksPath`, `lefthook uninstall` y `git push --force` | Vigila a Claude Code, no a una persona escribiendo en su terminal |
 | Rendimiento y accesibilidad | Lighthouse CI y Playwright + axe en la CI | — |
 | Historial de `main` | **Regla de repositorio «main protegida»: activa, sin excepciones** (`bypass_actors` vacío, así que tampoco para administradores). Comprobada con `gh api repos/dlcdetailcenter/quitapesares-web/rules/branches/main`: `pull_request` con fusión solo por *merge* (`allowed_merge_methods: ["merge"]`, sin aplastar), `required_status_checks` con los 7 trabajos de la CI, y `non_fast_forward`, `deletion` y `creation`: no se reescribe, no se borra y no se recrea la rama | — |
-| Publicar (push y `gh`) | — | Sin barrera: depende de la instrucción de la sección «Estado y traspaso» y de que los push y los comandos `gh` que escriben en GitHub los lanza Kara |
+| Publicar (push y `gh`) | Reglas `ask` configuradas en `.claude/settings.json`, **SIN VERIFICAR**: en la prueba del 2-11 un `git push --dry-run` se ejecutó sin aviso. Hasta resolverlo (A-06), la confirmación es el OK explícito de Kara en el chat. | Otras formas de invocar el programa (`sh -c`, scripts, rutas absolutas) y lo que haga una persona en su terminal. Que el informe previo se escriba depende de la instrucción de «Estado y traspaso» |
 | Producción | Sin credenciales de despliegue en el repositorio ni en la CI | — |
 
 Los 7 trabajos de la CI: `build (ubuntu-latest)`, `build (windows-latest)`, `check`, `test`, `lighthouse`, `gitleaks`, `media`.
