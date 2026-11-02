@@ -1,0 +1,158 @@
+---
+// Portada estática en un idioma: foto real de la entrada, nombre, botones, menú del día y horario.
+// Todos los datos salen de src/data/restaurante.json en la compilación.
+import { Picture } from 'astro:assets';
+import entrada from '../assets/portada/entrada.jpg';
+import Base from '../layouts/Base.astro';
+import Pizarra from './Pizarra.astro';
+import { NOMBRES_DIAS, TEXTOS, palabraDatos } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = TEXTOS[idioma];
+const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
+// «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada.
+const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCorto.length).trim();
+---
+
+<Base idioma={idioma} rutaOtroIdioma={idioma === 'es' ? '/en/' : '/'} nombreEnCabecera={false}>
+  <div class="contenedor portada">
+    <figure class="portada__foto">
+      <Picture
+        src={entrada}
+        formats={['avif', 'webp']}
+        widths={[480, 720, 1080]}
+        sizes="(min-width: 40rem) 38rem, calc(100vw - 2rem)"
+        alt={t.fotoPortada}
+        loading="eager"
+        fetchpriority="high"
+      />
+    </figure>
+
+    <h1 class="portada__nombre">
+      {tipoDeLocal && <span class="portada__tipo">{tipoDeLocal}</span>}
+      <span class="portada__rotulo">{local.nombreCorto}</span>
+    </h1>
+    <p class="portada__direccion">{local.direccion}</p>
+
+    <ul class="portada__acciones">
+      <li><a class="boton" href={local.telefonoHref}>{t.llamar}</a></li>
+      <li><a class="boton" href={rutaCarta}>{t.verCarta}</a></li>
+      <li><a class="boton boton--borde" href={local.comoLlegarHref}>{t.comoLlegar}</a></li>
+      <li><a class="boton boton--borde" href={local.resenaHref}>{t.dejarResena}</a></li>
+    </ul>
+
+    <Pizarra idioma={idioma} id="menu-del-dia" />
+
+    <section class="portada__horario" aria-labelledby="horario">
+      <h2 id="horario">{t.horario}</h2>
+      <dl>
+        {
+          local.horario.map(({ dia, horas }) => (
+            <div class="portada__dia">
+              <dt>{NOMBRES_DIAS[idioma][dia]}</dt>
+              <dd>{palabraDatos(horas, idioma)}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .portada {
+    padding-bottom: 2.5rem;
+  }
+
+  .portada__foto {
+    margin: 0;
+    border: 0.375rem solid var(--burdeos);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    background: var(--madera);
+    aspect-ratio: 3 / 4;
+    max-height: 70vh;
+  }
+
+  .portada__foto :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 40%;
+  }
+
+  .portada__nombre {
+    margin-top: 1rem;
+    color: var(--burdeos);
+    font-weight: 400;
+  }
+
+  .portada__tipo {
+    display: block;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--texto-suave);
+  }
+
+  .portada__rotulo {
+    display: block;
+    font-family: var(--fuente-rotulo-pila);
+    font-size: clamp(3rem, 15vw, 4.5rem);
+    line-height: 1;
+  }
+
+  .portada__direccion {
+    margin: 0.5rem 0 0;
+    color: var(--texto-suave);
+  }
+
+  .portada__acciones {
+    list-style: none;
+    margin: 1.5rem 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .portada__acciones .boton {
+    height: 100%;
+  }
+
+  .portada__horario {
+    margin-top: 2rem;
+  }
+
+  .portada__horario h2 {
+    font-size: 1.375rem;
+    padding-bottom: 0.375rem;
+    border-bottom: 3px double var(--ladrillo);
+  }
+
+  .portada__horario dl {
+    margin: 0;
+  }
+
+  .portada__dia {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--ocre);
+  }
+
+  .portada__dia dt {
+    font-weight: 700;
+  }
+
+  .portada__dia dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+  }
+</style>

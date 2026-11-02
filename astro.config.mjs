@@ -4,7 +4,9 @@ import cloudflare from '@astrojs/cloudflare';
 import datosRestaurante from './scripts/datos/integracion-astro.mjs';
 
 export default defineConfig({
-  adapter: cloudflare(),
+  // Imágenes procesadas con sharp en la compilación (la portada es estática): sin el enlace de Cloudflare
+  // Images en el Worker.
+  adapter: cloudflare({ imageService: 'compile' }),
   // Web sin sesiones: así el adaptador no reserva un KV de Cloudflare al desplegar.
   session: false,
   // Español sin prefijo (/ y /carta) e inglés en /en/ (/en/ y /en/carta).

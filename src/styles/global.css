@@ -230,3 +230,7 @@ h3 {
     scroll-behavior: auto !important;
   }
 }
+
+.cabecera--sin-nombre {
+  justify-content: flex-end;
+}
