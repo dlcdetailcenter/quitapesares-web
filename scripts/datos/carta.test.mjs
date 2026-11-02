@@ -139,3 +139,25 @@ test('esCarta: solo acepta lo que escribe la tarea programada', () => {
   assert.equal(esCarta({ ...carta, platos: [{ ...carta.platos[0], categoria: 'Bebidas' }] }), false);
   assert.equal(esCarta({ ...carta, platos: [{ ...carta.platos[0], disponible: 'TRUE' }] }), false);
 });
+
+test('con nombre_en relleno, cada plato válido aparece en español y en inglés, sin textos vacíos', () => {
+  // Nombres en inglés de prueba (los reales los pega Kara en la columna D de la hoja).
+  const conIngles = PLANTILLA.trim()
+    .split(/\r?\n/)
+    .map((linea, i) => {
+      if (i === 0) return linea;
+      const celdas = linea.split(',');
+      celdas[3] = `EN ${celdas[2]}`;
+      return celdas.join(',');
+    })
+    .join('\n');
+  const lectura = leerHoja(conIngles);
+  assert.deepEqual(lectura.sinIngles, []);
+  const carta = fusionar(null, lectura, AHORA).carta;
+  for (const idioma of ['es', 'en']) {
+    const platos = agrupar(carta, idioma).flatMap((g) => g.platos);
+    assert.equal(platos.length, 23, idioma);
+    assert.deepEqual(platos.map((p) => p.id).sort(), carta.platos.map((p) => p.id).sort(), idioma);
+    assert.ok(platos.every((p) => p.nombre.trim() !== ''), idioma);
+  }
+});
