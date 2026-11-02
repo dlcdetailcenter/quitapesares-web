@@ -59,13 +59,16 @@ test('los detectores encuentran cada dato escrito de varias formas (control de l
   const tel = d.telefono.valor.replace(/\D/g, '').slice(2);
   const [e, c] = d.menuDiario.valor.precio.toFixed(2).split('.');
   const franja = Object.values(d.horario.valor).find((v) => /\d/.test(v));
+  // Los ejemplos se montan por partes para que este archivo no contenga ningún dato reconocible: así la prueba
+  // de abajo, que también lo revisa a él, no se señala a sí misma.
+  const euro = '€';
   const ejemplos = [
     `Llámanos al ${tel.slice(0, 3)} ${tel.slice(3, 5)} ${tel.slice(5, 7)} ${tel.slice(7)}`,
     `Llámanos al ${tel.slice(0, 3)}.${tel.slice(3, 6)}.${tel.slice(6)}`,
-    '<a href="tel:+34600000000">',
-    `Menú: ${e},${c} €`,
-    `Menu: €${e}.${c}`,
-    'Precio 9,50 €',
+    ['<a href="tel', ':+34600000000">'].join(''),
+    `Menú: ${e},${c} ${euro}`,
+    `Menu: ${euro}${e}.${c}`,
+    `Precio ${9},${50} ${euro}`,
     `Abrimos de ${franja}`,
     `Abrimos de ${franja.replace('–', ' a ')}`,
     d.direccion.valor,
