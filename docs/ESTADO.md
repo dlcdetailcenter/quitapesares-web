@@ -7,7 +7,7 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-01 |
+| Actualizado | 2026-11-02 |
 | `main` al escribirlo | `c61031b` |
 | Fase | **F0** (base y barreras), cerrándose |
 
@@ -15,7 +15,7 @@ Reglas de este archivo:
 
 - `main`: protegida por la regla de repositorio «main protegida», activa y sin excepciones. VERIFICADO
 - `f0-base`: fusionada en la PR #1, sin commits por delante de `main`. VERIFICADO
-- `f0-contexto`: rama de este cambio (estado y traspaso); su PR a `main` se abre al terminarla. PARCIAL
+- `f0-contexto`: rama que añadió este archivo; si ya no aparece como PR abierta, está fusionada.
 - Ninguna otra PR abierta. VERIFICADO
 
 ## Hecho en F0
@@ -31,21 +31,20 @@ Reglas de este archivo:
 - Skill `workers-best-practices` copiada de la organización oficial de Cloudflare con su commit de
   origen en `.claude/skills/ORIGEN.md`. VERIFICADO
 - MCP del proyecto `astro-docs` y `cloudflare-docs`, conectados. VERIFICADO
-- Repositorio viejo archivado, sin borrar. VERIFICADO
 - Despliegue: sin credenciales en el repositorio ni en la CI; nada publicado todavía. VERIFICADO
 
 ## A medias
 
-- Esta rama: queda abrir la PR, la CI en verde y fusionar sin aplastar. PARCIAL
-- La hoja de Google de la carta no está creada; la carta real sigue en Google Sites.
+- Revisión del cierre de F0 (Kara). PARCIAL
+- Prueba de la hoja de Google de la carta (criterio 7 de F0): pendiente de Kara.
   NO VERIFICABLE AÚN desde el repositorio.
 
 ## Siguiente paso
 
-Fusionar la PR de `f0-contexto` sin aplastar y cerrar F0. Después, F1: hoja de Google de la carta
-y datos confirmados por el restaurante.
+Revisión del cierre de F0 por Kara. Después, F1: carta funcional leída de la hoja de Google y portada
+estática, como demo privada con datos provisionales (los datos confirmados por el restaurante son de F3).
 
 ## Cómo trabajamos
 
 - Un cambio, un commit. Nada a producción sin aprobación de Kara.
-- Los push, las PR y las fusiones los ejecuta Claude Code tras un informe y la confirmación de Kara en el aviso de permisos.
+- Los push, las PR y las fusiones los ejecuta Claude Code con el OK explícito de Kara en el chat (las reglas `ask` están sin verificar).
