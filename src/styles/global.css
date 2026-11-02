@@ -192,10 +192,29 @@ h3 {
 
 .alergenos summary {
   display: flex;
+  list-style: none;
   align-items: center;
   min-height: var(--toque);
   cursor: pointer;
   font-weight: 700;
+}
+
+/* Con display: flex el navegador quita el triángulo: se pone un signo que dice si está abierto o cerrado. */
+.alergenos summary::-webkit-details-marker {
+  display: none;
+}
+
+.alergenos summary::after {
+  content: '+';
+  content: '+' / '';
+  margin-left: auto;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.alergenos[open] summary::after {
+  content: '−';
+  content: '−' / '';
 }
 
 .alergenos p {

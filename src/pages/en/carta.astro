@@ -1,0 +1,11 @@
+---
+// Carta en inglés: solo los platos con nombre_en en la hoja.
+import CartaPagina from '../../components/CartaPagina.astro';
+export const prerender = false;
+
+// La disponibilidad cambia cada minuto: el navegador debe preguntar siempre. Va en la página y no en el
+// componente porque con el streaming de Astro las cabeceras salen antes de renderizar los componentes.
+Astro.response.headers.set('Cache-Control', 'no-cache');
+---
+
+<CartaPagina idioma="en" />

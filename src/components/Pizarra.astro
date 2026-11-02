@@ -1,0 +1,24 @@
+---
+// Menú del día y menú de fin de semana, con los precios tal como están en restaurante.json.
+import { TEXTOS, palabraDatos } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+  /** id del título, único en la página (aria-labelledby). */
+  id: string;
+}
+
+const { idioma, id } = Astro.props;
+const t = TEXTOS[idioma];
+const incluye = local.menuIncluye.map((palabra) => palabraDatos(palabra, idioma));
+const lista = new Intl.ListFormat(idioma === 'es' ? 'es' : 'en', { type: 'conjunction' }).format(incluye);
+---
+
+<section class="pizarra" aria-labelledby={id}>
+  <h2 id={id}>{t.menuDelDia}</h2>
+  <p class="pizarra__precio">{local.precioMenuDiario(idioma)}</p>
+  <p class="pizarra__incluye">{t.menuIncluye}: {lista}.</p>
+  <p class="pizarra__otro">{t.menuFinDeSemana}: <strong>{local.precioMenuFinDeSemana(idioma)}</strong></p>
+</section>
