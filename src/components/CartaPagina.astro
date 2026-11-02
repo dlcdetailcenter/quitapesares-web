@@ -1,0 +1,177 @@
+---
+// La carta del día en un idioma. Se renderiza en el servidor en cada petición: lee la última versión válida
+// de KV (la actualiza la tarea programada cada minuto). Detalle de las fuentes en src/lib/carta/fuente.ts.
+import { env } from 'cloudflare:workers';
+import plantilla from '../../docs/carta/plantilla-hoja-carta.csv?raw';
+import Base from '../layouts/Base.astro';
+import Pizarra from './Pizarra.astro';
+import { CATEGORIAS_TRADUCIDAS, TEXTOS } from '../i18n/textos.ts';
+import { agrupar, type Idioma } from '../lib/carta/hoja.ts';
+import { cartaParaMostrar } from '../lib/carta/fuente.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = TEXTOS[idioma];
+
+const carta = await cartaParaMostrar(env, Astro.url, plantilla, (promesa) => Astro.locals.cfContext.waitUntil(promesa));
+const grupos = carta ? agrupar(carta, idioma) : [];
+const hayEnEspanol = carta ? agrupar(carta, 'es').length > 0 : false;
+
+// La plantilla de prueba no tiene hora real (fecha 0): entonces no se muestra.
+const actualizada = carta && Date.parse(carta.actualizada) > 0 ? new Date(carta.actualizada) : null;
+const hora = actualizada
+  ? new Intl.DateTimeFormat(idioma === 'es' ? 'es-ES' : 'en-GB', {
+      timeZone: 'Europe/Madrid',
+      day: 'numeric',
+      month: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+    }).format(actualizada)
+  : null;
+---
+
+<Base idioma={idioma} titulo={t.tituloCarta} rutaOtroIdioma={idioma === 'es' ? '/en/carta' : '/carta'}>
+  <div class="contenedor carta">
+    <h1>{t.carta}</h1>
+
+    <Pizarra idioma={idioma} id="menu-del-dia" />
+
+    {
+      grupos.map((grupo, i) => (
+        <section class="carta__grupo" aria-labelledby={`categoria-${i + 1}`}>
+          <h2 id={`categoria-${i + 1}`}>{CATEGORIAS_TRADUCIDAS[idioma][grupo.categoria]}</h2>
+          <ul class="carta__platos">
+            {grupo.platos.map((plato) => (
+              <li class:list={['carta__plato', { 'carta__plato--agotado': !plato.disponible }]}>
+                <span class="carta__nombre">{plato.nombre}</span>
+                {!plato.disponible && <span class="carta__agotado">{t.agotado}</span>}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+
+    {
+      grupos.length === 0 && idioma === 'en' && hayEnEspanol && (
+        <section class="carta__aviso" aria-labelledby="aviso-carta">
+          <h2 id="aviso-carta">{t.cartaSinIngles}</h2>
+          <p>
+            <a class="boton boton--borde" href="/carta" hreflang="es">
+              {t.verCartaEnOtroIdioma}
+            </a>
+          </p>
+        </section>
+      )
+    }
+
+    {
+      grupos.length === 0 && !(idioma === 'en' && hayEnEspanol) && (
+        <section class="carta__aviso" aria-labelledby="aviso-carta">
+          <h2 id="aviso-carta">{t.sinCartaTitulo}</h2>
+          <p>{t.sinCartaTexto}</p>
+          <p>
+            <a class="boton" href={local.telefonoHref}>
+              {t.llamar}: {local.telefono}
+            </a>
+          </p>
+        </section>
+      )
+    }
+
+    {
+      hora && actualizada && grupos.length > 0 && (
+        <p class="carta__actualizada">
+          {t.ultimoCambio} <time datetime={actualizada.toISOString()}>{hora}</time>
+        </p>
+      )
+    }
+
+    <details class="alergenos">
+      <summary>{t.alergenos}</summary>
+      <p>{t.alergenosTexto}</p>
+    </details>
+
+    <p class="carta__llamar">
+      <a class="boton" href={local.telefonoHref}>{t.llamar}</a>
+    </p>
+  </div>
+</Base>
+
+<style>
+  .carta {
+    padding-bottom: 2rem;
+  }
+
+  h1 {
+    font-family: var(--fuente-rotulo-pila);
+    font-weight: 400;
+    font-size: 2.75rem;
+    color: var(--burdeos);
+    margin: 0.5rem 0 1rem;
+  }
+
+  .carta__grupo {
+    margin-top: 2rem;
+  }
+
+  .carta__grupo h2,
+  .carta__aviso h2 {
+    font-size: 1.375rem;
+    font-weight: 700;
+    padding-bottom: 0.375rem;
+    border-bottom: 3px double var(--ladrillo);
+  }
+
+  .carta__platos {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .carta__plato {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 0.75rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--ocre);
+  }
+
+  .carta__plato--agotado .carta__nombre {
+    color: var(--texto-suave);
+  }
+
+  .carta__agotado {
+    flex: none;
+    padding: 0 0.5rem;
+    border: 2px solid var(--burdeos);
+    border-radius: 0.25rem;
+    color: var(--burdeos);
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
+  .carta__aviso {
+    margin-top: 2rem;
+  }
+
+  .carta__aviso p {
+    margin: 0.75rem 0 0;
+  }
+
+  .carta__actualizada {
+    margin: 1.5rem 0 0;
+    color: var(--texto-suave);
+    font-size: 1rem;
+  }
+
+  .carta__llamar {
+    margin: 0;
+  }
+</style>

@@ -1,6 +1,7 @@
 import { defineConfig } from '@playwright/test';
 
-const PUERTO = 4321;
+// 4321 por defecto (CI). En local se puede usar otro si ese puerto ya está ocupado: PUERTO_PRUEBAS=4330 npm test
+const PUERTO = Number(process.env.PUERTO_PRUEBAS ?? 4321);
 
 // Móvil: anchos de 360 y 390 px en Chromium y WebKit.
 const pantallas = [
@@ -31,7 +32,7 @@ export default defineConfig({
   ),
   // Sirve la compilación (npm run build antes) con `astro preview`, que usa workerd como Cloudflare.
   webServer: {
-    command: 'npm run preview',
+    command: `npm run preview -- --port ${PUERTO}`,
     url: `http://localhost:${PUERTO}`,
     // Si ya hay una previsualización abierta en el puerto, se usa esa; en la CI no la hay y se arranca.
     reuseExistingServer: true,

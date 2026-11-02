@@ -24,3 +24,9 @@ material/
 *.[mM][oO][vV]
 *.[hH][eE][iI][cC]
 *.[hH][eE][iI][fF]
+
+# Ajustes locales de Claude Code de cada equipo: nunca se publican
+.claude/settings.local.json
+
+# Tipos del Worker: los genera `wrangler types` (npm run check lo ejecuta antes de astro check)
+worker-configuration.d.ts

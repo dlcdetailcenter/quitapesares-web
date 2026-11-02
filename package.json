@@ -11,12 +11,13 @@
     "build": "astro build --mode demo",
     "build:produccion": "astro build --mode production",
     "preview": "astro preview",
-    "check": "astro check",
+    "check": "wrangler types && astro check",
     "test": "playwright test",
     "lhci": "lhci autorun",
     "check:media": "node scripts/check-media.mjs",
     "test:datos": "node --test \"scripts/datos/*.test.mjs\"",
-    "astro": "astro"
+    "astro": "astro",
+    "types": "wrangler types"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.3",

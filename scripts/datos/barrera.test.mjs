@@ -3,8 +3,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validarDatos } from './validar.mjs';
@@ -15,7 +14,11 @@ const { pendientes } = validarDatos(JSON.parse(readFileSync(join(raiz, 'src', 'd
 
 /** @param {string} modo */
 function compilar(modo) {
-  const salida = mkdtempSync(join(tmpdir(), 'quitapesares-'));
+  // La salida va dentro del proyecto (node_modules/.cache, ignorada por git): desde una carpeta temporal del
+  // sistema, la compilación no encuentra las dependencias (sharp, para las imágenes de la portada).
+  const cache = join(raiz, 'node_modules', '.cache');
+  mkdirSync(cache, { recursive: true });
+  const salida = mkdtempSync(join(cache, 'barrera-'));
   try {
     const r = spawnSync(process.execPath, [astro, 'build', '--mode', modo, '--outDir', salida], {
       cwd: raiz,
