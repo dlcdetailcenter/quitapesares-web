@@ -1,11 +1,22 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "quitapesares-web",
+  // Punto de entrada propio: las páginas de Astro más la tarea programada que lee la hoja de la carta.
+  "main": "./src/worker.ts",
   // Fecha fija para que el comportamiento no cambie al actualizar dependencias.
   // Es la más reciente que admite el workerd instalado (1.20261023.1).
   "compatibility_date": "2026-10-23",
-  // Registro de errores en Cloudflare cuando se despliegue (las trazas se deciden en la fase de despliegue).
+  // Registro de errores en Cloudflare: las filas rechazadas de la hoja y sus fallos quedan aquí.
   "observability": {
     "enabled": true
+  },
+  // Última versión válida de la carta. Sin id: Wrangler crea el espacio al desplegar (aprovisionamiento
+  // automático) y lo mantiene enlazado; el id que escribe de vuelta en este archivo no se sube.
+  "kv_namespaces": [{ "binding": "CARTA" }],
+  // Cada minuto: peor caso para que un agotado aparezca ≈ 60 s + lectura de gviz + ≤ 60 s de propagación de KV.
+  // Plan gratuito: 1 de las 5 tareas programadas de la cuenta.
+  "triggers": {
+    "crons": ["* * * * *"]
   }
+  // La URL de la hoja es un secreto (wrangler secret put URL_HOJA): nunca en este archivo.
 }
