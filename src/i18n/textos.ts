@@ -34,9 +34,14 @@ const es = {
   rotuloEntrada: 'La entrada',
   rotuloBarra: 'La barra',
   rotuloComedor: 'El comedor',
-  creditosIa: 'El local sale solo en vídeo real. Generado con IA:',
+  creditosSoloReal: 'El local sale solo en vídeo real.',
+  creditosIa: 'Generado con IA:',
+  creditosIaLocal: 'Simulación con IA a partir de fotos reales del local (Higgsfield).',
   creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
   pnoaPrefijo: 'Obra derivada de PNOA',
+  etiquetaIaLocal: 'Simulación con IA a partir de una foto real del local',
+  paradaPuerta: 'Cómo llegar o llamar',
+  paradaBarra: 'La carta y el menú del día',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -71,9 +76,14 @@ const en: Textos = {
   rotuloEntrada: 'The entrance',
   rotuloBarra: 'The bar',
   rotuloComedor: 'The dining room',
-  creditosIa: 'The restaurant is shown only in real video. AI-generated:',
+  creditosSoloReal: 'The restaurant is shown only in real video.',
+  creditosIa: 'AI-generated:',
+  creditosIaLocal: 'AI simulation based on real photos of the venue (Higgsfield).',
   creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
   pnoaPrefijo: 'Derived from PNOA',
+  etiquetaIaLocal: 'AI simulation based on a real photo of the venue',
+  paradaPuerta: 'Directions or call',
+  paradaBarra: 'The menu and the set menu of the day',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };

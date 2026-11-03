@@ -29,11 +29,34 @@ function peticionesDeMaterial(page: Page): string[] {
   return urls;
 }
 
+/** Lleva el scroll a un punto del recorrido, en pantallas desde el principio (la pista mide la suma de todas). */
+async function irA(page: Page, pantalla: number) {
+  await page.evaluate((p) => {
+    const caja = (document.querySelector('[data-recorrido-pista]') as HTMLElement).getBoundingClientRect();
+    const total = caja.height / innerHeight;
+    const desplazable = caja.height - innerHeight;
+    scrollTo(0, caja.top + scrollY + (p / total) * desplazable);
+  }, pantalla);
+  await page.waitForTimeout(200);
+}
+
+/** Objetivo táctil de 44 px como mínimo y con el foco visible. */
+async function comprobarObjetivo(enlace: ReturnType<Page['locator']>) {
+  const caja = await enlace.boundingBox();
+  expect(caja?.width ?? 0).toBeGreaterThanOrEqual(44);
+  expect(caja?.height ?? 0).toBeGreaterThanOrEqual(44);
+  await enlace.focus();
+  const contorno = await enlace.evaluate((e) => getComputedStyle(e).outlineStyle);
+  expect(contorno).not.toBe('none');
+}
+
 /** La portada de F1 entera: foto, nombre y los cuatro botones, más la pizarra y el horario. */
 async function mismasFunciones(page: Page, botones: readonly string[]) {
   await expect(page.locator('picture img')).toBeVisible();
   await expect(page.locator('h1')).toBeVisible();
-  for (const texto of botones) await expect(page.getByRole('link', { name: texto, exact: true })).toBeVisible();
+  // Los de la portada (las paradas del recorrido repiten algunos: aquí se miran los de la portada).
+  for (const texto of botones) await expect(page.locator('.portada').getByRole('link', { name: texto, exact: true })).toBeVisible();
+  // La pizarra lleva el menú del día con su precio: la misma información que la parada de la barra.
   await expect(page.locator('.pizarra')).toBeVisible();
   await expect(page.locator('.portada__horario dd')).toHaveCount(7);
 }
@@ -48,21 +71,18 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page).toHaveURL(new RegExp(`${carta}$`));
     });
 
-    test('se activa con el primer tramo y avanza con el scroll: aire, puerta, barra', async ({ page }) => {
+    test('se activa con el primer tramo y avanza con el scroll: aire, puerta, parada, barra, parada', async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const seccion = page.locator('[data-recorrido]');
       await expect(seccion).toHaveAttribute('data-parte', 'aire');
-      // Lo que se desplaza es el alto de la pista menos la ventana; las tres partes miden lo mismo (1 pantalla).
-      const desplazable = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height - innerHeight);
-      expect(desplazable).toBeGreaterThan(0);
+      // Partes en pantallas: aire 0–1, puerta 1–2, parada 2–2,5, barra 2,5–3,5 y parada 3,5–4. Se va al centro de cada una.
       const vistas: string[] = [];
-      for (const f of [0.5 / 3, 1.5 / 3, 2.5 / 3]) {
-        await page.evaluate(([y]) => scrollTo(0, y), [desplazable * f]);
-        await page.waitForTimeout(150);
+      for (const p of [0.5, 1.5, 2.25, 3, 3.75]) {
+        await irA(page, p);
         vistas.push((await seccion.getAttribute('data-parte')) ?? '');
       }
-      expect(vistas).toEqual(['aire', 'puerta', 'barra']);
+      expect(vistas).toEqual(['aire', 'puerta', 'parada-puerta', 'barra', 'parada-barra']);
       // Material sintético: lo dice en los créditos.
       await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
       // Después del recorrido sigue la portada de F1.
@@ -87,14 +107,82 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       expect(tipo.abajo).toBeLessThan(gotica.mitad);
     });
 
-    test('recorrido corto: a 390×844 la pista mide como mucho 3 veces la ventana', async ({ page }) => {
-      // Ajuste de Kara del 2026-11-03: aire, puerta y barra, una pantalla cada uno (antes eran unas 6 en total).
+    test('longitud: ningún tramo pasa de 1 pantalla, cada parada 0,5 y a 390×844 la pista mide 5 ventanas como mucho', async ({ page }) => {
+      // Encargo de la maqueta (2026-11-03): tramos ≤ 1 pantalla, paradas de 0,5, total ≤ 5 (antes eran unas 7).
       await page.setViewportSize({ width: 390, height: 844 });
+      const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { aire: { pantallas: number }; tramos: { pantallas: number }[] };
+      expect(config.aire.pantallas).toBeLessThanOrEqual(1);
+      for (const t of config.tramos) expect(t.pantallas).toBeLessThanOrEqual(1);
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
-      expect(alto).toBeGreaterThan(844);
-      expect(alto).toBeLessThanOrEqual(3 * 844);
+      const pantallas = config.aire.pantallas + config.tramos.reduce((a, t) => a + t.pantallas, 0) + 2 * 0.5;
+      expect(alto).toBeCloseTo(pantallas * 844, 0);
+      expect(alto).toBeLessThanOrEqual(5 * 844);
+    });
+
+    test('paradas: tras la puerta, Cómo llegar y Llamar; tras la barra, Ver carta y el menú del día con su precio', async ({ page }) => {
+      const datos = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', import.meta.url), 'utf8'));
+      const telefono = `tel:${String(datos.telefono.valor).replace(/[^\d+]/g, '')}`;
+      const precio = new Intl.NumberFormat(ruta === '/' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(datos.menuDiario.valor.precio);
+      const [comoLlegar, llamar, verCarta, menu] = ruta === '/' ? ['Cómo llegar', 'Llamar', 'Ver carta', 'Menú del día'] : ['Directions', 'Call', 'See the menu', 'Set menu of the day'];
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const puerta = page.locator('[data-parada="puerta"]');
+      const barra = page.locator('[data-parada="barra"]');
+      // Fuera de su media pantalla no se ven ni se pueden enfocar.
+      await irA(page, 1.5);
+      await expect(puerta).toBeHidden();
+      await expect(barra).toBeHidden();
+
+      await irA(page, 2.25);
+      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-puerta');
+      // Enlaces reales y accesibles (por su rol y su nombre, nada de aria-hidden).
+      const enlaceLlegar = puerta.getByRole('link', { name: comoLlegar, exact: true });
+      const enlaceLlamar = puerta.getByRole('link', { name: llamar, exact: true });
+      await expect(enlaceLlegar).toBeVisible();
+      await expect(enlaceLlegar).toHaveAttribute('href', new RegExp(`query_place_id=${datos.placeId.valor}`));
+      await expect(enlaceLlamar).toHaveAttribute('href', telefono);
+      await expect(barra).toBeHidden();
+      for (const enlace of [enlaceLlegar, enlaceLlamar]) await comprobarObjetivo(enlace);
+
+      await irA(page, 3.75);
+      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-barra');
+      const enlaceCarta = barra.getByRole('link', { name: verCarta, exact: true });
+      const enlaceMenu = barra.getByRole('link', { name: new RegExp(`^${menu}`) });
+      await expect(enlaceCarta).toHaveAttribute('href', carta);
+      await expect(enlaceMenu).toHaveAttribute('href', `${carta}#menu-del-dia`);
+      // El precio sale del archivo de datos, con sus espacios: «Menú del día: <precio del JSON>».
+      // (Intl pone un espacio duro antes de «€»: se normalizan los dos lados.)
+      const normalizar = (s: string) => s.replace(/\s+/g, ' ').trim();
+      expect(normalizar((await enlaceMenu.textContent()) ?? '')).toBe(normalizar(`${menu}: ${precio}`));
+      await expect(puerta).toBeHidden();
+      for (const enlace of [enlaceCarta, enlaceMenu]) await comprobarObjetivo(enlace);
+    });
+
+    test('maqueta: la etiqueta «Simulación con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
+      await page.route('**/recorrido/recorrido.json', async (r) => {
+        const config = await (await r.fetch()).json();
+        config.tramos[1].ia = 'local';
+        config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
+        await r.fulfill({ json: config });
+      });
+      const [etiqueta, creditos, soloReal] =
+        ruta === '/'
+          ? ['Simulación con IA a partir de una foto real del local', 'Simulación con IA a partir de fotos reales del local', 'solo en vídeo real']
+          : ['AI simulation based on a real photo of the venue', 'AI simulation based on real photos of the venue', 'only in real video'];
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const marca = page.locator('[data-recorrido-etiqueta-ia]');
+      await irA(page, 1.5); // puerta: material real
+      await expect(marca).toBeHidden();
+      await irA(page, 3); // barra: la pieza «ia: local»
+      await expect(marca).toBeVisible();
+      await expect(marca).toHaveText(etiqueta);
+      await irA(page, 3.75); // su parada deja quieta la pieza: la etiqueta sigue
+      await expect(marca).toBeVisible();
+      await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
+      await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);
     });
 
     test('con «reducir movimiento»: sin canvas animado ni vídeo, sin material y con las mismas funciones', async ({ browser }) => {
