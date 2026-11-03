@@ -128,6 +128,34 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
   });
 }
 
+test('sin ortofoto: el aire es cielo con nubes, sin atribución del PNOA, y el recorrido sigue', async ({ page }) => {
+  // Es el caso del material real mientras el servicio del IGN no se pueda usar (aire.ts, ensamblar.mjs).
+  await page.route('**/recorrido/recorrido.json', async (r) => {
+    const config = await (await r.fetch()).json();
+    config.aire.niveles = [];
+    config.aire.pnoa = null;
+    await r.fulfill({ json: config });
+  });
+  const niveles: string[] = [];
+  page.on('request', (p) => {
+    if (new URL(p.url()).pathname.startsWith('/recorrido/aire/')) niveles.push(p.url());
+  });
+  await page.goto('/');
+  await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+  await expect(page.locator('[data-recorrido-pnoa]')).toBeHidden();
+  // El lienzo tiene el cielo pintado: el píxel de arriba es azul, no el negro del lienzo vacío.
+  const [r, g, b] = await page.locator('[data-recorrido-lienzo]').evaluate((c: HTMLCanvasElement) => [
+    ...(c.getContext('2d')?.getImageData(c.width / 2, 2, 1, 1).data ?? []),
+  ]);
+  expect(b).toBeGreaterThan(r);
+  expect(b).toBeGreaterThan(100);
+  expect(g).toBeGreaterThan(0);
+  const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
+  await page.evaluate(([y]) => scrollTo(0, y), [alto * 0.3]);
+  await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'puerta');
+  expect(niveles).toEqual([]);
+});
+
 test('memoria: solo una ventana de fotogramas decodificados, no todos', async ({ page }) => {
   // Cuenta los ImageBitmap vivos (creados menos cerrados) mientras se recorre todo.
   await page.addInitScript(() => {
