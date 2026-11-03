@@ -1,6 +1,26 @@
 {
   "$comentario": "Sumas SHA-256 y dimensiones del material real del recorrido (recorrido-real/). Lo escribe scripts/media/ensamblar.mjs y lo comprueba npm run media:check.",
   "archivos": {
+    "aire/nivel-0.webp": {
+      "sha256": "a3a8e32b7f41036b5d35bd0a1cf034d50ea3feba9c887a991725abadcadcc0c7",
+      "ancho": 540,
+      "alto": 960
+    },
+    "aire/nivel-1.webp": {
+      "sha256": "feed47d64d7ff82e19843066a5dde37bbb1270d272bc476e432287c50b5f0e46",
+      "ancho": 540,
+      "alto": 960
+    },
+    "aire/nivel-2.webp": {
+      "sha256": "1ab7f51f6e1072e0cc66f1f74cea3463b2a676484bf7e4d568aefb4a4b269784",
+      "ancho": 540,
+      "alto": 960
+    },
+    "aire/nivel-3.webp": {
+      "sha256": "2b824ed05d05d1a0ecf1652c42334a30047232a09484edd890801eb5c3060d34",
+      "ancho": 540,
+      "alto": 960
+    },
     "barra/0001.webp": {
       "sha256": "fc252244d08da908326a99a66cc4783101bfe85464be1e68df1c336a0cc2ab9a",
       "ancho": 540,
@@ -291,6 +311,21 @@
       "ancho": 540,
       "alto": 960
     },
+    "nubes/nubes-1.webp": {
+      "sha256": "836e9da883a5413e4957ab4c987803ec03fff0a21075908dbac001334891bd40",
+      "ancho": 540,
+      "alto": 960
+    },
+    "nubes/nubes-2.webp": {
+      "sha256": "956c45d0ecb9b3f81e11331f90c725d79d83dfea28d9b91b2f21d38ca47f9be2",
+      "ancho": 540,
+      "alto": 960
+    },
+    "nubes/nubes-3.webp": {
+      "sha256": "45b2e6eb5c0e440f570759ed5a1fd679a3df723f9cfe465e883a1cd171e04e69",
+      "ancho": 540,
+      "alto": 960
+    },
     "puerta/0001.webp": {
       "sha256": "faa137bff58d024eabbf54cd77c20e11c7881d94da915901be1fe47dccb0b71b",
       "ancho": 540,
@@ -557,7 +592,7 @@
       "alto": 960
     },
     "recorrido.json": {
-      "sha256": "9ff282a2836d5775e620b398187addea6feda7bd0fabd26124f59e91bb9ba6d1"
+      "sha256": "bf7fb5ed1f0f2e0fa0a90224dfc605faaf2595895a347b62b14bc3598fc0fd38"
     }
   }
 }
