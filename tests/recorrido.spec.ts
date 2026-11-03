@@ -47,24 +47,35 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page).toHaveURL(new RegExp(`${carta}$`));
     });
 
-    test('se activa con el primer tramo y avanza con el scroll: aire, puerta, barra, comedor', async ({ page }) => {
+    test('se activa con el primer tramo y avanza con el scroll: aire, puerta, barra', async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const seccion = page.locator('[data-recorrido]');
       await expect(seccion).toHaveAttribute('data-parte', 'aire');
-      const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
-      expect(alto).toBeGreaterThan(5 * 800);
+      // Lo que se desplaza es el alto de la pista menos la ventana; las tres partes miden lo mismo (1 pantalla).
+      const desplazable = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height - innerHeight);
+      expect(desplazable).toBeGreaterThan(0);
       const vistas: string[] = [];
-      for (const f of [0.02, 0.3, 0.55, 0.8]) {
-        await page.evaluate(([y]) => scrollTo(0, y), [alto * f]);
+      for (const f of [0.5 / 3, 1.5 / 3, 2.5 / 3]) {
+        await page.evaluate(([y]) => scrollTo(0, y), [desplazable * f]);
         await page.waitForTimeout(150);
         vistas.push((await seccion.getAttribute('data-parte')) ?? '');
       }
-      expect(vistas).toEqual(['aire', 'puerta', 'barra', 'comedor']);
+      expect(vistas).toEqual(['aire', 'puerta', 'barra']);
       // Material sintético: lo dice en los créditos.
       await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
       // Después del recorrido sigue la portada de F1.
       await mismasFunciones(page, botones);
+    });
+
+    test('recorrido corto: a 390×844 la pista mide como mucho 3 veces la ventana', async ({ page }) => {
+      // Ajuste de Kara del 2026-11-03: aire, puerta y barra, una pantalla cada uno (antes eran unas 6 en total).
+      await page.setViewportSize({ width: 390, height: 844 });
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
+      expect(alto).toBeGreaterThan(844);
+      expect(alto).toBeLessThanOrEqual(3 * 844);
     });
 
     test('con «reducir movimiento»: sin canvas animado ni vídeo, sin material y con las mismas funciones', async ({ browser }) => {
@@ -204,7 +215,7 @@ test('memoria: solo una ventana de fotogramas decodificados, no todos', async ({
   }
   const { maximo } = await page.evaluate(() => ({ maximo: (window as unknown as { __maximo: number }).__maximo }));
   expect(maximo).toBeGreaterThan(3); // el contador funciona: se han decodificado fotogramas
-  // 72 fotogramas en el material sintético: la ventana es de 6 a cada lado (13) más los 3 niveles del aire.
+  // 48 fotogramas en el material sintético: la ventana es de 6 a cada lado (13) más los 3 niveles del aire.
   expect(maximo).toBeLessThanOrEqual(13 + 3 + 2);
 });
 

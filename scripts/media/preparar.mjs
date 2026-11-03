@@ -62,19 +62,20 @@ function sintetico() {
     return `aire/nivel-${i}.png`;
   });
   // Tramos: 24 fotogramas lisos cada uno, el tono cambia de un fotograma a otro para ver que se mueven.
-  const bases = { puerta: [142, 27, 42], barra: [110, 70, 40], comedor: [60, 50, 90] };
+  // Las mismas partes y pantallas que el material real (tramos.json): aire, puerta y barra, una pantalla cada una.
+  const bases = { puerta: [142, 27, 42], barra: [110, 70, 40] };
   const tramos = Object.entries(bases).map(([id, [r, g, b]]) => {
     for (let i = 0; i < 24; i++) {
       const k = i * 4;
       escribir(`${id}/${String(i + 1).padStart(4, '0')}.png`, pngLiso(36, 64, [Math.min(255, r + k), g, Math.max(0, b - k / 2)]));
     }
-    return { id, fotogramas: 24, patron: `${id}/%04d.png`, pantallas: 2 };
+    return { id, fotogramas: 24, patron: `${id}/%04d.png`, pantallas: 1 };
   });
   const config = {
     material: 'sintetico',
     ancho: 720,
     alto: 1280,
-    aire: { niveles, nubes: [], pantallas: 1.5, pnoa: null },
+    aire: { niveles, nubes: [], pantallas: 1, pnoa: null },
     tramos,
     ia: [],
   };

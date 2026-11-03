@@ -64,7 +64,8 @@ const recorrido = {
   aire: {
     niveles: aire.niveles,
     nubes,
-    pantallas: aire.pantallas ?? 1.5,
+    // Pantallas de scroll del aire: de tramos.json, como las de los tramos.
+    pantallas: config.aire?.pantallas ?? 1,
     pnoa: hayOrtofoto ? { anio: aire.anio } : null,
     centro: aire.centro,
   },

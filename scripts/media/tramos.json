@@ -5,6 +5,10 @@
     "alto": 960,
     "fps": 30
   },
+  "aire": {
+    "$comentario": "Pantallas de scroll del tramo aéreo. El recorrido entero mide la suma de las pantallas de todas las partes (aire y tramos), escenario incluido: 3 en total (ajuste de Kara del 2026-11-03).",
+    "pantallas": 1
+  },
   "tonemap": {
     "$comentario": "HDR (HLG o PQ) a SDR BT.709. Si el clip ya es SDR, solo se convierte a BT.709.",
     "operador": "hable",
@@ -47,7 +51,7 @@
         "mezcla": 4
       },
       "notas": "Fotogramas 40–126 de IMG_4595 (revisados uno a uno el 2026-11-03): desde el 40 no se ve la placa de especialidades de la fachada (0–43) y en el 134 entran personas sentadas al fondo. Ninguna cara ni matrícula.",
-      "pantallas": 2.5,
+      "pantallas": 1,
       "exportar": {
         "fps": 20,
         "calidad": 60
@@ -68,7 +72,7 @@
       "difuminados": [],
       "barridoFinal": null,
       "notas": "IMG_4593 entero con recorte fijo de la mitad inferior (cafetera, platos y barra): las pantallas, arriba, no entran en ningún fotograma (revisado uno a uno). Sin personas.",
-      "pantallas": 2,
+      "pantallas": 1,
       "exportar": {
         "fps": 15,
         "calidad": 60

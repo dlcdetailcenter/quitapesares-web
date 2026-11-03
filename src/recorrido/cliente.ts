@@ -112,10 +112,11 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     pnoa.removeAttribute('hidden');
   }
 
-  // Duración de cada parte en pantallas de scroll: la pista mide eso más la pantalla del propio escenario.
+  // Alto de la pista: la suma de las pantallas de todas las partes, con la del propio escenario incluida (3 en total
+  // con aire, puerta y barra). Cada parte avanza en proporción a sus pantallas a lo largo de lo que se desplaza.
   const partes = [config.aire.pantallas, ...tramos.map((t) => t.pantallas)];
   const total = partes.reduce((a, b) => a + b, 0);
-  pista.style.setProperty('--recorrido-pantallas', String(total + 1));
+  pista.style.setProperty('--recorrido-pantallas', String(Math.max(total, 1)));
   html.classList.remove('recorrido-pendiente');
   html.classList.add('recorrido-activo');
   html.dataset.estadoRecorrido = 'activo';
