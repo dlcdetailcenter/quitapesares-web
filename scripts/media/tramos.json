@@ -1,8 +1,8 @@
 {
   "$comentario": "Tramos del recorrido de F2. Lo lee scripts/media/procesar.mjs. Los tiempos se eligen mirando las hojas de contacto (paso «contacto»); mientras un tramo tenga null, el script no lo procesa. Un solo ajuste de color para todos: no hay color por tramo a propósito (FIDELIDAD).",
   "salida": {
-    "ancho": 720,
-    "alto": 1280,
+    "ancho": 540,
+    "alto": 960,
     "fps": 30
   },
   "tonemap": {
@@ -23,31 +23,56 @@
     "smoothing": 20
   },
   "exportar": {
-    "canvas": { "formato": "webp", "calidad": 62 },
-    "video": { "crf": 26, "gop": 4 }
+    "canvas": {
+      "formato": "webp",
+      "calidad": 62
+    },
+    "video": {
+      "crf": 26,
+      "gop": 4
+    }
   },
   "tramos": [
     {
       "id": "puerta",
       "clip": "IMG_4595",
-      "inicio": null,
-      "fin": null,
+      "inicio": 1.333,
+      "fin": 4.2,
       "recorte": null,
       "velocidad": 1,
       "difuminados": [],
-      "barridoFinal": null,
-      "notas": "Sin el final (personas desde el segundo 4,5 en F1) ni la placa de especialidades legible (segundo 1,1 en F1)."
+      "barridoFinal": {
+        "segundos": 0.4,
+        "factor": 2,
+        "mezcla": 4
+      },
+      "notas": "Fotogramas 40–126 de IMG_4595 (revisados uno a uno el 2026-11-03): desde el 40 no se ve la placa de especialidades de la fachada (0–43) y en el 134 entran personas sentadas al fondo. Ninguna cara ni matrícula.",
+      "pantallas": 2.5,
+      "exportar": {
+        "fps": 20,
+        "calidad": 60
+      }
     },
     {
       "id": "barra",
       "clip": "IMG_4593",
-      "inicio": null,
-      "fin": null,
-      "recorte": null,
+      "inicio": 0,
+      "fin": 3.85,
+      "recorte": {
+        "x": 420,
+        "y": 930,
+        "ancho": 540,
+        "alto": 960
+      },
       "velocidad": 1,
       "difuminados": [],
       "barridoFinal": null,
-      "notas": "Las pantallas de la barra no salen: recorte; si no se puede, difuminado declarado."
+      "notas": "IMG_4593 entero con recorte fijo de la mitad inferior (cafetera, platos y barra): las pantallas, arriba, no entran en ningún fotograma (revisado uno a uno). Sin personas.",
+      "pantallas": 2,
+      "exportar": {
+        "fps": 15,
+        "calidad": 60
+      }
     },
     {
       "id": "comedor",
@@ -58,7 +83,7 @@
       "velocidad": 1,
       "difuminados": [],
       "barridoFinal": null,
-      "notas": "Solo tramos sin caras. Si no se puede con buen nivel, se quita este tramo y se anota para F4."
+      "notas": "QUITADO en F2 (2026-11-03): en IMG_4592 hay personas con la cara reconocible en todos los fotogramas (personal en primer plano y comensales); lo único limpio es el techo. Se anota para F4: grabar el comedor vacío."
     }
   ]
 }
