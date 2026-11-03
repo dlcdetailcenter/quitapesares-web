@@ -8,7 +8,7 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-03 |
+| Actualizado | 2026-11-03 (cierre de F2 desde el PC) |
 | `main` al escribirlo | `06312b0` |
 | Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` |
 
@@ -36,40 +36,42 @@ y Dejar reseña abren lo correcto en un móvil real. NO VERIFICABLE AÚN desde e
 
 ## F2: en curso
 
-Recorrido que avanza con el scroll (aire → puerta → barra → comedor → secciones) como capa sobre la portada
-de F1. El material real no entra en git durante la fase: en el repositorio solo hay un recorrido sintético
+Recorrido que avanza con el scroll (aire → puerta → barra → secciones; el comedor se quitó) como capa sobre la
+portada de F1. El material real no entra en git durante la fase: en el repositorio solo hay un recorrido sintético
 para las pruebas y la CI, y un manifiesto con las sumas SHA-256 del material real.
 
 Hecho en `f2-recorrido`:
 - Recorrido en español e inglés: barra «Ir a la carta», carga por tramos, ventana de fotogramas en memoria,
   versión estática (reducir movimiento, Save-Data, red lenta o primer tramo en más de 3 s) e interruptor al
   compilar (`RECORRIDO=apagado`). Probado con el material sintético en Chromium. VERIFICADO
-- Prueba técnica en `/lab/scroll` (noindex, sin enlaces) con 3 s reales de IMG_4595, en Chromium con CPU 4x y
-  4G: a 540×960, canvas p95 41 ms y vídeo p95 80 ms → canvas, a 540×960 (a 720×1280 el canvas daba 68 ms).
-  VERIFICADO en Chromium; WebKit y móviles reales, NO VERIFICABLE AÚN.
-- Material real procesado (fuera de git, sumas en el manifiesto): puerta (IMG_4595) y barra (IMG_4593, sin
-  pantallas), 3,89 MB. Comedor quitado: caras en todos los fotogramas de IMG_4592 (para F4). VERIFICADO
-- Lighthouse en local con el material real: rendimiento 0,99, LCP 1,98 s, CLS 0, TBT 68 ms, 166 KB antes del
-  recorrido, JS 11 KB. VERIFICADO
-- Pipeline del material (`npm run media:procesar`), ortofoto PNOA (`npm run media:ortofoto`), `media:check`
-  y despliegue de la demo que lo ejecuta antes. El pipeline está probado con un clip sintético; la ortofoto y el
-  despliegue, sin probar. PARCIAL
+- Prueba técnica en `/lab/scroll` (noindex, sin enlaces) con 3 s reales de IMG_4595, a 540×960 → canvas.
+  Chromium con CPU 4x y 4G: canvas p95 36 ms, vídeo p95 72 ms. WebKit (sin limitar la CPU): canvas p95 47 ms; el
+  vídeo no se puede medir (el WebKit de Playwright en Windows no lo decodifica). VERIFICADO; móviles reales, NO
+  VERIFICABLE AÚN.
+- Material real (fuera de git, sumas en el manifiesto, 119 archivos, 4,34 MB de 8): puerta (IMG_4595) y barra
+  (IMG_4593, sin pantallas), regeneradas el 3-11 y sin reprocesar después; ortofoto PNOA de 2023 en el tramo
+  aéreo con su atribución visible; 3 nubes de IA (Higgsfield, solo texto) aceptadas tras ajustarlas y revisarlas,
+  declaradas en los créditos (es/en). Comedor quitado: caras en todos los fotogramas de IMG_4592 (para F4).
+  VERIFICADO; visto bueno de Kara, pendiente.
+- Lighthouse en local con el material real: rendimiento 1,00, LCP 1,67 s, CLS 0, TBT 0 ms, 302 KB antes del
+  recorrido, JS 4,7 KB (transferido). VERIFICADO
+- Pipeline del material, ortofoto (`npm run media:ortofoto`), `media:check` y despliegue de la demo
+  (`npm run demo:desplegar`), probados con el material real. VERIFICADO
+- Demo privada desplegada con el recorrido real: noindex comprobado y `recorrido.json` igual al del manifiesto.
+  VERIFICADO
 - `check:media` rechaza vídeos con audio y el material del recorrido versionado. VERIFICADO
 
 ## A medias
 
-- Ortofoto del PNOA: sin generar (el servicio del IGN no es accesible desde la sesión en la nube). Mientras
-  tanto, el tramo aéreo es cielo con nubes dibujadas.
-- Nubes de IA: 3 generadas solo con texto (inventario), sin revisar y sin usar. Mientras tanto, el recorrido
-  dibuja las nubes en canvas, sin IA.
-- Demo con el recorrido: sin desplegar.
-- Comprobaciones de Kara en móviles reales (F2 y lo pendiente de F1).
+- Sesión de comprobación de Kara con los móviles (unos 25 minutos), preparada: visto bueno de la puerta, la
+  barra, la ortofoto y cada nube de IA; el tramo aéreo termina sobre el local; p95 en móviles reales; y lo
+  pendiente de F1 (VoiceOver y los botones).
+- Las coordenadas de la ortofoto son las de `src/data/restaurante.json`, sin confirmar: si cambian, se regenera.
 
 ## Siguiente paso
 
-Desde un equipo con acceso al IGN y a Cloudflare: ortofoto, despliegue de la demo y sesión de comprobación de
-Kara (visto bueno de los tramos y de las piezas de IA). Después, el último commit con el material real y la
-fusión sin aplastar, con el OK de Kara.
+Sesión de comprobación de Kara. Con su visto bueno: el último commit con el material real (se quita la regla de
+`check:media` que hoy lo bloquea, decisión de Kara) y la fusión sin aplastar, con su OK.
 
 ## Cómo trabajamos
 
