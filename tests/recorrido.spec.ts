@@ -118,6 +118,26 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(pnoa).toBeVisible();
       await expect(pnoa).toHaveAttribute('href', 'https://www.scne.es/');
       await expect(pnoa).toContainText('PNOA 2099 CC-BY 4.0 scne.es');
+      // Tal como se pinta, no solo en el DOM: con un enlace flex se perdían los espacios a los dos lados del año
+      // («PNOA2099CC-BY»). Se mide el hueco entre el texto anterior y el año, y entre el año y el texto siguiente.
+      const huecos = await page.locator('[data-recorrido-pnoa] [data-anio]').evaluate((anio) => {
+        const caja = anio.getBoundingClientRect();
+        /** Caja de un carácter de un nodo de texto. */
+        const caracter = (texto: Text, i: number) => {
+          const r = document.createRange();
+          r.setStart(texto, i);
+          r.setEnd(texto, i + 1);
+          return r.getBoundingClientRect();
+        };
+        // Último carácter visible antes del año y primero después (los textos llevan el espacio en el borde).
+        const antes = anio.previousSibling as Text;
+        const despues = anio.nextSibling as Text;
+        const ultimo = caracter(antes, antes.data.trimEnd().length - 1);
+        const primero = caracter(despues, despues.data.length - despues.data.trimStart().length);
+        return { izquierda: caja.left - ultimo.right, derecha: primero.left - caja.right };
+      });
+      expect(huecos.izquierda).toBeGreaterThan(1);
+      expect(huecos.derecha).toBeGreaterThan(1);
       const ia = page.locator('[data-recorrido-ia]');
       await expect(ia).toContainText(ruta === '/' ? 'nubes (Higgsfield)' : 'clouds (Higgsfield)');
       // Fuera del tramo aéreo, la atribución se va.

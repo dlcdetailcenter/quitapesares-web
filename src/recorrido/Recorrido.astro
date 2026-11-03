@@ -25,7 +25,8 @@ const t = TEXTOS[idioma];
         <p class="recorrido__rotulo" data-rotulo="comedor">{t.rotuloComedor}</p>
       </div>
       <p class="recorrido__pnoa" data-recorrido-pnoa hidden>
-        <a href="https://www.scne.es/">{t.pnoaPrefijo} <span data-anio></span> CC-BY 4.0 scne.es</a>
+        <!-- El texto va en un solo span: el enlace es flex y, sin él, se perdían los espacios a los lados del año. -->
+        <a href="https://www.scne.es/"><span>{t.pnoaPrefijo} <span data-anio></span> CC-BY 4.0 scne.es</span></a>
       </p>
     </div>
   </div>
