@@ -44,19 +44,22 @@ Hecho en `f2-recorrido`:
 - Recorrido en español e inglés: barra «Ir a la carta», carga por tramos, ventana de fotogramas en memoria,
   versión estática (reducir movimiento, Save-Data, red lenta o primer tramo en más de 3 s) e interruptor al
   compilar (`RECORRIDO=apagado`). Probado con el material sintético en Chromium. VERIFICADO
-- Prueba técnica en `/lab/scroll` (noindex, sin enlaces). Canvas p95 40 ms y vídeo p95 76 ms en Chromium con
-  CPU 4x y 4G, con un tramo **sintético**. Se elige canvas. PARCIAL: falta el tramo real y WebKit.
+- Prueba técnica en `/lab/scroll` (noindex, sin enlaces) con 3 s reales de IMG_4595, en Chromium con CPU 4x y
+  4G: a 540×960, canvas p95 41 ms y vídeo p95 80 ms → canvas, a 540×960 (a 720×1280 el canvas daba 68 ms).
+  VERIFICADO en Chromium; WebKit y móviles reales, NO VERIFICABLE AÚN.
+- Material real procesado (fuera de git, sumas en el manifiesto): puerta (IMG_4595) y barra (IMG_4593, sin
+  pantallas), 3,89 MB. Comedor quitado: caras en todos los fotogramas de IMG_4592 (para F4). VERIFICADO
+- Lighthouse en local con el material real: rendimiento 0,99, LCP 1,98 s, CLS 0, TBT 68 ms, 166 KB antes del
+  recorrido, JS 11 KB. VERIFICADO
 - Pipeline del material (`npm run media:procesar`), ortofoto PNOA (`npm run media:ortofoto`), `media:check`
   y despliegue de la demo que lo ejecuta antes. El pipeline está probado con un clip sintético; la ortofoto y el
   despliegue, sin probar. PARCIAL
 - `check:media` rechaza vídeos con audio y el material del recorrido versionado. VERIFICADO
-- Lighthouse de la portada con el recorrido sintético: rendimiento 0,99, LCP 1,7 s, CLS 0, TBT 83 ms,
-  JS 10 KB, 177 KB en total. VERIFICADO (con el real: NO VERIFICABLE AÚN)
 
 ## A medias
 
-- Material real (puerta, barra y comedor), ortofoto y revisión fotograma a fotograma: no hechos. La sesión de
-  F2 corrió en la nube, sin acceso a los clips, al servicio del IGN ni a Cloudflare.
+- Ortofoto del PNOA: sin generar (el servicio del IGN no es accesible desde la sesión en la nube). Mientras
+  tanto, el tramo aéreo es cielo con nubes dibujadas.
 - Nubes de IA: 3 generadas solo con texto (inventario), sin revisar y sin usar. Mientras tanto, el recorrido
   dibuja las nubes en canvas, sin IA.
 - Demo con el recorrido: sin desplegar.
@@ -64,8 +67,8 @@ Hecho en `f2-recorrido`:
 
 ## Siguiente paso
 
-Retomar F2 en un equipo con acceso a los clips: material real, prueba técnica con el tramo real, ortofoto,
-despliegue de la demo y sesión de comprobación de Kara. Después, el último commit con el material real y la
+Desde un equipo con acceso al IGN y a Cloudflare: ortofoto, despliegue de la demo y sesión de comprobación de
+Kara (visto bueno de los tramos y de las piezas de IA). Después, el último commit con el material real y la
 fusión sin aplastar, con el OK de Kara.
 
 ## Cómo trabajamos
