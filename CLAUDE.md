@@ -26,6 +26,10 @@ Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al
 - Platos y local reales. Ninguna IA que cree o cambie platos, local, personas o producto.
 - La IA solo en fondos o transiciones, y declarada. Higgsfield u otras herramientas de IA, solo con encargo explícito.
 - Nada de texto inventado: ni descripciones de platos ni reseñas.
+- **Excepción, solo para la maqueta de la demo privada al dueño** (decisión de Kara del 2026-11-03): Higgsfield puede animar fotos fijas reales del local (imagen a vídeo). Sustituye, solo en la maqueta, a «la IA no lo genera, no lo recrea»; el resto de Fidelidad y de la privacidad del material sigue igual.
+  - **Entrada**: solo fotos fijas reales sin caras, matrículas, pantallas de la barra ni la lista de especialidades legible; en SDR y sin metadatos ni GPS. Nunca vídeos enteros ni nada de IMG_4592. Subir a Higgsfield es irreversible (sus términos le permiten entrenar con lo subido): antes, OK de Kara en el chat con la lista exacta de fotos y sus hojas de contacto.
+  - **Salida**: solo movimiento de cámara sobre la escena de la foto (acercamiento lento, paralaje, giro leve), de 5 s como mucho; sin personas, objetos nuevos ni texto inventado; el rótulo real, si sale, legible e igual; sin cambiar la luz, los colores ni la distribución del local. Etiqueta visible mientras se ve cada pieza («Simulación con IA a partir de una foto real del local» / «AI simulation based on a real photo of the venue») y en los créditos.
+  - **Barreras**: la maqueta es una variante aparte (`RECORRIDO_VARIANTE=maqueta`, carpeta `recorrido-maqueta/`, ignorada por git y bloqueada por `check:media`); la variante por defecto sigue siendo la real. `build:produccion` falla con la variante maqueta o con cualquier pieza `"ia": "local"` en `recorrido.json`, aunque todos los datos estuvieran confirmados (prueba en `test:datos`). `demo:desplegar` solo la despliega con `--maqueta` explícito. Producción nunca lleva maqueta, y se retira después de la demo al dueño.
 
 ### Material
 - Al repositorio solo entra material procesado, sin GPS, sin audio y sin caras identificables.
