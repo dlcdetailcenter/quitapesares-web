@@ -74,7 +74,10 @@ export class Aire {
     this.ctx = ctx;
   }
 
-  /** Vuelve con el nivel más lejano y las nubes; los niveles cercanos siguen llegando después. */
+  /** Pide los niveles cercanos de la ortofoto. Se llama con el primer scroll. */
+  cargarResto: () => void = () => {};
+
+  /** Vuelve con el nivel más lejano y las nubes; los cercanos, con cargarResto(). */
   async cargar(señal?: AbortSignal): Promise<void> {
     this.niveles = new Array(this.config.niveles.length);
     const cargarNivel = async (i: number) => {
@@ -91,8 +94,13 @@ export class Aire {
       : Promise.resolve().then(() => {
           this.capas = [nubesDibujadas(7, 36), nubesDibujadas(11, 26), nubesDibujadas(23, 18)];
         });
-    await Promise.all([cargarNivel(0), nubes]);
-    for (let i = 1; i < this.config.niveles.length; i++) void cargarNivel(i).catch(() => {});
+    // Sin ortofoto (pendiente de generar), el aire es un cielo con nubes: nada del suelo, ningún edificio.
+    await Promise.all([this.config.niveles.length ? cargarNivel(0) : Promise.resolve(), nubes]);
+    // Los niveles cercanos, solo cuando se empieza a bajar (cargarResto): la carga inicial se queda en ≤ 1 MB.
+    this.cargarResto = () => {
+      this.cargarResto = () => {};
+      for (let i = 1; i < this.config.niveles.length; i++) void cargarNivel(i).catch(() => {});
+    };
   }
 
   /** t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta). */
@@ -105,6 +113,7 @@ export class Aire {
     const z = suave(t / 0.85) * ultimo;
     const k = Math.min(ultimo, Math.floor(z));
     const actual = this.mejorNivel(k);
+    if (!actual) this.pintarCielo();
     if (actual) {
       const nivel = this.niveles.indexOf(actual);
       pintarCubriendo(ctx, actual, actual.width, actual.height, 2 ** (z - nivel));
@@ -143,6 +152,16 @@ export class Aire {
     }
     ctx.globalCompositeOperation = 'source-over';
     ctx.globalAlpha = 1;
+  }
+
+  /** Cielo sin ortofoto: degradado de azul a blanco, la luz de las nubes. */
+  private pintarCielo(): void {
+    const { width: w, height: h } = this.canvas;
+    const g = this.ctx.createLinearGradient(0, 0, 0, h);
+    g.addColorStop(0, '#6f9cc8');
+    g.addColorStop(1, '#dfe8ef');
+    this.ctx.fillStyle = g;
+    this.ctx.fillRect(0, 0, w, h);
   }
 
   liberar(): void {

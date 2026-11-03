@@ -30,10 +30,12 @@ rmSync(DESTINO, { recursive: true, force: true });
 mkdirSync(DESTINO, { recursive: true });
 
 // Aire.
+// Sin ortofoto, el aire es solo cielo y nubes (aire.ts): se avisa, no se inventa nada.
 const metaAire = join(F2, 'aire', 'meta.json');
-if (!existsSync(metaAire)) fallar(`no hay ortofoto: ${metaAire} (npm run media:ortofoto)`);
-const aire = JSON.parse(readFileSync(metaAire, 'utf8'));
-cpSync(join(F2, 'aire'), join(DESTINO, 'aire'), { recursive: true, filter: (f) => !f.endsWith('meta.json') });
+const hayOrtofoto = existsSync(metaAire);
+if (!hayOrtofoto) console.warn(`⚠ sin ortofoto (${metaAire}): el tramo aéreo será cielo con nubes. npm run media:ortofoto`);
+const aire = hayOrtofoto ? JSON.parse(readFileSync(metaAire, 'utf8')) : { niveles: [], anio: null, centro: null };
+if (hayOrtofoto) cpSync(join(F2, 'aire'), join(DESTINO, 'aire'), { recursive: true, filter: (f) => !f.endsWith('meta.json') });
 
 // Piezas de IA aceptadas (si no hay ninguna, el recorrido dibuja las nubes sin IA).
 const aceptadas = join(F2, 'ia', 'aceptadas.json');
@@ -63,7 +65,7 @@ const recorrido = {
     niveles: aire.niveles,
     nubes,
     pantallas: aire.pantallas ?? 1.5,
-    pnoa: { anio: aire.anio },
+    pnoa: hayOrtofoto ? { anio: aire.anio } : null,
     centro: aire.centro,
   },
   tramos,
