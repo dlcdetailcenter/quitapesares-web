@@ -1,0 +1,4 @@
+{
+  "$comentario": "Sumas SHA-256 y dimensiones del material real del recorrido (recorrido-real/). Lo escribe scripts/media/ensamblar.mjs y lo comprueba npm run media:check. Vacío: el material real aún no está procesado (ver docs/ESTADO.md).",
+  "archivos": {}
+}
