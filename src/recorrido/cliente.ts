@@ -119,7 +119,14 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   html.classList.remove('recorrido-pendiente');
   html.classList.add('recorrido-activo');
   html.dataset.estadoRecorrido = 'activo';
-  pedir(0);
+  // Nada más del recorrido hasta que la persona empieza a bajar: «≤ 1 MB antes del recorrido» (presupuesto).
+  let empezado = false;
+  const empezar = () => {
+    if (empezado) return;
+    empezado = true;
+    aire.cargarResto();
+    pedir(0);
+  };
 
   const rotulos = [...seccion.querySelectorAll<HTMLElement>('[data-rotulo]')];
   let visible = -1;
@@ -129,6 +136,8 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     pendiente = false;
     const caja = pista.getBoundingClientRect();
     const recorrido = caja.height - innerHeight;
+    // Ventana más alta que la pista (captura de página completa): no hay recorrido que mover ni nada que pedir.
+    if (recorrido <= 0) return;
     const progreso = Math.min(1, Math.max(0, -caja.top / recorrido)) * total;
     let parte = 0;
     let inicio = 0;
@@ -145,7 +154,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
         tramos[parte - 1].rep.activo = true;
         tramos[parte - 1].rep.invalidar();
       }
-      pedir(parte);
+      if (empezado) pedir(parte);
       visible = parte;
       seccion.dataset.parte = parte === 0 ? 'aire' : tramos[parte - 1].id;
     }
@@ -170,6 +179,10 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   addEventListener(
     'scroll',
     () => {
+      if (scrollY > 0 && innerHeight < pista.offsetHeight) {
+        empezar();
+        if (visible > 0) pedir(visible);
+      }
       if (!pendiente) {
         pendiente = true;
         requestAnimationFrame(actualizar);
