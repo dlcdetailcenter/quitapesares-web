@@ -19,7 +19,11 @@ const t = TEXTOS[idioma];
     <div class="recorrido__escena">
       <canvas class="recorrido__lienzo" data-recorrido-lienzo aria-hidden="true"></canvas>
       <div class="recorrido__rotulos" aria-hidden="true">
-        <p class="recorrido__rotulo recorrido__rotulo--nombre" data-rotulo="aire">{local.nombreCorto}</p>
+        <!-- Nombre completo como en la portada: «Restaurante» en pequeño encima y el nombre en gótica. El espacio entre
+             los dos trozos va escrito para que el texto sea el nombre del archivo de datos y no «RestauranteQuitapesares». -->
+        <p class="recorrido__rotulo recorrido__rotulo--nombre" data-rotulo="aire">
+          {local.tipoDeLocal && <span class="recorrido__tipo">{local.tipoDeLocal}</span>}{local.tipoDeLocal && ' '}<span>{local.nombreCorto}</span>
+        </p>
         <p class="recorrido__rotulo" data-rotulo="puerta">{t.rotuloEntrada}</p>
         <p class="recorrido__rotulo" data-rotulo="barra">{t.rotuloBarra}</p>
         <p class="recorrido__rotulo" data-rotulo="comedor">{t.rotuloComedor}</p>
@@ -98,6 +102,16 @@ const t = TEXTOS[idioma];
   .recorrido__rotulo--nombre {
     opacity: 1;
     font-size: clamp(3.5rem, 18vw, 6rem);
+  }
+
+  /* «Restaurante», en pequeño y en la letra del texto, encima del nombre en gótica (como en la portada). */
+  .recorrido__tipo {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-family: var(--fuente-texto-pila);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
   }
 
   .recorrido__pnoa {

@@ -5,6 +5,7 @@
 // El interruptor apagado (portada de F1) se prueba al compilar: scripts/media/interruptor.test.mjs.
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { readFileSync } from 'node:fs';
 
 const PORTADAS = [
   { ruta: '/', carta: '/carta', barra: 'Ir a la carta', botones: ['Llamar', 'Ver carta', 'Cómo llegar', 'Dejar reseña'] },
@@ -66,6 +67,24 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
       // Después del recorrido sigue la portada de F1.
       await mismasFunciones(page, botones);
+    });
+
+    test('rótulo del aire: el nombre completo del archivo de datos, con su espacio y en dos líneas', async ({ page }) => {
+      const nombre: string = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', import.meta.url), 'utf8')).nombre.valor;
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const rotulo = page.locator('[data-rotulo="aire"]');
+      const normalizar = (s: string) => s.replace(/\s+/g, ' ').trim();
+      // En el DOM y tal como se lee: «Restaurante Quitapesares», no «RestauranteQuitapesares».
+      expect(normalizar((await rotulo.textContent()) ?? '')).toBe(nombre);
+      expect(normalizar(await rotulo.innerText())).toBe(nombre);
+      // Pintado: «Restaurante» en su propia línea, encima del nombre en gótica, no pegado a él en la misma línea.
+      // (Las cajas se tocan unos píxeles porque la gótica, con line-height 1, sobresale de su línea; las letras no.)
+      const [tipo, gotica] = await rotulo
+        .locator('span')
+        .evaluateAll((s) => s.map((e) => e.getBoundingClientRect()).map((r) => ({ arriba: r.top, abajo: r.bottom, mitad: r.top + r.height / 2 })));
+      expect(tipo.arriba).toBeLessThan(gotica.arriba);
+      expect(tipo.abajo).toBeLessThan(gotica.mitad);
     });
 
     test('recorrido corto: a 390×844 la pista mide como mucho 3 veces la ventana', async ({ page }) => {

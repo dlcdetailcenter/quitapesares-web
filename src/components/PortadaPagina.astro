@@ -21,8 +21,6 @@ interface Props {
 const { idioma } = Astro.props;
 const t = TEXTOS[idioma];
 const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
-// «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada.
-const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCorto.length).trim();
 ---
 
 <Base idioma={idioma} rutaOtroIdioma={idioma === 'es' ? '/en/' : '/'} nombreEnCabecera={false}>
@@ -41,8 +39,9 @@ const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCort
       />
     </figure>
 
+    <!-- «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
     <h1 class="portada__nombre">
-      {tipoDeLocal && <span class="portada__tipo">{tipoDeLocal}</span>}
+      {local.tipoDeLocal && <span class="portada__tipo">{local.tipoDeLocal}</span>}
       <span class="portada__rotulo">{local.nombreCorto}</span>
     </h1>
     <p class="portada__direccion">{local.direccion}</p>
