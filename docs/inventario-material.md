@@ -11,3 +11,29 @@ Descartados para la portada (F1):
 - IMG_4595, segundo 1,1: se lee la placa de «Especialidades», con platos que no están en la hoja de la carta.
 - IMG_4595, desde el segundo 4,5: salen personas.
 - IMG_4593: el plano principal son pantallas con fotos de comida de origen sin confirmar.
+
+## F2: recorrido con el scroll
+
+Estado al 2026-11-03. El material del recorrido **no entra en git** durante la fase (se sirve desde
+`public/recorrido/`, ignorada); aquí se inventaría igual. Sumas SHA-256 del material real:
+`scripts/media/manifiesto-real.json` (vacío mientras no haya material real procesado).
+
+| Pieza | Origen | Real o IA | Licencia | Dónde se declara la IA | Estado |
+|---|---|---|---|---|---|
+| Recorrido de prueba (`public/recorrido/`, generado al compilar) | `scripts/media/preparar.mjs`: PNG de colores lisos | Sintético, sin IA | Propio | — | Solo para pruebas y CI; los créditos del recorrido dicen que es de prueba |
+| Nubes dibujadas | `src/recorrido/aire.ts`: degradados en canvas | Código, sin IA | Propio | — | En uso: es la alternativa sin IA mientras no haya nubes de IA aceptadas |
+| Tramo aéreo | Ortofoto PNOA del IGN por WMTS (`scripts/media/ortofoto.mjs`), capa `OI.OrthoimageCoverage` | Real (ortofoto), sin IA | CC-BY 4.0 scne.es: «Obra derivada de PNOA <año> CC-BY 4.0 scne.es», visible al pie del tramo con enlace | — | Pendiente: sin generar (el servicio no era accesible desde la sesión). El año sale de la tabla de productos de scne.es |
+| Puerta | IMG_4595 sin el final | Real | Propio del restaurante | — | Pendiente: clip no accesible desde la sesión |
+| Barra | IMG_4593 sin pantallas | Real | Propio del restaurante | — | Pendiente |
+| Comedor | IMG_4592 sin caras (o se quita y se anota para F4) | Real | Propio del restaurante | — | Pendiente |
+| Nubes, capa lejana | Higgsfield, trabajo `996fb547-5def-4626-b094-68547776cd30`, modelo pedido `nano_banana_pro` (el trabajo figura como `nano_banana_2`), 9:16, 2K, solo texto | **IA** | Términos de Higgsfield | Créditos del recorrido (es/en) y esta tabla | Generada, **sin revisar** y sin usar |
+| Nubes, capa media | Higgsfield, trabajo `4605e657-e426-4a3e-b111-f19b85f1cee9`, ídem | **IA** | Ídem | Ídem | Generada, **sin revisar** y sin usar |
+| Nubes, capa cercana | Higgsfield, trabajo `1eab2ccd-1e00-4695-8c6e-ba8713ef8029`, ídem | **IA** | Ídem | Ídem | Generada, **sin revisar** y sin usar |
+
+Prompts de las nubes (sin imágenes de entrada, nada real subido a Higgsfield):
+1. «Photographic layer of thin wispy high-altitude clouds seen from an airplane window looking down, scattered soft white and pale grey wisps, isolated on a solid pure black background (#000000). Only clouds and black: no ground, no landscape, no sea, no buildings, no people, no animals, no aircraft, no sun, no text, no logos, no watermark. Soft neutral daylight, fine natural detail, vertical composition with the wisps spread over the whole frame and plenty of black between them.»
+2. «Photographic layer of medium-density fluffy cumulus clouds seen from above, separate soft white puffs with gentle grey shading, isolated on a solid pure black background (#000000). Only clouds and black: no ground, no landscape, no sea, no buildings, no people, no animals, no aircraft, no sun, no text, no logos, no watermark. Soft neutral daylight, realistic volumetric detail, vertical composition, clouds distributed across the frame with black gaps.»
+3. «Photographic close-up of large soft dense white cloud banks drifting past the camera, thick billowing volumes filling most of the frame with ragged edges, isolated on a solid pure black background (#000000) visible at the edges. Only clouds and black: no ground, no landscape, no buildings, no people, no animals, no aircraft, no sun, no text, no logos, no watermark. Soft neutral daylight, realistic volumetric detail, vertical composition.»
+
+Una pieza de IA solo se usa si no muestra edificios, personas, comida, logos ni texto, no tiene artefactos a
+tamaño de móvil, casa con el color de los tramos reales, cabe en 0,6 MB y tiene el visto bueno de Kara.
