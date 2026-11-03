@@ -5,7 +5,8 @@
 //   3. alguna imagen o vídeo lleva coordenadas GPS (lo comprueba exiftool);
 //   4. algún vídeo lleva pista de audio (exiftool: pista «soun» en MP4/MOV o de tipo audio en WebM/MKV);
 //   5. hay material del recorrido de F2 versionado (recorrido-real/ o public/recorrido/): durante F2 el material
-//      real no entra en git (encargo de F2); entra en el último commit, con el OK de Kara, quitando esta regla.
+//      real no entra en git (encargo de F2); entra en el último commit, con el OK de Kara, quitando esta regla;
+//   6. hay algo de la maqueta versionado (recorrido-maqueta/): esa no entra nunca (excepción a FIDELIDAD, CLAUDE.md).
 // exiftool es obligatorio en la CI, y también en el hook de pre-commit (--staged) en cuanto hay
 // imágenes o vídeos preparados: entonces el commit se bloquea. En una revisión manual de todo el
 // repositorio, si no está instalado, el GPS no se comprueba y se avisa.
@@ -31,6 +32,8 @@ const MEDIOS = new Set([
 ]);
 const ETIQUETA_GPS = /^(gps(latitude|longitude|position|coordinates)|locationinformation)$/i;
 const CARPETA_RECORRIDO = /^(recorrido-real|public\/recorrido)\//i;
+// La maqueta de la demo al dueño (IA sobre fotos del local) no entra nunca en git, ni al cerrar F2.
+const CARPETA_MAQUETA = /^recorrido-maqueta\//i;
 
 /**
  * ¿Lleva pista de audio? Con `-n`, exiftool da HandlerType «soun» (MP4, MOV) y TrackType 2 (WebM, MKV); sin `-n`,
@@ -65,6 +68,7 @@ const medios = [];
 for (const ruta of archivos) {
   if (ORIGINAL.test(ruta) || CARPETA_MATERIAL.test(ruta)) fallos.push(`Material original versionado: ${ruta}`);
   if (CARPETA_RECORRIDO.test(ruta)) fallos.push(`Material del recorrido versionado (en F2 no entra en git): ${ruta}`);
+  if (CARPETA_MAQUETA.test(ruta)) fallos.push(`Maqueta del recorrido versionada (nunca entra en git): ${ruta}`);
   const bytes = soloPreparados ? tamanoPreparado(ruta) : tamanoEnDisco(ruta);
   if (bytes !== null && bytes > LIMITE_BYTES) {
     fallos.push(`Pesa más de 10 MB: ${ruta} (${(bytes / 1024 / 1024).toFixed(1)} MB)`);

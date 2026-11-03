@@ -20,6 +20,7 @@
     "astro": "astro",
     "types": "wrangler types",
     "media:check": "node scripts/media/media-check.mjs",
+    "media:check:maqueta": "node scripts/media/media-check.mjs recorrido-maqueta scripts/media/manifiesto-maqueta.json",
     "media:procesar": "node scripts/media/procesar.mjs",
     "media:ortofoto": "node scripts/media/ortofoto.mjs",
     "media:ensamblar": "node scripts/media/ensamblar.mjs",

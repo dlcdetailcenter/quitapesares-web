@@ -73,6 +73,18 @@ test('check:media: el material del recorrido no entra en git durante F2', () => 
   }
 });
 
+test('check:media: la maqueta (IA sobre fotos del local) no entra nunca en git', () => {
+  const dir = repoTemporal();
+  try {
+    preparar(dir, 'recorrido-maqueta/recorrido.json', Buffer.from('{}'));
+    const { codigo, texto } = checkMedia(dir);
+    assert.notEqual(codigo, 0, texto);
+    assert.match(texto, /Maqueta del recorrido versionada.*recorrido-maqueta\/recorrido\.json/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 /** Carpeta de material «real» de prueba: 3 fotogramas lisos de 72×128 y su manifiesto. */
 function materialDePrueba() {
   const dir = mkdtempSync(join(tmpdir(), 'media-check-prueba-'));

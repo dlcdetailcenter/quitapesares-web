@@ -2,6 +2,7 @@
 //   - Por defecto, un recorrido SINTÉTICO de colores lisos, generado aquí mismo: es el que usan las pruebas y la CI.
 //     No contiene nada real, así que no hay nada que proteger ni que pesar.
 //   - Con RECORRIDO_MATERIAL=real, copia recorrido-real/ (ignorada por git), que antes ha pasado media:check.
+//   - Con RECORRIDO_VARIANTE=maqueta, copia recorrido-maqueta/ (ignorada por git): solo para la demo privada.
 // public/recorrido/lab/ (material de /lab/scroll) no se toca.
 import { cpSync, existsSync, mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -11,6 +12,7 @@ import { deflateSync } from 'node:zlib';
 const RAIZ = fileURLToPath(new URL('../..', import.meta.url));
 const DESTINO = join(RAIZ, 'public', 'recorrido');
 const REAL = join(RAIZ, 'recorrido-real');
+const MAQUETA = join(RAIZ, 'recorrido-maqueta');
 
 /** PNG de un solo color, sin metadatos (RGB, 8 bits). */
 export function pngLiso(ancho, alto, [r, g, b]) {
@@ -93,8 +95,27 @@ function real() {
   console.log('recorrido: material REAL copiado de recorrido-real/ a public/recorrido/ (ignorada por git)');
 }
 
+/**
+ * MAQUETA para la demo al dueño (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md): recorrido-maqueta/
+ * (ignorada por git), con piezas animadas con IA a partir de fotos reales del local, marcadas con "ia": "local".
+ * Solo para la demo privada: build:produccion falla con esta variante (scripts/datos/integracion-astro.mjs).
+ */
+function maqueta() {
+  if (!existsSync(join(MAQUETA, 'recorrido.json'))) {
+    console.error('✗ RECORRIDO_VARIANTE=maqueta pero no hay recorrido-maqueta/recorrido.json (scripts/media/ensamblar-maqueta.mjs).');
+    process.exit(1);
+  }
+  limpiarDestino();
+  cpSync(MAQUETA, DESTINO, { recursive: true });
+  console.log('recorrido: MAQUETA (con IA sobre fotos del local, solo demo privada) copiada de recorrido-maqueta/ a public/recorrido/');
+}
+
 // Solo al ejecutarlo (prebuild), no al importarlo (las pruebas usan pngLiso).
 if (process.argv[1] && fileURLToPath(import.meta.url) === resolve(process.argv[1])) {
-  if (process.env.RECORRIDO_MATERIAL === 'real') real();
+  if (process.env.RECORRIDO_VARIANTE === 'maqueta') maqueta();
+  else if (process.env.RECORRIDO_VARIANTE) {
+    console.error(`✗ RECORRIDO_VARIANTE="${process.env.RECORRIDO_VARIANTE}" no existe: solo "maqueta" (sin la variable, el material de siempre).`);
+    process.exit(1);
+  } else if (process.env.RECORRIDO_MATERIAL === 'real') real();
   else sintetico();
 }

@@ -4,10 +4,12 @@
 //   dato no está CONFIRMADO. Así ningún despliegue que llame a `astro build` a secas sale con datos
 //   sin confirmar.
 // Un error de estructura en el archivo hace fallar la compilación en cualquier modo.
+// Además, fuera del modo demo, falla con la maqueta del recorrido (barreraMaqueta), sea cual sea el estado de los datos.
 import { readFileSync } from 'node:fs';
 import { validarDatos } from './validar.mjs';
 
 const ARCHIVO = new URL('../../src/data/restaurante.json', import.meta.url);
+const RECORRIDO = new URL('../../public/recorrido/recorrido.json', import.meta.url);
 const MODO_DEMO = 'demo';
 
 /** @returns {import('astro').AstroIntegration} */
@@ -38,11 +40,49 @@ export default function datosRestaurante() {
   };
 }
 
+/** ¿Hay en el recorrido alguna pieza marcada como IA sobre el local («"ia": "local"»), a cualquier profundidad? */
+export function tieneIaDelLocal(valor) {
+  if (Array.isArray(valor)) return valor.some(tieneIaDelLocal);
+  if (valor === null || typeof valor !== 'object') return false;
+  return Object.entries(valor).some(([clave, v]) => (clave === 'ia' && v === 'local') || tieneIaDelLocal(v));
+}
+
+/**
+ * Barrera de la maqueta (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md): la maqueta con IA sobre fotos
+ * del local solo existe en la demo privada. Fuera del modo demo, la compilación falla con la variante maqueta o si el
+ * recorrido preparado tiene alguna pieza «"ia": "local"», aunque todos los datos estuvieran confirmados.
+ * @param {string} modo
+ * @param {{ variante?: string, recorrido?: unknown }} recorrido
+ * @returns {string[]} motivos por los que no se puede compilar en este modo (vacío si se puede)
+ */
+export function barreraMaqueta(modo, { variante, recorrido }) {
+  if (modo === MODO_DEMO) return [];
+  const motivos = [];
+  if (variante === 'maqueta') motivos.push('RECORRIDO_VARIANTE=maqueta (la maqueta solo va a la demo privada)');
+  if (tieneIaDelLocal(recorrido)) motivos.push('public/recorrido/recorrido.json tiene piezas con "ia": "local" (maqueta)');
+  return motivos;
+}
+
+/** El recorrido que va a entrar en la compilación (lo deja preparar.mjs en public/recorrido/), si lo hay. */
+function recorridoPreparado() {
+  try {
+    return JSON.parse(readFileSync(RECORRIDO, 'utf8'));
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * @param {string} modo
  * @param {import('astro').AstroIntegrationLogger} logger
  */
 function comprobar(modo, logger) {
+  // Primero la maqueta: aunque todos los datos estuvieran confirmados, producción nunca la lleva.
+  const motivos = barreraMaqueta(modo, { variante: process.env.RECORRIDO_VARIANTE, recorrido: recorridoPreparado() });
+  if (motivos.length > 0) {
+    throw new Error(`Compilación de producción bloqueada por la maqueta: ${motivos.join('; ')}. Producción nunca lleva maqueta.`);
+  }
+
   /** @type {unknown} */
   let datos;
   try {

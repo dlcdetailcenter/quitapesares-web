@@ -35,3 +35,6 @@ worker-configuration.d.ts
 # El material real no entra en git durante la fase (encargo de F2); el sintético se genera en cada compilación.
 public/recorrido/
 recorrido-real/
+
+# Maqueta de la demo al dueño (excepción a FIDELIDAD de Kara, CLAUDE.md): IA sobre fotos del local. Nunca entra en git.
+recorrido-maqueta/
