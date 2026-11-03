@@ -8,6 +8,7 @@
   },
   "scripts": {
     "dev": "astro dev",
+    "prebuild": "node scripts/media/preparar.mjs",
     "build": "astro build --mode demo",
     "build:produccion": "astro build --mode production",
     "preview": "astro preview",
@@ -15,9 +16,16 @@
     "test": "playwright test",
     "lhci": "lhci autorun",
     "check:media": "node scripts/check-media.mjs",
-    "test:datos": "node --test \"scripts/datos/*.test.mjs\"",
+    "test:datos": "node --test \"scripts/datos/*.test.mjs\" \"scripts/media/*.test.mjs\"",
     "astro": "astro",
-    "types": "wrangler types"
+    "types": "wrangler types",
+    "media:check": "node scripts/media/media-check.mjs",
+    "media:procesar": "node scripts/media/procesar.mjs",
+    "media:ortofoto": "node scripts/media/ortofoto.mjs",
+    "media:ensamblar": "node scripts/media/ensamblar.mjs",
+    "lab:preparar": "node scripts/lab/preparar-lab.mjs",
+    "lab:medir": "node scripts/lab/medir.mjs",
+    "demo:desplegar": "node scripts/desplegar-demo.mjs"
   },
   "dependencies": {
     "@astrojs/cloudflare": "14.4.3",

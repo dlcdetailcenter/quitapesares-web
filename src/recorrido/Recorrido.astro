@@ -1,0 +1,142 @@
+---
+// Recorrido de F2 como capa sobre la portada de F1. Sin JavaScript, o con «reducir movimiento», ahorro de datos o red
+// lenta, la sección no se muestra y la portada es la de F1 más la barra «Ir a la carta».
+// Textos: el nombre sale de src/data/restaurante.json; los rótulos son neutros (src/i18n/textos.ts).
+import { TEXTOS } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = TEXTOS[idioma];
+---
+
+<section class="recorrido" data-recorrido aria-label={t.recorrido}>
+  <div class="recorrido__pista" data-recorrido-pista>
+    <div class="recorrido__escena">
+      <canvas class="recorrido__lienzo" data-recorrido-lienzo aria-hidden="true"></canvas>
+      <div class="recorrido__rotulos" aria-hidden="true">
+        <p class="recorrido__rotulo recorrido__rotulo--nombre" data-rotulo="aire">{local.nombreCorto}</p>
+        <p class="recorrido__rotulo" data-rotulo="puerta">{t.rotuloEntrada}</p>
+        <p class="recorrido__rotulo" data-rotulo="barra">{t.rotuloBarra}</p>
+        <p class="recorrido__rotulo" data-rotulo="comedor">{t.rotuloComedor}</p>
+      </div>
+      <p class="recorrido__pnoa" data-recorrido-pnoa hidden>
+        <a href="https://www.scne.es/">{t.pnoaPrefijo} <span data-anio></span> CC-BY 4.0 scne.es</a>
+      </p>
+    </div>
+  </div>
+  <div class="recorrido__creditos">
+    <p data-recorrido-ia hidden>{t.creditosIa} <span data-lista></span>.</p>
+    <p data-recorrido-sintetico hidden>{t.creditosSintetico}</p>
+  </div>
+</section>
+
+<script>
+  import './cliente.ts';
+</script>
+
+<style>
+  .recorrido {
+    display: none;
+    background: #1b1410;
+    color: #fff;
+  }
+
+  .recorrido__pista {
+    position: relative;
+    height: 100svh;
+  }
+
+  :global(html.recorrido-pendiente) .recorrido,
+  :global(html.recorrido-activo) .recorrido {
+    display: block;
+  }
+
+  :global(html.recorrido-activo) .recorrido__pista {
+    height: calc(var(--recorrido-pantallas, 1) * 100svh);
+  }
+
+  .recorrido__escena {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .recorrido__lienzo {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .recorrido__rotulos {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .recorrido__rotulo {
+    grid-area: 1 / 1;
+    margin: 0;
+    padding: 0 1rem;
+    opacity: 0;
+    font-family: var(--fuente-rotulo-pila);
+    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--crema-clara);
+    text-shadow: 0 2px 18px rgb(0 0 0 / 0.75);
+  }
+
+  .recorrido__rotulo--nombre {
+    opacity: 1;
+    font-size: clamp(3.5rem, 18vw, 6rem);
+  }
+
+  .recorrido__pnoa {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4.5rem;
+    margin: 0;
+    padding: 0.25rem 0.75rem;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .recorrido__pnoa a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: #fff;
+    background: rgb(0 0 0 / 0.7);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+
+  .recorrido__pnoa--oculta {
+    visibility: hidden;
+  }
+
+  .recorrido__creditos {
+    padding: 1rem var(--hueco);
+    background: var(--madera);
+    color: var(--crema);
+    font-size: 0.9375rem;
+  }
+
+  .recorrido__creditos p {
+    max-width: var(--ancho);
+    margin: 0 auto;
+  }
+
+  :global(html.recorrido-pendiente) .recorrido__creditos {
+    display: none;
+  }
+</style>

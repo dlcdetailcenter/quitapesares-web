@@ -28,6 +28,15 @@ const es = {
   verCartaEnOtroIdioma: 'Ver la carta en español',
   ultimoCambio: 'Disponibilidad actualizada:',
   fotoPortada: 'Puertas burdeos abiertas a la entrada del restaurante: dentro, una barrica sobre el mostrador de madera, la escalera y el suelo de barro.',
+  irALaCarta: 'Ir a la carta',
+  navCarta: 'Acceso a la carta',
+  recorrido: 'Recorrido por el local',
+  rotuloEntrada: 'La entrada',
+  rotuloBarra: 'La barra',
+  rotuloComedor: 'El comedor',
+  creditosIa: 'El local sale solo en vídeo real. Generado con IA:',
+  creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
+  pnoaPrefijo: 'Obra derivada de PNOA',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -56,6 +65,15 @@ const en: Textos = {
   verCartaEnOtroIdioma: 'See the menu in Spanish',
   ultimoCambio: 'Availability updated:',
   fotoPortada: 'Burgundy doors open at the restaurant entrance: inside, a barrel on the wooden counter, the staircase and the terracotta floor.',
+  irALaCarta: 'Go to the menu',
+  navCarta: 'Menu shortcut',
+  recorrido: 'Walk through the restaurant',
+  rotuloEntrada: 'The entrance',
+  rotuloBarra: 'The bar',
+  rotuloComedor: 'The dining room',
+  creditosIa: 'The restaurant is shown only in real video. AI-generated:',
+  creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
+  pnoaPrefijo: 'Derived from PNOA',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };

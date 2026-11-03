@@ -42,4 +42,8 @@ export default defineConfig({
   ],
   // Barrera: `astro build` en modo producción falla si algún dato del restaurante no está CONFIRMADO.
   integrations: [datosRestaurante()],
+  // Interruptor del recorrido de F2 (src/recorrido/interruptor.ts): RECORRIDO=apagado deja la portada de F1.
+  vite: {
+    define: { __RECORRIDO__: JSON.stringify(process.env.RECORRIDO !== 'apagado') },
+  },
 });
