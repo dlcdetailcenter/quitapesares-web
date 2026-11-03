@@ -1,0 +1,64 @@
+{
+  "$comentario": "Tramos del recorrido de F2. Lo lee scripts/media/procesar.mjs. Los tiempos se eligen mirando las hojas de contacto (paso «contacto»); mientras un tramo tenga null, el script no lo procesa. Un solo ajuste de color para todos: no hay color por tramo a propósito (FIDELIDAD).",
+  "salida": {
+    "ancho": 720,
+    "alto": 1280,
+    "fps": 30
+  },
+  "tonemap": {
+    "$comentario": "HDR (HLG o PQ) a SDR BT.709. Si el clip ya es SDR, solo se convierte a BT.709.",
+    "operador": "hable",
+    "npl": 100,
+    "desat": 0
+  },
+  "color": {
+    "$comentario": "El mismo para todos los tramos: ajuste suave, reducción de ruido y nitidez suave.",
+    "eq": "contrast=1.0:brightness=0.0:saturation=1.0:gamma=1.0",
+    "ruido": "hqdn3d=1.5:1.5:4:4",
+    "nitidez": "unsharp=5:5:0.25:5:5:0.0"
+  },
+  "estabilizacion": {
+    "shakiness": 5,
+    "accuracy": 15,
+    "smoothing": 20
+  },
+  "exportar": {
+    "canvas": { "formato": "webp", "calidad": 62 },
+    "video": { "crf": 26, "gop": 4 }
+  },
+  "tramos": [
+    {
+      "id": "puerta",
+      "clip": "IMG_4595",
+      "inicio": null,
+      "fin": null,
+      "recorte": null,
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": null,
+      "notas": "Sin el final (personas desde el segundo 4,5 en F1) ni la placa de especialidades legible (segundo 1,1 en F1)."
+    },
+    {
+      "id": "barra",
+      "clip": "IMG_4593",
+      "inicio": null,
+      "fin": null,
+      "recorte": null,
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": null,
+      "notas": "Las pantallas de la barra no salen: recorte; si no se puede, difuminado declarado."
+    },
+    {
+      "id": "comedor",
+      "clip": "IMG_4592",
+      "inicio": null,
+      "fin": null,
+      "recorte": null,
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": null,
+      "notas": "Solo tramos sin caras. Si no se puede con buen nivel, se quita este tramo y se anota para F4."
+    }
+  ]
+}
