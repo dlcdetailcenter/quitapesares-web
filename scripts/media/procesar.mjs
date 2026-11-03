@@ -183,8 +183,12 @@ function exportar(id, metodo) {
   rmSync(destino, { recursive: true, force: true });
   mkdirSync(destino, { recursive: true });
   if (metodo === 'canvas') {
-    const { calidad } = config.exportar.canvas;
-    ffmpeg(['-i', entrada, '-c:v', 'libwebp', '-quality', String(calidad), '-compression_level', '6', '-preset', 'photo', ...SIN_EXTRAS, join(destino, '%04d.webp')]);
+    // Cada tramo puede elegir menos fotogramas por segundo y su calidad para caber en su parte del peso
+    // («elegir fotogramas»: solo se quitan fotogramas reales, no se inventa ninguno).
+    const t = tramo(id);
+    const calidad = t.exportar?.calidad ?? config.exportar.canvas.calidad;
+    const cadencia = t.exportar?.fps ? ['-vf', `fps=${t.exportar.fps}`] : [];
+    ffmpeg(['-i', entrada, ...cadencia, '-c:v', 'libwebp', '-quality', String(calidad), '-compression_level', '6', '-preset', 'photo', ...SIN_EXTRAS, join(destino, '%04d.webp')]);
   } else if (metodo === 'video') {
     const { crf, gop } = config.exportar.video;
     ffmpeg([
@@ -205,7 +209,7 @@ function contacto(nombre, etapa = '04-color') {
   const salida = carpeta(INFORMES, 'f2-revision', 'contacto', `${nombre}-${etapa}-%02d.png`);
   ffmpeg([
     '-i', entrada, '-vf',
-    "scale=240:-2,drawtext=text='%{n}':x=6:y=6:fontsize=20:fontcolor=white:box=1:boxcolor=black@0.6,tile=6x5:padding=4:color=black",
+    "format=rgb24,scale=240:-2:flags=lanczos,drawtext=text='%{n}':x=6:y=6:fontsize=20:fontcolor=white:box=1:boxcolor=black@0.6,tile=6x5:padding=4:color=black",
     '-fps_mode', 'passthrough', salida,
   ]);
 }
