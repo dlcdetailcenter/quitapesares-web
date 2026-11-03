@@ -2,7 +2,10 @@
 //   1. algún archivo pesa más de 10 MB (10 485 760 bytes, como lo muestra Windows);
 //   2. hay material original versionado (.mov, .heic, .heif o una carpeta material/), aunque se haya
 //      saltado el .gitignore con `git add -f`;
-//   3. alguna imagen o vídeo lleva coordenadas GPS (lo comprueba exiftool).
+//   3. alguna imagen o vídeo lleva coordenadas GPS (lo comprueba exiftool);
+//   4. algún vídeo lleva pista de audio (exiftool: pista «soun» en MP4/MOV o de tipo audio en WebM/MKV);
+//   5. hay material del recorrido de F2 versionado (recorrido-real/ o public/recorrido/): durante F2 el material
+//      real no entra en git (encargo de F2); entra en el último commit, con el OK de Kara, quitando esta regla.
 // exiftool es obligatorio en la CI, y también en el hook de pre-commit (--staged) en cuanto hay
 // imágenes o vídeos preparados: entonces el commit se bloquea. En una revisión manual de todo el
 // repositorio, si no está instalado, el GPS no se comprueba y se avisa.
@@ -27,6 +30,18 @@ const MEDIOS = new Set([
   '.wmv', '.asf', '.flv', '.insv', '.lrv', '.mxf',
 ]);
 const ETIQUETA_GPS = /^(gps(latitude|longitude|position|coordinates)|locationinformation)$/i;
+const CARPETA_RECORRIDO = /^(recorrido-real|public\/recorrido)\//i;
+
+/**
+ * ¿Lleva pista de audio? Con `-n`, exiftool da HandlerType «soun» (MP4, MOV) y TrackType 2 (WebM, MKV); sin `-n`,
+ * «Audio Track» y «Audio». AudioFormat o AudioChannels solo aparecen si hay audio.
+ * @param {string} etiqueta @param {unknown} valor
+ */
+function esAudio(etiqueta, valor) {
+  if (/^handlertype$/i.test(etiqueta)) return /^(soun|audio track)$/i.test(String(valor));
+  if (/^tracktype$/i.test(etiqueta)) return String(valor) === '2' || /^audio$/i.test(String(valor));
+  return /^audio(format|channels)$/i.test(etiqueta) && valor !== '' && valor !== null;
+}
 const EN_CI = Boolean(process.env.CI) && process.env.CI !== 'false';
 
 const soloPreparados = process.argv.includes('--staged');
@@ -49,6 +64,7 @@ const avisos = [];
 const medios = [];
 for (const ruta of archivos) {
   if (ORIGINAL.test(ruta) || CARPETA_MATERIAL.test(ruta)) fallos.push(`Material original versionado: ${ruta}`);
+  if (CARPETA_RECORRIDO.test(ruta)) fallos.push(`Material del recorrido versionado (en F2 no entra en git): ${ruta}`);
   const bytes = soloPreparados ? tamanoPreparado(ruta) : tamanoEnDisco(ruta);
   if (bytes !== null && bytes > LIMITE_BYTES) {
     fallos.push(`Pesa más de 10 MB: ${ruta} (${(bytes / 1024 / 1024).toFixed(1)} MB)`);
@@ -72,7 +88,7 @@ if (fallos.length > 0) {
   console.error(`check:media: ${fallos.length} problema(s).`);
   process.exit(1);
 }
-console.log('✓ Sin archivos de más de 10 MB, sin originales versionados y sin GPS en imágenes ni vídeos.');
+console.log('✓ Sin archivos de más de 10 MB, sin originales ni material del recorrido versionados, sin GPS y sin audio.');
 
 /** @param {string[]} args */
 function git(args) {
@@ -147,7 +163,7 @@ function comprobarGps(rutas) {
     const r = spawnSync(
       exiftool.orden,
       ['-json', '-n', '-a', '-G1', '-ee3', '-q', '-q', '-charset', 'filename=utf8', '-api', 'LargeFileSupport=1',
-        '-*gps*', '-LocationInformation', '-@', listado],
+        '-*gps*', '-LocationInformation', '-HandlerType', '-TrackType', '-AudioFormat', '-AudioChannels', '-@', listado],
       { cwd: raiz, encoding: 'utf8', maxBuffer: 256 * 1024 * 1024 },
     );
     /** @type {Array<Record<string, unknown>>} */
@@ -165,12 +181,15 @@ function comprobarGps(rutas) {
       const ruta = porArchivo.get(normalizar(String(resultado.SourceFile))) ?? String(resultado.SourceFile);
       revisadas.add(ruta);
       const etiquetas = [];
+      const audio = [];
       for (const [clave, valor] of Object.entries(resultado)) {
         const etiqueta = clave.split(':').pop() ?? '';
         if (etiqueta === 'Error') fallos.push(`No se pudo leer con exiftool: ${ruta} (${String(valor)})`);
         if (ETIQUETA_GPS.test(etiqueta) && valor !== '' && valor !== null) etiquetas.push(clave);
+        if (esAudio(etiqueta, valor)) audio.push(clave);
       }
       if (etiquetas.length > 0) fallos.push(`Lleva GPS: ${ruta} (${[...new Set(etiquetas)].join(', ')})`);
+      if (audio.length > 0) fallos.push(`Lleva pista de audio: ${ruta} (${[...new Set(audio)].join(', ')})`);
     }
     for (const { ruta } of entradas) {
       if (!revisadas.has(ruta)) fallos.push(`exiftool no revisó: ${ruta}`);
