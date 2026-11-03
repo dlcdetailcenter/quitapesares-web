@@ -36,6 +36,59 @@
       "gop": 4
     }
   },
+  "fotos": {
+    "$comentario": "Fotos fijas para la MAQUETA de la demo al dueño (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md): paso «foto» de procesar.mjs. Solo de IMG_4593, IMG_4594 e IMG_4595 (nunca IMG_4592), sin caras, matrículas, pantallas ni la lista de especialidades. Se suben a Higgsfield solo con el OK de Kara.",
+    "lista": [
+      {
+        "id": "fachada",
+        "clip": "IMG_4595",
+        "segundo": 1.6,
+        "recorte": {
+          "x": 90,
+          "y": 160,
+          "ancho": 990,
+          "alto": 1760
+        },
+        "zona": "puerta",
+        "notas": "Toldo y puertas burdeos abiertas. Recorte 9:16 desde x=90 (la placa con la lista de especialidades asomaba por la izquierda con trozos legibles) y desde y=160 (arriba salía cortado el rótulo metálico de la fachada, ilegible: mejor fuera que deformado). Sin personas."
+      },
+      {
+        "id": "escalera",
+        "clip": "IMG_4595",
+        "segundo": 3,
+        "recorte": null,
+        "zona": "puerta",
+        "notas": "A través de la puerta: la barrica sobre el mostrador, la escalera y el suelo de barro. Sin personas."
+      },
+      {
+        "id": "ventana",
+        "clip": "IMG_4595",
+        "segundo": 3.9,
+        "recorte": null,
+        "zona": "puerta",
+        "notas": "Dentro: la ventana con arco de forja, la barrica y el mostrador. Antes del 4,5 s, cuando entran personas al fondo."
+      },
+      {
+        "id": "cafetera",
+        "clip": "IMG_4593",
+        "segundo": 1,
+        "recorte": {
+          "x": 420,
+          "y": 930,
+          "ancho": 540,
+          "alto": 960
+        },
+        "zona": "barra",
+        "notas": "Cafetera y barra con el mismo recorte que el tramo de la barra: las pantallas (hasta la fila 920) no entran."
+      }
+    ],
+    "descartadas": [
+      {
+        "clip": "IMG_4594",
+        "motivo": "La placa con la lista de especialidades es legible en todos los fotogramas, y en 9:16 no cabe el nombre sin la lista."
+      }
+    ]
+  },
   "tramos": [
     {
       "id": "puerta",

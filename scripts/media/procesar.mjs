@@ -18,6 +18,7 @@
 //   node scripts/media/procesar.mjs exportar <tramo> <canvas|video>
 //   node scripts/media/procesar.mjs contacto <tramo|clip> [etapa]   (etapa: 02-limpio, 04-color… por defecto 04-color)
 //   node scripts/media/procesar.mjs comparar <tramo>
+//   node scripts/media/procesar.mjs foto <foto>                       (foto fija para la maqueta: lista «fotos»)
 //   node scripts/media/procesar.mjs todo <canvas|video>               (los pasos de todos los tramos definidos)
 // Opciones: --config <tramos.json>  (por defecto scripts/media/tramos.json)
 //
@@ -229,6 +230,41 @@ function comparar(id) {
   ]);
 }
 
+/**
+ * Foto fija de un clip para la MAQUETA (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md): un solo fotograma
+ * del original en el segundo indicado, con el mismo paso a SDR y el mismo ajuste de color que los tramos, recortado y
+ * sin metadatos. Es la entrada que se sube a Higgsfield (solo con el OK de Kara) y la base de la versión sin IA.
+ * Lista en tramos.json → «fotos» (id, clip, segundo, recorte). Salida: $MATERIAL/f2/maqueta/fotos/<id>.png y su
+ * versión 540×960 (<id>-540.webp, la del canvas si la foto va sin IA).
+ */
+function foto(id) {
+  const f = (config.fotos?.lista ?? []).find((x) => x.id === id);
+  if (!f) fallar(`no hay ninguna foto «${id}» en ${rutaConfig} («fotos» → «lista»)`);
+  if (f.clip === 'IMG_4592') fallar('IMG_4592 no se usa nunca (caras en todos los fotogramas)');
+  const entrada = original(f.clip);
+  const v = sondear(entrada).streams.find((s) => s.codec_type === 'video');
+  const trc = v.color_transfer ?? '';
+  const esHdr = trc === 'arib-std-b67' || trc === 'smpte2084';
+  const { operador, npl, desat } = config.tonemap;
+  const { eq, nitidez } = config.color;
+  const r = f.recorte;
+  const filtro = [
+    ...(esHdr
+      ? [`zscale=tin=${trc}:pin=2020:min=2020_ncl:rin=limited:t=linear:npl=${npl}`, 'format=gbrpf32le', 'zscale=p=709', `tonemap=tonemap=${operador}:desat=${desat}`, 'zscale=t=709:m=709:r=limited']
+      : ['zscale=t=709:m=709:p=709:r=limited']),
+    'format=yuv444p',
+    ...(r ? [`crop=${r.ancho}:${r.alto}:${r.x}:${r.y}`] : []),
+    // Sin reducción de ruido temporal (es un solo fotograma): el mismo ajuste de color y la misma nitidez suave.
+    `eq=${eq}`,
+    nitidez,
+    'format=rgb24',
+  ].join(',');
+  const salida = carpeta(F2, 'maqueta', 'fotos', `${id}.png`);
+  ffmpeg(['-ss', String(f.segundo), '-i', entrada, '-map', '0:v:0', '-frames:v', '1', '-vf', filtro, ...SIN_EXTRAS, salida]);
+  ffmpeg(['-i', salida, '-vf', `scale=${ancho}:${alto}:flags=lanczos`, '-c:v', 'libwebp', '-quality', '90', ...SIN_EXTRAS, carpeta(F2, 'maqueta', 'fotos', `${id}-540.webp`)]);
+  console.log(`✓ foto «${id}»: ${f.clip}, segundo ${f.segundo}${r ? `, recorte ${r.ancho}×${r.alto} desde x=${r.x}, y=${r.y}` : ''} → ${salida}`);
+}
+
 function todo(metodo) {
   const definidos = config.tramos.filter((t) => t.inicio !== null && t.fin !== null);
   if (definidos.length === 0) fallar('ningún tramo tiene inicio y fin en tramos.json');
@@ -245,9 +281,9 @@ function todo(metodo) {
   }
 }
 
-const pasos = { sdr, limpiar, estabilizar, color, exportar: (id) => exportar(id, extra), contacto: (n) => contacto(n, extra), comparar, todo };
+const pasos = { sdr, limpiar, estabilizar, color, exportar: (id) => exportar(id, extra), contacto: (n) => contacto(n, extra), comparar, foto, todo };
 if (!pasos[paso] || !objetivo) {
-  console.error('Uso: node scripts/media/procesar.mjs <sdr|limpiar|estabilizar|color|exportar|contacto|comparar|todo> <clip|tramo|método> [canvas|video|etapa]');
+  console.error('Uso: node scripts/media/procesar.mjs <sdr|limpiar|estabilizar|color|exportar|contacto|comparar|foto|todo> <clip|tramo|foto|método> [canvas|video|etapa]');
   process.exit(2);
 }
 pasos[paso](objetivo);
