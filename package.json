@@ -16,7 +16,7 @@
     "test": "playwright test",
     "lhci": "lhci autorun",
     "check:media": "node scripts/check-media.mjs",
-    "test:datos": "node --test \"scripts/datos/*.test.mjs\" \"scripts/media/*.test.mjs\"",
+    "test:datos": "node --test --test-concurrency=1 \"scripts/datos/*.test.mjs\" \"scripts/media/*.test.mjs\"",
     "astro": "astro",
     "types": "wrangler types",
     "media:check": "node scripts/media/media-check.mjs",
