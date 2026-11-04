@@ -125,7 +125,7 @@ Todas las piezas son **IA** (`"ia": "local"`, `"origen": "creada"`) y se declara
 con IA a partir de fotogramas reales del local» / «AI image created from real frames of the venue», en los créditos del
 recorrido (es/en) y en esta tabla. Se usan fijas: 28 fotogramas a 8 fps con recorte progresivo, WebP 55, sin imagen a
 vídeo. Modelo: `nano_banana_2_1`, 2k, 9:16, `thinking_level` alto; semilla 4112026 en los primeros intentos y 4112027 en
-los segundos. Aceptadas por Claude. **Falta el visto bueno de Kara, imagen a imagen.**
+los segundos. Aceptadas por Claude y con el visto bueno de Kara del 2026-11-04 («todo ok»), a la vista de las hojas de contacto. **Falta la respuesta del dueño: «¿es tu local?».**
 
 | Pieza | Parada | Referencias | Variante aceptada | Trabajo | Uso |
 |---|---|---|---|---|---|

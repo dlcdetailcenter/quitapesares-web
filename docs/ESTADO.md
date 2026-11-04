@@ -8,7 +8,7 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-04 (maqueta para la demo al dueño) |
+| Actualizado | 2026-11-04 (maqueta 2: imágenes creadas con IA para la demo al dueño) |
 | `main` al escribirlo | `06312b0` |
 | Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` |
 
@@ -64,24 +64,31 @@ Hecho en `f2-recorrido`:
   inglés y con las mismas acciones si se reduce el movimiento. Tramos de 1 pantalla como mucho, paradas de 0,5 y 5
   pantallas de total como mucho. Pruebas en verde con el sintético y contra la demo con la maqueta (Chromium y WebKit
   a 390 px). VERIFICADO; con el material real, sin probar desde que existen las paradas, NO VERIFICADO.
-- Maqueta para la demo al dueño (variante aparte, `RECORRIDO_VARIANTE=maqueta`, fuera de git): 4 piezas desde fotos
-  reales. Solo la fachada lleva IA, declarada con etiqueta visible y en los créditos; la escalera, la ventana y la
-  cafetera van sin IA porque se rechazaron sus 8 intentos (detalle en el inventario). Desplegada en la demo privada
-  con noindex y `recorrido.json` igual al del manifiesto. VERIFICADO; visto bueno de Kara, pendiente.
-- `build:produccion` falla con la variante maqueta o con cualquier pieza `"ia": "local"`, y `check:media` bloquea
+- Maqueta 2 para la demo al dueño (variante aparte, `RECORRIDO_VARIANTE=maqueta`, fuera de git): 6 imágenes creadas con
+  IA a partir de fotogramas reales de IMG_4593, 4594 y 4595, con el OK del dueño que comunicó Kara (excepción ampliada
+  en `CLAUDE.md`). Usadas fijas con recorte progresivo, 5,89 MB de 8 y 5 pantallas; todas con `"ia": "local"`, etiqueta
+  visible y créditos. 16 intentos, cada uno con su motivo en el inventario. Desplegada en la demo privada con noindex y
+  `recorrido.json` igual al del manifiesto. VERIFICADO; visto bueno de Kara, imagen a imagen, dado el 2026-11-04.
+  Pregunta al dueño, «¿es tu local?», pendiente.
+- `build:produccion` falla con la variante maqueta y con cualquier pieza `"ia": "local"` o `"origen": "creada"`, también
+  con la variante real; una pieza creada sin `"ia": "local"` hace fallar el ensamblado; `check:media` bloquea
   `recorrido-maqueta/`. VERIFICADO
-- Lighthouse contra la demo con la maqueta: portada dentro del presupuesto (rendimiento 0,99, LCP 1,68 s, CLS 0, TBT
-  0 ms, 308 KB). VERIFICADO; en local, sin medir.
-- `lab:medir` contra la demo: Chromium con CPU 4x, canvas p95 36,5 ms. **WebKit, canvas p95 73 y 74 ms (dos tandas),
-  por encima de los 50 ms**, frente a los 47 ms en local del 3-11, con la causa sin aislar. NO VERIFICADO.
+- Fotogramas decodificados: lo que llega después de soltar un tramo ya se cierra. Con tramos cortos, WebKit llegaba a 30
+  vivos frente a un límite de 22. VERIFICADO con la maqueta en local.
+- Pruebas con la maqueta 2 en local: 138 de 138 en Chromium y WebKit a 390 px. VERIFICADO. Con el material real, sin
+  probar desde que existen las paradas, NO VERIFICADO.
+- Lighthouse en local con la maqueta 2: portada dentro del presupuesto (rendimiento 0,99, LCP 1,97 s, CLS 0, TBT 0 ms,
+  363 KB). VERIFICADO
+- `lab:medir`, mismo comando en local y en la demo: Chromium con CPU 4x, canvas p95 34,5 y 35,8 ms. **WebKit, canvas p95
+  50 ms en local, justo en el límite, y 78 ms en la demo, por encima.** Con el mismo código, la diferencia es de servir
+  por red; sin arreglar, se decide con el iPhone real. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
 
 ## A medias
 
-- Sesión de comprobación de Kara con los móviles, preparada: visto bueno de la puerta, la barra, la ortofoto, cada
-  nube de IA y cada pieza de la maqueta; paradas; el tramo aéreo termina sobre el local; p95 en móviles reales; y lo
+- Sesión de comprobación de Kara con los móviles, preparada: visto bueno de la puerta, la barra, la ortofoto y cada
+  nube de IA; las imágenes de la maqueta en el móvil; paradas; el tramo aéreo termina sobre el local; p95 en móviles reales; y lo
   pendiente de F1 (VoiceOver y los botones).
-- Repetir Lighthouse y `lab:medir` en local para saber si el p95 de WebKit viene de la red o del código, y probar
-  las paradas con el material real.
+- Probar las paradas con el material real.
 - **Retirar la maqueta después de la demo al dueño.**
 - Las coordenadas de la ortofoto son las de `src/data/restaurante.json`, sin confirmar: si cambian, se regenera.
 
