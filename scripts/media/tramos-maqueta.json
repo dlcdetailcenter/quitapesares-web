@@ -1,0 +1,44 @@
+{
+  "$comentario": "MAQUETA de la demo al dueño (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. Cada pieza sale de una foto fija real (tramos.json → fotos). origen «higgsfield»: vídeo de imagen a vídeo ACEPTADO (lleva \"ia\": \"local\" y su etiqueta); origen «foto»: la foto real con recortes progresivos, sin IA. Longitud: aire 1 + 4 piezas de 0,75 + 2 paradas de 0,5 = 5 pantallas.",
+  "aire": {
+    "pantallas": 1
+  },
+  "piezas": [
+    {
+      "id": "fachada",
+      "foto": "fachada",
+      "zona": "puerta",
+      "origen": "higgsfield",
+      "pantallas": 0.75,
+      "fps": 10,
+      "calidad": 60
+    },
+    {
+      "id": "escalera",
+      "foto": "escalera",
+      "zona": "puerta",
+      "origen": "higgsfield",
+      "pantallas": 0.75,
+      "fps": 10,
+      "calidad": 60
+    },
+    {
+      "id": "ventana",
+      "foto": "ventana",
+      "zona": "puerta",
+      "origen": "higgsfield",
+      "pantallas": 0.75,
+      "fps": 10,
+      "calidad": 60
+    },
+    {
+      "id": "cafetera",
+      "foto": "cafetera",
+      "zona": "barra",
+      "origen": "higgsfield",
+      "pantallas": 0.75,
+      "fps": 10,
+      "calidad": 60
+    }
+  ]
+}

@@ -40,6 +40,44 @@ async function irA(page: Page, pantalla: number) {
   await page.waitForTimeout(200);
 }
 
+interface ParteRecorrido {
+  nombre: string;
+  inicio: number;
+  pantallas: number;
+  ia: boolean;
+}
+
+/**
+ * Partes del recorrido tal como las monta cliente.ts, a partir del recorrido.json que se sirve: así las pruebas valen
+ * con el material sintético (CI), con el real y con la maqueta. Tras el último tramo de cada zona con parada, su parada.
+ */
+async function partesDelRecorrido(page: Page): Promise<ParteRecorrido[]> {
+  const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as {
+    aire: { pantallas: number };
+    tramos: { id: string; pantallas: number; zona?: string; ia?: string }[];
+  };
+  const partes: ParteRecorrido[] = [{ nombre: 'aire', inicio: 0, pantallas: config.aire.pantallas, ia: false }];
+  let inicio = config.aire.pantallas;
+  config.tramos.forEach((t, i) => {
+    const zona = t.zona ?? t.id;
+    partes.push({ nombre: t.id, inicio, pantallas: t.pantallas, ia: t.ia === 'local' });
+    inicio += t.pantallas;
+    const siguiente = config.tramos[i + 1];
+    if ((zona === 'puerta' || zona === 'barra') && (!siguiente || (siguiente.zona ?? siguiente.id) !== zona)) {
+      partes.push({ nombre: `parada-${zona}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
+      inicio += 0.5;
+    }
+  });
+  return partes;
+}
+
+/** Lleva el scroll a una parte del recorrido (por defecto, a su centro). */
+async function irAParte(page: Page, nombre: string, fraccion = 0.5) {
+  const parte = (await partesDelRecorrido(page)).find((p) => p.nombre === nombre);
+  if (!parte) throw new Error(`no hay ninguna parte «${nombre}» en el recorrido`);
+  await irA(page, parte.inicio + parte.pantallas * fraccion);
+}
+
 /** Objetivo táctil de 44 px como mínimo y con el foco visible. */
 async function comprobarObjetivo(enlace: ReturnType<Page['locator']>) {
   const caja = await enlace.boundingBox();
@@ -76,15 +114,19 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const seccion = page.locator('[data-recorrido]');
       await expect(seccion).toHaveAttribute('data-parte', 'aire');
-      // Partes en pantallas: aire 0–1, puerta 1–2, parada 2–2,5, barra 2,5–3,5 y parada 3,5–4. Se va al centro de cada una.
+      // Se va al centro de cada parte, en el orden del recorrido.json servido (sintético: aire, puerta, parada,
+      // barra, parada; la maqueta tiene varias piezas en la zona de la puerta).
+      const partes = await partesDelRecorrido(page);
+      expect(partes.map((p) => p.nombre)).toEqual(expect.arrayContaining(['aire', 'parada-puerta', 'parada-barra']));
       const vistas: string[] = [];
-      for (const p of [0.5, 1.5, 2.25, 3, 3.75]) {
-        await irA(page, p);
+      for (const p of partes) {
+        await irA(page, p.inicio + p.pantallas / 2);
         vistas.push((await seccion.getAttribute('data-parte')) ?? '');
       }
-      expect(vistas).toEqual(['aire', 'puerta', 'parada-puerta', 'barra', 'parada-barra']);
-      // Material sintético: lo dice en los créditos.
-      await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
+      expect(vistas).toEqual(partes.map((p) => p.nombre));
+      // Con el material sintético (CI), lo dice en los créditos.
+      const { material } = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { material: string };
+      if (material === 'sintetico') await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
       // Después del recorrido sigue la portada de F1.
       await mismasFunciones(page, botones);
     });
@@ -116,7 +158,9 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
-      const pantallas = config.aire.pantallas + config.tramos.reduce((a, t) => a + t.pantallas, 0) + 2 * 0.5;
+      const partes = await partesDelRecorrido(page);
+      expect(partes.filter((p) => p.nombre.startsWith('parada-')).map((p) => p.pantallas)).toEqual([0.5, 0.5]);
+      const pantallas = partes.reduce((a, p) => a + p.pantallas, 0);
       expect(alto).toBeCloseTo(pantallas * 844, 0);
       expect(alto).toBeLessThanOrEqual(5 * 844);
     });
@@ -130,12 +174,12 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const puerta = page.locator('[data-parada="puerta"]');
       const barra = page.locator('[data-parada="barra"]');
-      // Fuera de su media pantalla no se ven ni se pueden enfocar.
-      await irA(page, 1.5);
+      // Fuera de su media pantalla no se ven ni se pueden enfocar (en el primer tramo, por ejemplo).
+      await irAParte(page, (await partesDelRecorrido(page))[1].nombre);
       await expect(puerta).toBeHidden();
       await expect(barra).toBeHidden();
 
-      await irA(page, 2.25);
+      await irAParte(page, 'parada-puerta');
       await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-puerta');
       // Enlaces reales y accesibles (por su rol y su nombre, nada de aria-hidden).
       const enlaceLlegar = puerta.getByRole('link', { name: comoLlegar, exact: true });
@@ -146,7 +190,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(barra).toBeHidden();
       for (const enlace of [enlaceLlegar, enlaceLlamar]) await comprobarObjetivo(enlace);
 
-      await irA(page, 3.75);
+      await irAParte(page, 'parada-barra');
       await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-barra');
       const enlaceCarta = barra.getByRole('link', { name: verCarta, exact: true });
       const enlaceMenu = barra.getByRole('link', { name: new RegExp(`^${menu}`) });
@@ -161,9 +205,10 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
     });
 
     test('maqueta: la etiqueta «Simulación con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
+      // El último tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo son todos).
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
-        config.tramos[1].ia = 'local';
+        config.tramos[config.tramos.length - 1].ia = 'local';
         config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
         await r.fulfill({ json: config });
       });
@@ -174,12 +219,20 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const marca = page.locator('[data-recorrido-etiqueta-ia]');
-      await irA(page, 1.5); // puerta: material real
+      const partes = await partesDelRecorrido(page);
+      const tramosDelRecorrido = partes.filter((p) => p.nombre !== 'aire' && !p.nombre.startsWith('parada-'));
+      const ultimo = tramosDelRecorrido[tramosDelRecorrido.length - 1];
+      // En el aire y en cualquier tramo que no sea IA del local, la etiqueta no está.
+      await irAParte(page, 'aire');
       await expect(marca).toBeHidden();
-      await irA(page, 3); // barra: la pieza «ia: local»
+      for (const t of tramosDelRecorrido.filter((p) => !p.ia && p !== ultimo)) {
+        await irAParte(page, t.nombre);
+        await expect(marca).toBeHidden();
+      }
+      await irAParte(page, ultimo.nombre); // la pieza «ia: local»
       await expect(marca).toBeVisible();
       await expect(marca).toHaveText(etiqueta);
-      await irA(page, 3.75); // su parada deja quieta la pieza: la etiqueta sigue
+      await irAParte(page, 'parada-barra'); // su parada deja quieta la pieza: la etiqueta sigue
       await expect(marca).toBeVisible();
       await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
       await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);
