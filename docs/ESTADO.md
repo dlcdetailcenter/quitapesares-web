@@ -8,7 +8,7 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-03 (cierre de F2 desde el PC) |
+| Actualizado | 2026-11-04 (maqueta para la demo al dueño) |
 | `main` al escribirlo | `06312b0` |
 | Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` |
 
@@ -60,18 +60,36 @@ Hecho en `f2-recorrido`:
 - Demo privada desplegada con el recorrido real: noindex comprobado y `recorrido.json` igual al del manifiesto.
   VERIFICADO
 - `check:media` rechaza vídeos con audio y el material del recorrido versionado. VERIFICADO
+- Rótulo del aire con el nombre completo y paradas con acción al final de la puerta y de la barra, en español e
+  inglés y con las mismas acciones si se reduce el movimiento. Tramos de 1 pantalla como mucho, paradas de 0,5 y 5
+  pantallas de total como mucho. Pruebas en verde con el sintético y contra la demo con la maqueta (Chromium y WebKit
+  a 390 px). VERIFICADO; con el material real, sin probar desde que existen las paradas, NO VERIFICADO.
+- Maqueta para la demo al dueño (variante aparte, `RECORRIDO_VARIANTE=maqueta`, fuera de git): 4 piezas desde fotos
+  reales. Solo la fachada lleva IA, declarada con etiqueta visible y en los créditos; la escalera, la ventana y la
+  cafetera van sin IA porque se rechazaron sus 8 intentos (detalle en el inventario). Desplegada en la demo privada
+  con noindex y `recorrido.json` igual al del manifiesto. VERIFICADO; visto bueno de Kara, pendiente.
+- `build:produccion` falla con la variante maqueta o con cualquier pieza `"ia": "local"`, y `check:media` bloquea
+  `recorrido-maqueta/`. VERIFICADO
+- Lighthouse contra la demo con la maqueta: portada dentro del presupuesto (rendimiento 0,99, LCP 1,68 s, CLS 0, TBT
+  0 ms, 308 KB). VERIFICADO; en local, sin medir.
+- `lab:medir` contra la demo: Chromium con CPU 4x, canvas p95 36,5 ms. **WebKit, canvas p95 73 y 74 ms (dos tandas),
+  por encima de los 50 ms**, frente a los 47 ms en local del 3-11, con la causa sin aislar. NO VERIFICADO.
 
 ## A medias
 
-- Sesión de comprobación de Kara con los móviles (unos 25 minutos), preparada: visto bueno de la puerta, la
-  barra, la ortofoto y cada nube de IA; el tramo aéreo termina sobre el local; p95 en móviles reales; y lo
+- Sesión de comprobación de Kara con los móviles, preparada: visto bueno de la puerta, la barra, la ortofoto, cada
+  nube de IA y cada pieza de la maqueta; paradas; el tramo aéreo termina sobre el local; p95 en móviles reales; y lo
   pendiente de F1 (VoiceOver y los botones).
+- Repetir Lighthouse y `lab:medir` en local para saber si el p95 de WebKit viene de la red o del código, y probar
+  las paradas con el material real.
+- **Retirar la maqueta después de la demo al dueño.**
 - Las coordenadas de la ortofoto son las de `src/data/restaurante.json`, sin confirmar: si cambian, se regenera.
 
 ## Siguiente paso
 
-Sesión de comprobación de Kara. Con su visto bueno: el último commit con el material real (se quita la regla de
-`check:media` que hoy lo bloquea, decisión de Kara) y la fusión sin aplastar, con su OK.
+Sesión de comprobación de Kara y demo al dueño. Después: retirar la maqueta y, con el visto bueno de Kara, el último
+commit con el material real (se quita la regla de `check:media` que hoy lo bloquea, decisión de Kara) y la fusión
+sin aplastar, con su OK.
 
 ## Cómo trabajamos
 
