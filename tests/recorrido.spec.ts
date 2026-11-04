@@ -204,7 +204,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       for (const enlace of [enlaceCarta, enlaceMenu]) await comprobarObjetivo(enlace);
     });
 
-    test('maqueta: la etiqueta «Simulación con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
+    test('maqueta: la etiqueta «Imagen creada con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
       // El último tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo son todos).
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
@@ -214,8 +214,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       });
       const [etiqueta, creditos, soloReal] =
         ruta === '/'
-          ? ['Simulación con IA a partir de una foto real del local', 'Simulación con IA a partir de fotos reales del local', 'solo en vídeo real']
-          : ['AI simulation based on a real photo of the venue', 'AI simulation based on real photos of the venue', 'only in real video'];
+          ? ['Imagen creada con IA a partir de fotogramas reales del local', 'Imágenes creadas con IA a partir de fotogramas reales del local', 'solo en vídeo real']
+          : ['AI image created from real frames of the venue', 'AI images created from real frames of the venue', 'only in real video'];
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const marca = page.locator('[data-recorrido-etiqueta-ia]');
@@ -341,7 +341,7 @@ test('sin ortofoto: el aire es cielo con nubes, sin atribución del PNOA, y el r
   expect(b).toBeGreaterThan(r);
   expect(b).toBeGreaterThan(100);
   expect(g).toBeGreaterThan(0);
-  // La primera parte después del aire: «puerta» en el sintético y en el real, «fachada» en la maqueta.
+  // La primera parte después del aire: «puerta» en el sintético y en el real, «llegada» en la maqueta.
   const primerTramo = (await partesDelRecorrido(page))[1];
   await irAParte(page, primerTramo.nombre, 0.5);
   await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', primerTramo.nombre);
