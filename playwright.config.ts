@@ -27,6 +27,8 @@ export default defineConfig({
         viewport: { width: ancho, height: alto },
         isMobile: true,
         hasTouch: true,
+        // CHROMIUM_PATH: otro Chromium si el de esta versión de Playwright no está instalado (en la CI no se usa).
+        ...(motor === 'chromium' && process.env.CHROMIUM_PATH ? { launchOptions: { executablePath: process.env.CHROMIUM_PATH } } : {}),
       },
     })),
   ),

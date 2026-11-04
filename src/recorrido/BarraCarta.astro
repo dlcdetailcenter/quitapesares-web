@@ -1,0 +1,39 @@
+---
+// Barra fija «Ir a la carta»: está en el HTML desde el principio (visible al instante, sin JavaScript) y lleva a la
+// carta de un toque. Solo con el recorrido encendido; con el interruptor apagado la portada es la de F1.
+import { TEXTOS } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = TEXTOS[idioma];
+---
+
+<nav class="barra-carta" aria-label={t.navCarta}>
+  <a class="boton barra-carta__enlace" href={idioma === 'es' ? '/carta' : '/en/carta'}>{t.irALaCarta}</a>
+</nav>
+
+<style>
+  .barra-carta {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 5;
+    padding: 0.5rem var(--hueco) calc(0.5rem + env(safe-area-inset-bottom));
+    background: rgb(46 28 19 / 0.92);
+  }
+
+  .barra-carta__enlace {
+    display: flex;
+    max-width: var(--ancho);
+    margin: 0 auto;
+  }
+
+  :global(body:has(.barra-carta)) {
+    padding-bottom: 4.5rem;
+  }
+</style>

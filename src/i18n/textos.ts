@@ -28,6 +28,20 @@ const es = {
   verCartaEnOtroIdioma: 'Ver la carta en español',
   ultimoCambio: 'Disponibilidad actualizada:',
   fotoPortada: 'Puertas burdeos abiertas a la entrada del restaurante: dentro, una barrica sobre el mostrador de madera, la escalera y el suelo de barro.',
+  irALaCarta: 'Ir a la carta',
+  navCarta: 'Acceso a la carta',
+  recorrido: 'Recorrido por el local',
+  rotuloEntrada: 'La entrada',
+  rotuloBarra: 'La barra',
+  rotuloComedor: 'El comedor',
+  creditosSoloReal: 'El local sale solo en vídeo real.',
+  creditosIa: 'Generado con IA:',
+  creditosIaLocal: 'Imágenes creadas con IA a partir de fotogramas reales del local (Higgsfield).',
+  creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
+  pnoaPrefijo: 'Obra derivada de PNOA',
+  etiquetaIaLocal: 'Imagen creada con IA a partir de fotogramas reales del local',
+  paradaPuerta: 'Cómo llegar o llamar',
+  paradaBarra: 'La carta y el menú del día',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -56,6 +70,20 @@ const en: Textos = {
   verCartaEnOtroIdioma: 'See the menu in Spanish',
   ultimoCambio: 'Availability updated:',
   fotoPortada: 'Burgundy doors open at the restaurant entrance: inside, a barrel on the wooden counter, the staircase and the terracotta floor.',
+  irALaCarta: 'Go to the menu',
+  navCarta: 'Menu shortcut',
+  recorrido: 'Walk through the restaurant',
+  rotuloEntrada: 'The entrance',
+  rotuloBarra: 'The bar',
+  rotuloComedor: 'The dining room',
+  creditosSoloReal: 'The restaurant is shown only in real video.',
+  creditosIa: 'AI-generated:',
+  creditosIaLocal: 'AI images created from real frames of the venue (Higgsfield).',
+  creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
+  pnoaPrefijo: 'Derived from PNOA',
+  etiquetaIaLocal: 'AI image created from real frames of the venue',
+  paradaPuerta: 'Directions or call',
+  paradaBarra: 'The menu and the set menu of the day',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };

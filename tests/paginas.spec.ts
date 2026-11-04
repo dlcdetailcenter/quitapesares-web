@@ -1,4 +1,4 @@
-// Las cuatro páginas de la demo en cada proyecto (Chromium y WebKit, 360 y 390 px): idioma, noindex, sin scroll
+// Las páginas de la demo en cada proyecto (Chromium y WebKit, 360 y 390 px): idioma, noindex, sin scroll
 // horizontal, objetivos táctiles de 44 px, axe sin fallos graves ni críticos, ninguna petición a terceros y una
 // captura de cada una en test-results/capturas/.
 import { test, expect, type Page } from '@playwright/test';
@@ -9,6 +9,8 @@ const PAGINAS = [
   { ruta: '/en/', idioma: 'en', nombre: 'portada-en' },
   { ruta: '/carta', idioma: 'es', nombre: 'carta-es' },
   { ruta: '/en/carta', idioma: 'en', nombre: 'carta-en' },
+  // F2: prueba técnica del recorrido (sin enlaces desde ninguna página).
+  { ruta: '/lab/scroll', idioma: 'es', nombre: 'lab-scroll' },
 ] as const;
 
 const MINIMO_TACTIL = 44;

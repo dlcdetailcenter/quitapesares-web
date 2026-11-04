@@ -1,0 +1,18 @@
+---
+// Decisión síncrona en <head>, antes de pintar: solo se reserva el sitio del recorrido si nada lo impide. Así, cuando
+// el recorrido se activa, la sección crece por debajo de la pantalla y no mueve lo que se ve (CLS).
+// Lo impiden: «reducir movimiento», ahorro de datos del navegador (navigator.connection.saveData) y red lenta
+// (effectiveType 2g o 3g). La cabecera Save-Data la mira el Worker en /recorrido/estado (cliente.ts).
+---
+
+<script is:inline>
+  (function () {
+    try {
+      var c = navigator.connection || {};
+      var lenta = c.saveData === true || /(^|-)2g$|^3g$/.test(c.effectiveType || '');
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches && !lenta) {
+        document.documentElement.classList.add('recorrido-pendiente');
+      }
+    } catch (e) {}
+  })();
+</script>

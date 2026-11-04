@@ -1,0 +1,215 @@
+---
+// Recorrido de F2 como capa sobre la portada de F1. Sin JavaScript, o con «reducir movimiento», ahorro de datos o red
+// lenta, la sección no se muestra y la portada es la de F1 más la barra «Ir a la carta».
+// Textos: el nombre sale de src/data/restaurante.json; los rótulos son neutros (src/i18n/textos.ts).
+import { TEXTOS } from '../i18n/textos.ts';
+import type { Idioma } from '../lib/carta/hoja.ts';
+import { local } from '../lib/local.ts';
+
+interface Props {
+  idioma: Idioma;
+}
+
+const { idioma } = Astro.props;
+const t = TEXTOS[idioma];
+const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
+---
+
+<section class="recorrido" data-recorrido aria-label={t.recorrido}>
+  <div class="recorrido__pista" data-recorrido-pista>
+    <div class="recorrido__escena">
+      <canvas class="recorrido__lienzo" data-recorrido-lienzo aria-hidden="true"></canvas>
+      <div class="recorrido__rotulos" aria-hidden="true">
+        <!-- Nombre completo como en la portada: «Restaurante» en pequeño encima y el nombre en gótica. El espacio entre
+             los dos trozos va escrito para que el texto sea el nombre del archivo de datos y no «RestauranteQuitapesares». -->
+        <p class="recorrido__rotulo recorrido__rotulo--nombre" data-rotulo="aire">
+          {local.tipoDeLocal && <span class="recorrido__tipo">{local.tipoDeLocal}</span>}{local.tipoDeLocal && ' '}<span>{local.nombreCorto}</span>
+        </p>
+        <p class="recorrido__rotulo" data-rotulo="puerta">{t.rotuloEntrada}</p>
+        <p class="recorrido__rotulo" data-rotulo="barra">{t.rotuloBarra}</p>
+        <p class="recorrido__rotulo" data-rotulo="comedor">{t.rotuloComedor}</p>
+      </div>
+      <p class="recorrido__pnoa" data-recorrido-pnoa hidden>
+        <!-- El texto va en un solo span: el enlace es flex y, sin él, se perdían los espacios a los lados del año. -->
+        <a href="https://www.scne.es/"><span>{t.pnoaPrefijo} <span data-anio></span> CC-BY 4.0 scne.es</span></a>
+      </p>
+      <!-- Maqueta (excepción a FIDELIDAD, CLAUDE.md): visible mientras se ve una pieza animada con IA a partir de una foto. -->
+      <p class="recorrido__etiqueta-ia" data-recorrido-etiqueta-ia hidden>{t.etiquetaIaLocal}</p>
+      <!-- Paradas: al final de la puerta y de la barra, acciones que ya existen en la portada, con datos del archivo.
+           Solo se ven (y solo se pueden enfocar) en su media pantalla; fuera, visibility: hidden (cliente.ts). -->
+      <nav class="recorrido__parada" data-parada="puerta" aria-label={t.paradaPuerta}>
+        <a class="boton" href={local.comoLlegarHref}>{t.comoLlegar}</a>
+        <a class="boton" href={local.telefonoHref}>{t.llamar}</a>
+      </nav>
+      <nav class="recorrido__parada" data-parada="barra" aria-label={t.paradaBarra}>
+        <a class="boton" href={rutaCarta}>{t.verCarta}</a>
+        <a class="boton" href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span></a>
+      </nav>
+    </div>
+  </div>
+  <div class="recorrido__creditos">
+    <p data-recorrido-ia hidden><span data-solo-real>{t.creditosSoloReal} </span>{t.creditosIa} <span data-lista></span>.</p>
+    <p data-recorrido-ia-local hidden>{t.creditosIaLocal}</p>
+    <p data-recorrido-sintetico hidden>{t.creditosSintetico}</p>
+  </div>
+</section>
+
+<script>
+  import './cliente.ts';
+</script>
+
+<style>
+  .recorrido {
+    display: none;
+    background: #1b1410;
+    color: #fff;
+  }
+
+  .recorrido__pista {
+    position: relative;
+    height: 100svh;
+  }
+
+  :global(html.recorrido-pendiente) .recorrido,
+  :global(html.recorrido-activo) .recorrido {
+    display: block;
+  }
+
+  :global(html.recorrido-activo) .recorrido__pista {
+    height: calc(var(--recorrido-pantallas, 1) * 100svh);
+  }
+
+  .recorrido__escena {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+  }
+
+  .recorrido__lienzo {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+
+  .recorrido__rotulos {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    pointer-events: none;
+  }
+
+  .recorrido__rotulo {
+    grid-area: 1 / 1;
+    margin: 0;
+    padding: 0 1rem;
+    opacity: 0;
+    font-family: var(--fuente-rotulo-pila);
+    font-size: clamp(2.5rem, 12vw, 4.5rem);
+    line-height: 1;
+    text-align: center;
+    color: var(--crema-clara);
+    text-shadow: 0 2px 18px rgb(0 0 0 / 0.75);
+  }
+
+  .recorrido__rotulo--nombre {
+    opacity: 1;
+    font-size: clamp(3.5rem, 18vw, 6rem);
+  }
+
+  /* «Restaurante», en pequeño y en la letra del texto, encima del nombre en gótica (como en la portada). */
+  .recorrido__tipo {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-family: var(--fuente-texto-pila);
+    font-size: 1.25rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+
+  .recorrido__pnoa {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 4.5rem;
+    margin: 0;
+    padding: 0.25rem 0.75rem;
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  .recorrido__pnoa a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    color: #fff;
+    background: rgb(0 0 0 / 0.7);
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+
+  .recorrido__pnoa--oculta {
+    visibility: hidden;
+  }
+
+  .recorrido__etiqueta-ia {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    margin: 0;
+    padding: 0.375rem 0.625rem;
+    border-radius: 0.25rem;
+    background: rgb(0 0 0 / 0.72);
+    color: #fff;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .recorrido__parada {
+    position: absolute;
+    left: var(--hueco);
+    right: var(--hueco);
+    bottom: 5rem;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+    max-width: var(--ancho);
+    margin: 0 auto;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .recorrido__parada--visible {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  .recorrido__parada .boton {
+    box-shadow: 0 2px 12px rgb(0 0 0 / 0.45);
+  }
+
+  .recorrido__parada .boton:focus-visible {
+    outline: 3px solid var(--crema-clara);
+    outline-offset: 3px;
+  }
+
+  .recorrido__creditos {
+    padding: 1rem var(--hueco);
+    background: var(--madera);
+    color: var(--crema);
+    font-size: 0.9375rem;
+  }
+
+  .recorrido__creditos p {
+    max-width: var(--ancho);
+    margin: 0 auto;
+  }
+
+  :global(html.recorrido-pendiente) .recorrido__creditos {
+    display: none;
+  }
+</style>

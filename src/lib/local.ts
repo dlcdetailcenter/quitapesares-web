@@ -7,6 +7,10 @@ import type { Idioma } from './carta/hoja.ts';
 const telefono = datos.telefono.valor;
 const { lat, lng } = datos.coordenadas.valor;
 const placeId = datos.placeId.valor;
+// El nombre en dos trozos, como en la placa de la fachada: «Restaurante» en pequeño y «Quitapesares» en gótica.
+// Juntos (con un espacio) son exactamente el nombre del archivo de datos.
+const nombreCorto = datos.nombre.valor.replace(/^(bar-)?restaurante\s+/i, '');
+const tipoDeLocal = datos.nombre.valor.slice(0, datos.nombre.valor.length - nombreCorto.length).trim();
 
 const FORMATO_PRECIO: Record<Idioma, string> = { es: 'es-ES', en: 'en-GB' };
 
@@ -17,7 +21,9 @@ function precio(cantidad: number, moneda: string, idioma: Idioma): string {
 export const local = {
   nombre: datos.nombre.valor,
   /** El nombre sin «Restaurante» delante: es lo que dice el rótulo gótico. */
-  nombreCorto: datos.nombre.valor.replace(/^(bar-)?restaurante\s+/i, ''),
+  nombreCorto,
+  /** Lo que va delante del nombre corto («Restaurante»), en pequeño; vacío si el nombre no lo lleva. */
+  tipoDeLocal,
   direccion: datos.direccion.valor,
   telefono,
   /** Enlace tel: con el número sin espacios. */

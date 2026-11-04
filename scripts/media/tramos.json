@@ -1,0 +1,210 @@
+{
+  "$comentario": "Tramos del recorrido de F2. Lo lee scripts/media/procesar.mjs. Los tiempos se eligen mirando las hojas de contacto (paso «contacto»); mientras un tramo tenga null, el script no lo procesa. Un solo ajuste de color para todos: no hay color por tramo a propósito (FIDELIDAD).",
+  "salida": {
+    "ancho": 540,
+    "alto": 960,
+    "fps": 30
+  },
+  "aire": {
+    "$comentario": "Pantallas de scroll del tramo aéreo. El recorrido entero mide la suma de las pantallas de todas las partes (aire y tramos), escenario incluido: 3 en total (ajuste de Kara del 2026-11-03).",
+    "pantallas": 1
+  },
+  "tonemap": {
+    "$comentario": "HDR (HLG o PQ) a SDR BT.709. Si el clip ya es SDR, solo se convierte a BT.709.",
+    "operador": "hable",
+    "npl": 100,
+    "desat": 0
+  },
+  "color": {
+    "$comentario": "El mismo para todos los tramos: ajuste suave, reducción de ruido y nitidez suave.",
+    "eq": "contrast=1.0:brightness=0.0:saturation=1.0:gamma=1.0",
+    "ruido": "hqdn3d=1.5:1.5:4:4",
+    "nitidez": "unsharp=5:5:0.25:5:5:0.0"
+  },
+  "estabilizacion": {
+    "shakiness": 5,
+    "accuracy": 15,
+    "smoothing": 20
+  },
+  "exportar": {
+    "canvas": {
+      "formato": "webp",
+      "calidad": 62
+    },
+    "video": {
+      "crf": 26,
+      "gop": 4
+    }
+  },
+  "fotos": {
+    "$comentario": "Fotos fijas para la MAQUETA de la demo al dueño (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md): paso «foto» de procesar.mjs. Solo de IMG_4593, IMG_4594 e IMG_4595 (nunca IMG_4592), sin caras, matrículas, pantallas ni la lista de especialidades. Se suben a Higgsfield solo con el OK de Kara.",
+    "lista": [
+      {
+        "id": "fachada",
+        "clip": "IMG_4595",
+        "segundo": 1.6,
+        "recorte": {
+          "x": 90,
+          "y": 160,
+          "ancho": 990,
+          "alto": 1760
+        },
+        "zona": "puerta",
+        "notas": "Toldo y puertas burdeos abiertas. Recorte 9:16 desde x=90 (la placa con la lista de especialidades asomaba por la izquierda con trozos legibles) y desde y=160 (arriba salía cortado el rótulo metálico de la fachada, ilegible: mejor fuera que deformado). Sin personas."
+      },
+      {
+        "id": "escalera",
+        "clip": "IMG_4595",
+        "segundo": 3,
+        "recorte": null,
+        "zona": "puerta",
+        "notas": "A través de la puerta: la barrica sobre el mostrador, la escalera y el suelo de barro. Sin personas."
+      },
+      {
+        "id": "ventana",
+        "clip": "IMG_4595",
+        "segundo": 3.9,
+        "recorte": null,
+        "zona": "puerta",
+        "notas": "Dentro: la ventana con arco de forja, la barrica y el mostrador. Antes del 4,5 s, cuando entran personas al fondo."
+      },
+      {
+        "id": "cafetera",
+        "clip": "IMG_4593",
+        "segundo": 1,
+        "recorte": {
+          "x": 420,
+          "y": 930,
+          "ancho": 540,
+          "alto": 960
+        },
+        "zona": "barra",
+        "notas": "Cafetera y barra con el mismo recorte que el tramo de la barra: las pantallas (hasta la fila 920) no entran."
+      },
+      {
+        "id": "r-fachada",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 2.4,
+        "recorte": { "x": 0, "y": 0, "ancho": 640, "alto": 1138 },
+        "notas": "Toldo, montante, puerta burdeos izquierda y ladrillo. La puerta derecha, con cartel tras el cristal, queda fuera."
+      },
+      {
+        "id": "r-umbral",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 2.4,
+        "recorte": { "x": 205, "y": 480, "ancho": 695, "alto": 1180 },
+        "notas": "El interior desde la puerta: barrica, arco, mueble, escalera y terracota. A esta distancia el espejo no muestra texto."
+      },
+      {
+        "id": "r-barrica",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 4.3,
+        "recorte": { "x": 435, "y": 0, "ancho": 645, "alto": 795 },
+        "notas": "Barrica, barandilla y la parte alta del arco de forja. El recorte acaba antes del nombre grabado en el espejo (fila 805) y a la derecha de la puerta de cristal."
+      },
+      {
+        "id": "r-escalera",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 3.3,
+        "recorte": { "x": 640, "y": 240, "ancho": 400, "alto": 1130 },
+        "notas": "Escalera de granito con sus luces, pasamanos y pared ocre."
+      },
+      {
+        "id": "r-suelo",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 4.3,
+        "recorte": { "x": 0, "y": 1450, "ancho": 590, "alto": 470 },
+        "notas": "Terracota con la cenefa y el sol en el suelo, sin el felpudo."
+      },
+      {
+        "id": "r-ladrillo",
+        "referencia": true,
+        "clip": "IMG_4594",
+        "segundo": 0,
+        "recorte": { "x": 0, "y": 1400, "ancho": 1080, "alto": 440 },
+        "notas": "Solo ladrillo y sombra diagonal: la placa con la lista de especialidades queda por encima del recorte y el mueble de madera, por debajo."
+      },
+      {
+        "id": "r-cafetera",
+        "referencia": true,
+        "clip": "IMG_4593",
+        "segundo": 2.5,
+        "recorte": { "x": 570, "y": 930, "ancho": 340, "alto": 370 },
+        "notas": "Cafetera blanca, tazas apiladas y pared de piedra oscura. Empieza en la fila 930 porque por encima asoma la esquina de la pantalla. Sin molinillo ni botellas delante."
+      },
+      {
+        "id": "r-granito",
+        "referencia": true,
+        "clip": "IMG_4593",
+        "segundo": 2.5,
+        "recorte": { "x": 0, "y": 1600, "ancho": 1080, "alto": 320 },
+        "notas": "Solo el granito de la barra, por debajo de los platos."
+      }
+    ],
+    "descartadas": [
+      {
+        "clip": "IMG_4594",
+        "motivo": "La placa con la lista de especialidades es legible en todos los fotogramas, y en 9:16 no cabe el nombre sin la lista."
+      }
+    ]
+  },
+  "tramos": [
+    {
+      "id": "puerta",
+      "clip": "IMG_4595",
+      "inicio": 1.333,
+      "fin": 4.2,
+      "recorte": null,
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": {
+        "segundos": 0.4,
+        "factor": 2,
+        "mezcla": 4
+      },
+      "notas": "Fotogramas 40–126 de IMG_4595 (revisados uno a uno el 2026-11-03): desde el 40 no se ve la placa de especialidades de la fachada (0–43) y en el 134 entran personas sentadas al fondo. Ninguna cara ni matrícula.",
+      "pantallas": 1,
+      "exportar": {
+        "fps": 20,
+        "calidad": 60
+      }
+    },
+    {
+      "id": "barra",
+      "clip": "IMG_4593",
+      "inicio": 0,
+      "fin": 3.85,
+      "recorte": {
+        "x": 420,
+        "y": 930,
+        "ancho": 540,
+        "alto": 960
+      },
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": null,
+      "notas": "IMG_4593 entero con recorte fijo de la mitad inferior (cafetera, platos y barra): las pantallas, arriba, no entran en ningún fotograma (revisado uno a uno). Sin personas.",
+      "pantallas": 1,
+      "exportar": {
+        "fps": 15,
+        "calidad": 60
+      }
+    },
+    {
+      "id": "comedor",
+      "clip": "IMG_4592",
+      "inicio": null,
+      "fin": null,
+      "recorte": null,
+      "velocidad": 1,
+      "difuminados": [],
+      "barridoFinal": null,
+      "notas": "QUITADO en F2 (2026-11-03): en IMG_4592 hay personas con la cara reconocible en todos los fotogramas (personal en primer plano y comensales); lo único limpio es el techo. Se anota para F4: grabar el comedor vacío."
+    }
+  ]
+}

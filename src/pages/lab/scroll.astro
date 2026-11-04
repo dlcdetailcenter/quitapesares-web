@@ -1,0 +1,82 @@
+---
+// Prueba técnica de F2: compara los dos métodos del recorrido en un móvil. Sin enlaces desde ninguna página y con
+// noindex (la meta de Base y la cabecera X-Robots-Tag de public/_headers). Solo en español: es una herramienta.
+import Base from '../../layouts/Base.astro';
+---
+
+<Base idioma="es" titulo="Laboratorio de scroll" rutaOtroIdioma="/en/">
+  <div class="lab">
+    <section class="contenedor lab__intro">
+      <h1>Laboratorio de scroll</h1>
+      <p>El mismo tramo con dos métodos. Desplázate hacia abajo y mira si hay saltos.</p>
+      <ul class="lab__metodos">
+        <li><a class="boton" href="?metodo=canvas" data-lab-metodo="canvas">Fotogramas en canvas</a></li>
+        <li><a class="boton boton--borde" href="?metodo=video" data-lab-metodo="video">Vídeo</a></li>
+      </ul>
+    </section>
+    <section class="lab__zona" data-lab-zona>
+      <div class="lab__escena">
+        <canvas class="lab__lienzo" data-lab-canvas aria-hidden="true"></canvas>
+        <video class="lab__lienzo" data-lab-video muted playsinline aria-hidden="true"></video>
+        <p class="lab__cifras" data-lab-cifras role="status">Cargando…</p>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<script>
+  import '../../recorrido/lab.ts';
+</script>
+
+<style>
+  .lab__metodos {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+
+  .lab__metodos [aria-current='page'] {
+    outline: 3px solid var(--ocre);
+    outline-offset: 2px;
+  }
+
+  .lab__zona {
+    height: 600svh;
+    position: relative;
+  }
+
+  .lab__escena {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    overflow: hidden;
+    background: #1b1410;
+  }
+
+  .lab__lienzo {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .lab__lienzo[hidden] {
+    display: none;
+  }
+
+  .lab__cifras {
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    margin: 0;
+    padding: 0.5rem 0.75rem;
+    background: rgb(0 0 0 / 0.75);
+    color: #fff;
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    border-radius: 0.25rem;
+  }
+</style>

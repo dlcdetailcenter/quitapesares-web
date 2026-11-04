@@ -1,5 +1,6 @@
 ---
 // Portada estática en un idioma: foto real de la entrada, nombre, botones, menú del día y horario.
+// Con el interruptor encendido (src/recorrido/interruptor.ts), encima va el recorrido de F2 y abajo la barra «Ir a la carta».
 // Todos los datos salen de src/data/restaurante.json en la compilación.
 import { Picture } from 'astro:assets';
 import entrada from '../assets/portada/entrada.jpg';
@@ -8,6 +9,10 @@ import Pizarra from './Pizarra.astro';
 import { NOMBRES_DIAS, TEXTOS, palabraDatos } from '../i18n/textos.ts';
 import type { Idioma } from '../lib/carta/hoja.ts';
 import { local } from '../lib/local.ts';
+import BarraCarta from '../recorrido/BarraCarta.astro';
+import Decision from '../recorrido/Decision.astro';
+import Recorrido from '../recorrido/Recorrido.astro';
+import { RECORRIDO_ENCENDIDO } from '../recorrido/interruptor.ts';
 
 interface Props {
   idioma: Idioma;
@@ -16,11 +21,11 @@ interface Props {
 const { idioma } = Astro.props;
 const t = TEXTOS[idioma];
 const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
-// «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada.
-const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCorto.length).trim();
 ---
 
 <Base idioma={idioma} rutaOtroIdioma={idioma === 'es' ? '/en/' : '/'} nombreEnCabecera={false}>
+  {RECORRIDO_ENCENDIDO && <Decision slot="head" />}
+  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} />}
   <div class="contenedor portada">
     <figure class="portada__foto">
       <Picture
@@ -34,8 +39,9 @@ const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCort
       />
     </figure>
 
+    <!-- «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
     <h1 class="portada__nombre">
-      {tipoDeLocal && <span class="portada__tipo">{tipoDeLocal}</span>}
+      {local.tipoDeLocal && <span class="portada__tipo">{local.tipoDeLocal}</span>}
       <span class="portada__rotulo">{local.nombreCorto}</span>
     </h1>
     <p class="portada__direccion">{local.direccion}</p>
@@ -63,6 +69,7 @@ const tipoDeLocal = local.nombre.slice(0, local.nombre.length - local.nombreCort
       </dl>
     </section>
   </div>
+  {RECORRIDO_ENCENDIDO && <BarraCarta idioma={idioma} />}
 </Base>
 
 <style>

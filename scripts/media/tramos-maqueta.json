@@ -1,0 +1,14 @@
+{
+  "$comentario": "MAQUETA de la demo al dueño (excepción ampliada de Kara del 2026-11-04, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. origen «creada»: imagen creada con IA a partir de fotogramas reales, aceptada en la revisión y usada fija con recorte progresivo (lleva \"ia\": \"local\"; sin él, el ensamblado falla). origen «foto»: la foto real con recortes progresivos, sin IA. Longitud: aire 1 + 6 piezas de 0,5 + 2 paradas de 0,5 = 5 pantallas.",
+  "aire": {
+    "pantallas": 1
+  },
+  "piezas": [
+    { "id": "llegada", "origen": "creada", "ia": "local", "imagen": "llegada-libre-2", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.6, "y": 0.45 } },
+    { "id": "umbral", "origen": "creada", "ia": "local", "imagen": "umbral-libre-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.6, "y": 0.2 } },
+    { "id": "barrica", "origen": "creada", "ia": "local", "imagen": "barrica-fiel-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.5, "y": 0.25 } },
+    { "id": "escalera", "origen": "creada", "ia": "local", "imagen": "escalera-fiel-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.5, "y": 0.4 } },
+    { "id": "barra", "origen": "creada", "ia": "local", "imagen": "barra-libre-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "barra", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.5, "y": 0.35 } },
+    { "id": "cafetera", "origen": "creada", "ia": "local", "imagen": "cafetera-libre-2", "recorte": { "x": 0, "y": 60, "ancho": 1200, "alto": 2133 }, "zona": "barra", "pantallas": 0.5, "fps": 8, "calidad": 55, "segundos": 3.5, "desplazamiento": { "x": 0.5, "y": 0.7 } }
+  ]
+}
