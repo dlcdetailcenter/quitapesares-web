@@ -18,7 +18,8 @@ import { writeFileSync } from 'node:fs';
 import { chromium, webkit } from '@playwright/test';
 
 const PUERTO = Number(process.env.PUERTO_PRUEBAS ?? 4321);
-const BASE = `http://localhost:${PUERTO}`;
+// LAB_BASE: medir contra otra dirección, por ejemplo la demo, con el mismo comando.
+const BASE = process.env.LAB_BASE ?? `http://localhost:${PUERTO}`;
 const motores = (process.argv[2] ?? 'todos') === 'todos' ? ['chromium', 'webkit'] : [process.argv[2]];
 const salida = process.argv[3];
 const EJECUCIONES = 3;
