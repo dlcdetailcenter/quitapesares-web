@@ -24,11 +24,13 @@ const t = TEXTOS[idioma];
     bottom: 0;
     z-index: 5;
     padding: 0.5rem var(--hueco) calc(0.5rem + env(safe-area-inset-bottom));
-    background: rgb(46 28 19 / 0.92);
+    background: var(--crema);
+    border-top: 1px solid var(--burdeos);
   }
 
   .barra-carta__enlace {
     display: flex;
+    outline-width: 0;
     max-width: var(--ancho);
     margin: 0 auto;
   }

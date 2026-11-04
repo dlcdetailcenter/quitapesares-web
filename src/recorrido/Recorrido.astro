@@ -38,12 +38,12 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
       <!-- Paradas: al final de la puerta y de la barra, acciones que ya existen en la portada, con datos del archivo.
            Solo se ven (y solo se pueden enfocar) en su media pantalla; fuera, visibility: hidden (cliente.ts). -->
       <nav class="recorrido__parada" data-parada="puerta" aria-label={t.paradaPuerta}>
-        <a class="boton" href={local.comoLlegarHref}>{t.comoLlegar}</a>
-        <a class="boton" href={local.telefonoHref}>{t.llamar}</a>
+        <a href={local.comoLlegarHref}>{t.comoLlegar}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
+        <a href={local.telefonoHref}>{t.llamar}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
       </nav>
       <nav class="recorrido__parada" data-parada="barra" aria-label={t.paradaBarra}>
-        <a class="boton" href={rutaCarta}>{t.verCarta}</a>
-        <a class="boton" href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span></a>
+        <a href={rutaCarta}>{t.verCarta}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
+        <a href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span><svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
       </nav>
     </div>
   </div>
@@ -155,46 +155,66 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
 
   .recorrido__etiqueta-ia {
     position: absolute;
-    top: 0.75rem;
+    top: calc(var(--alto-cabecera) + 0.5rem);
     left: 0.75rem;
     right: 0.75rem;
     margin: 0;
-    padding: 0.375rem 0.625rem;
-    border-radius: 0.25rem;
-    background: rgb(0 0 0 / 0.72);
-    color: #fff;
+    padding: 0.25rem 0.625rem;
+    background: rgb(46 28 19 / 0.8);
+    color: var(--crema-clara);
     font-size: 0.9375rem;
-    font-weight: 700;
+    font-style: italic;
     text-align: center;
   }
 
+  /* Paradas: tarjeta clara con doble filete, solapada sobre el fotograma quieto. */
   .recorrido__parada {
     position: absolute;
     left: var(--hueco);
     right: var(--hueco);
     bottom: 5rem;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.75rem;
     max-width: var(--ancho);
     margin: 0 auto;
+    padding: 0.5rem 1.25rem;
+    border: 1px solid var(--burdeos);
+    outline: 1px solid var(--burdeos);
+    outline-offset: -6px;
+    background: var(--crema-clara);
+    color: var(--madera);
     visibility: hidden;
     opacity: 0;
     transition: opacity 0.2s ease;
   }
 
+  .recorrido__parada a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3.5rem;
+    color: var(--burdeos);
+    font-family: var(--fuente-versalitas-pila);
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    line-height: 1.2;
+    text-decoration: none;
+  }
+
+  .recorrido__parada a + a {
+    border-top: 1px solid var(--ocre);
+  }
+
+  .recorrido__parada svg {
+    flex: none;
+    width: 3.5rem;
+    height: 0.75rem;
+  }
+
   .recorrido__parada--visible {
     visibility: visible;
     opacity: 1;
-  }
-
-  .recorrido__parada .boton {
-    box-shadow: 0 2px 12px rgb(0 0 0 / 0.45);
-  }
-
-  .recorrido__parada .boton:focus-visible {
-    outline: 3px solid var(--crema-clara);
-    outline-offset: 3px;
   }
 
   .recorrido__creditos {

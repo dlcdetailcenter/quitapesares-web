@@ -7,6 +7,7 @@ import type { Categoria, Idioma } from '../lib/carta/hoja.ts';
 const es = {
   saltarAlContenido: 'Saltar al contenido',
   navIdioma: 'Idioma',
+  navSecciones: 'Secciones de la carta',
   otroIdioma: 'English',
   inicio: 'Inicio',
   llamar: 'Llamar',
@@ -49,6 +50,7 @@ type Textos = Record<keyof typeof es, string>;
 const en: Textos = {
   saltarAlContenido: 'Skip to content',
   navIdioma: 'Language',
+  navSecciones: 'Menu sections',
   otroIdioma: 'Español',
   inicio: 'Home',
   llamar: 'Call',

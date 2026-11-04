@@ -38,12 +38,27 @@ const hora = actualizada
   <div class="contenedor carta">
     <h1>{t.carta}</h1>
 
+    {
+      grupos.length > 0 && (
+        <nav class="carta__pestanas" aria-label={t.navSecciones}>
+          <a href="#menu-del-dia">{t.menuDelDia}</a>
+          {grupos.map((grupo, i) => (
+            <a href={`#categoria-${i + 1}`} data-pestana={i}>
+              {CATEGORIAS_TRADUCIDAS[idioma][grupo.categoria]}
+            </a>
+          ))}
+        </nav>
+      )
+    }
+
     <Pizarra idioma={idioma} id="menu-del-dia" />
 
     {
       grupos.map((grupo, i) => (
-        <section class="carta__grupo" aria-labelledby={`categoria-${i + 1}`}>
-          <h2 id={`categoria-${i + 1}`}>{CATEGORIAS_TRADUCIDAS[idioma][grupo.categoria]}</h2>
+        <details class="carta__grupo" open={i === 0} aria-labelledby={`categoria-${i + 1}`}>
+          <summary>
+            <h2 id={`categoria-${i + 1}`}>{CATEGORIAS_TRADUCIDAS[idioma][grupo.categoria]}</h2>
+          </summary>
           <ul class="carta__platos">
             {grupo.platos.map((plato) => (
               <li class:list={['carta__plato', { 'carta__plato--agotado': !plato.disponible }]}>
@@ -52,7 +67,7 @@ const hora = actualizada
               </li>
             ))}
           </ul>
-        </section>
+        </details>
       ))
     }
 
@@ -102,34 +117,108 @@ const hora = actualizada
   </div>
 </Base>
 
+<script is:inline>
+  // Una pestaña abre su desplegable antes de que el navegador baje hasta él. Sin esto, se abre a mano.
+  document.querySelectorAll('[data-pestana]').forEach(function (a) {
+    a.addEventListener('click', function () {
+      var titulo = document.getElementById(a.getAttribute('href').slice(1));
+      var grupo = titulo && titulo.closest('details');
+      if (grupo) grupo.open = true;
+    });
+  });
+</script>
+
 <style>
   .carta {
+    padding-top: calc(var(--alto-cabecera) + 2rem);
     padding-bottom: 2rem;
   }
 
   h1 {
     font-family: var(--fuente-rotulo-pila);
-    font-weight: 400;
-    font-size: 2.75rem;
+    font-size: 3.25rem;
     color: var(--burdeos);
-    margin: 0.5rem 0 1rem;
+    text-align: center;
+  }
+
+  /* Pestañas: se desplazan de lado sin mover la página. */
+  .carta__pestanas {
+    position: sticky;
+    top: var(--alto-cabecera);
+    z-index: 5;
+    display: flex;
+    gap: 1.25rem;
+    margin: 1rem calc(var(--hueco) * -1) 2rem;
+    padding: 0 var(--hueco);
+    overflow-x: auto;
+    background: var(--crema);
+    border-bottom: 1px solid var(--burdeos);
+    scrollbar-width: none;
+  }
+
+  .carta__pestanas a {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--toque);
+    color: var(--madera);
+    font-family: var(--fuente-versalitas-pila);
+    font-size: 1rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-decoration: none;
+  }
+
+  .carta__pestanas a:hover {
+    color: var(--burdeos);
+  }
+
+  .carta__pestanas a:focus-visible {
+    outline-offset: -3px;
   }
 
   .carta__grupo {
     margin-top: 2rem;
+    border-bottom: 1px solid var(--burdeos);
+  }
+
+  .carta__grupo summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    min-height: 3.5rem;
+    list-style: none;
+    cursor: pointer;
+    color: var(--burdeos);
+  }
+
+  .carta__grupo summary::-webkit-details-marker {
+    display: none;
+  }
+
+  /* El signo dice si está abierto o cerrado. */
+  .carta__grupo summary::after {
+    content: '+';
+    content: '+' / '';
+    flex: none;
+    font-size: 1.75rem;
+    line-height: 1;
+  }
+
+  .carta__grupo[open] summary::after {
+    content: '−';
+    content: '−' / '';
   }
 
   .carta__grupo h2,
   .carta__aviso h2 {
     font-size: 1.375rem;
-    font-weight: 700;
-    padding-bottom: 0.375rem;
-    border-bottom: 3px double var(--ladrillo);
   }
 
   .carta__platos {
     list-style: none;
-    margin: 0;
+    margin: 0 0 1rem;
     padding: 0;
   }
 
@@ -140,7 +229,10 @@ const hora = actualizada
     justify-content: space-between;
     gap: 0.25rem 0.75rem;
     padding: 0.625rem 0;
-    border-bottom: 1px solid var(--ocre);
+  }
+
+  .carta__plato + .carta__plato {
+    border-top: 1px solid var(--ocre);
   }
 
   .carta__plato--agotado .carta__nombre {
@@ -150,9 +242,9 @@ const hora = actualizada
   .carta__agotado {
     flex: none;
     padding: 0 0.5rem;
-    border: 2px solid var(--burdeos);
-    border-radius: 0.25rem;
+    border: 1px solid var(--burdeos);
     color: var(--burdeos);
+    font-family: var(--fuente-texto-pila);
     font-size: 1rem;
     font-weight: 700;
   }
@@ -169,6 +261,7 @@ const hora = actualizada
     margin: 1.5rem 0 0;
     color: var(--texto-suave);
     font-size: 1rem;
+    font-style: italic;
   }
 
   .carta__llamar {

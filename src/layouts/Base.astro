@@ -1,6 +1,6 @@
 ---
-// Esqueleto común de todas las páginas: idioma, noindex, fuentes del propio sitio, cabecera con el nombre
-// y el cambio de idioma. Sin JavaScript en el navegador.
+// Esqueleto común de todas las páginas: idioma, noindex, fuentes del propio sitio y cabecera fija con el nombre,
+// el cambio de idioma y Llamar. Sin JavaScript en el navegador.
 import { Font } from 'astro:assets';
 import '../styles/global.css';
 import { TEXTOS } from '../i18n/textos.ts';
@@ -13,11 +13,9 @@ interface Props {
   titulo?: string;
   /** Ruta de la misma página en el otro idioma. */
   rutaOtroIdioma: string;
-  /** En la portada el nombre ya es el título grande: la cabecera no lo repite. */
-  nombreEnCabecera?: boolean;
 }
 
-const { idioma, titulo, rutaOtroIdioma, nombreEnCabecera = true } = Astro.props;
+const { idioma, titulo, rutaOtroIdioma } = Astro.props;
 const t = TEXTOS[idioma];
 const otroIdioma: Idioma = idioma === 'es' ? 'en' : 'es';
 const inicio = idioma === 'es' ? '/' : '/en/';
@@ -33,22 +31,19 @@ const inicio = idioma === 'es' ? '/' : '/en/';
     <meta name="theme-color" content="#8e1b2a" />
     <title>{titulo ? `${titulo} | ${local.nombre}` : local.nombre}</title>
     <Font cssVariable="--fuente-rotulo" preload />
-    <Font cssVariable="--fuente-texto" preload={[{ weight: 400 }]} />
+    <Font cssVariable="--fuente-serifa" preload={[{ weight: 400, style: 'normal' }]} />
+    <Font cssVariable="--fuente-versalitas" />
+    <Font cssVariable="--fuente-texto" />
     <slot name="head" />
   </head>
   <body>
     <a class="saltar" href="#contenido">{t.saltarAlContenido}</a>
-    <header class:list={['cabecera', { 'cabecera--sin-nombre': !nombreEnCabecera }]}>
-      {
-        nombreEnCabecera && (
-          <a class="cabecera__nombre" href={inicio} aria-label={`${local.nombre}: ${t.inicio}`}>
-            {local.nombreCorto}
-          </a>
-        )
-      }
+    <header class="cabecera">
+      <a class="cabecera__nombre" href={inicio} aria-label={`${local.nombre}: ${t.inicio}`}>{local.nombreCorto}</a>
       <nav aria-label={t.navIdioma}>
         <a class="cabecera__idioma" href={rutaOtroIdioma} hreflang={otroIdioma} lang={otroIdioma}>{t.otroIdioma}</a>
       </nav>
+      <a class="cabecera__llamar" href={local.telefonoHref}>{t.llamar}</a>
     </header>
     <main id="contenido">
       <slot />
