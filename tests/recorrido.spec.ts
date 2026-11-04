@@ -341,9 +341,10 @@ test('sin ortofoto: el aire es cielo con nubes, sin atribución del PNOA, y el r
   expect(b).toBeGreaterThan(r);
   expect(b).toBeGreaterThan(100);
   expect(g).toBeGreaterThan(0);
-  const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
-  await page.evaluate(([y]) => scrollTo(0, y), [alto * 0.3]);
-  await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'puerta');
+  // La primera parte después del aire: «puerta» en el sintético y en el real, «fachada» en la maqueta.
+  const primerTramo = (await partesDelRecorrido(page))[1];
+  await irAParte(page, primerTramo.nombre, 0.5);
+  await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', primerTramo.nombre);
   expect(niveles).toEqual([]);
 });
 
@@ -375,8 +376,12 @@ test('memoria: solo una ventana de fotogramas decodificados, no todos', async ({
   }
   const { maximo } = await page.evaluate(() => ({ maximo: (window as unknown as { __maximo: number }).__maximo }));
   expect(maximo).toBeGreaterThan(3); // el contador funciona: se han decodificado fotogramas
-  // 48 fotogramas en el material sintético: la ventana es de 6 a cada lado (13) más los 3 niveles del aire.
-  expect(maximo).toBeLessThanOrEqual(13 + 3 + 2);
+  // La ventana es de 6 a cada lado (13) más lo que el aire tiene siempre decodificado: sus niveles y sus nubes, que
+  // cambian con el material (el del recorrido.json servido). Los 2 de margen son los que están llegando.
+  const { aire } = (await (await page.request.get('/recorrido/recorrido.json')).json()) as {
+    aire: { niveles: unknown[]; nubes?: unknown[] };
+  };
+  expect(maximo).toBeLessThanOrEqual(13 + aire.niveles.length + (aire.nubes?.length ?? 0) + 2);
 });
 
 test('rutas nuevas con noindex: /recorrido/estado y /lab/scroll', async ({ request }) => {
