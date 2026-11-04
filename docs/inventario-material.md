@@ -94,3 +94,86 @@ Prompts, en inglés:
 - **ventana 1**: «Very slow, subtle camera push-in toward the wrought-iron arched mirror and the barrel, almost static. Keep everything in the photo exactly as it is: the same barrel, staircase, wooden counter, glass door, terracotta floor, colours and light. The engraved word on the wall and on the mirror and the small sign on the glass door must stay exactly identical and unchanged. No people, no animals, no new objects, no new text. Only the camera moves gently forward.»
 - **cafetera 1**: «Very slow, smooth lateral camera move along the bar counter with a slight parallax, almost static. Keep everything in the photo exactly as it is: the same espresso machine, coffee grinders, cups, saucers, granite counter, colours and light. No people, no hands, no animals, no new objects, no text, no steam, no screens. Only the camera moves gently.»
 - **Segundos y terceros intentos**: el prompt de su foto con menos movimiento y más control del texto. escalera 2: «Minimal, very slow camera push-in of only a few percent (…) The small white sign on the left glass door must stay exactly as it is». escalera 3, ventana 2 y cafetera 3: «Almost a still photograph: an extremely slow, barely perceptible camera push-in. Preserve every detail of the photo pixel for pixel (…) Do not redraw, sharpen or change any text.» cafetera 2: «Very slow, steady camera push-in straight toward the espresso machine, no sideways movement (…) Keep all small logos and labels blurred».
+
+## F2: maqueta 2, imágenes creadas con IA
+
+Estado al 2026-11-04. Sustituye a las 4 piezas de la maqueta anterior, que quedan arriba como historial. Excepción
+ampliada, solo para la demo privada (`CLAUDE.md`). **Producción sigue solo con material real y la maqueta se retira
+después de la demo al dueño.** `recorrido-maqueta/` no entra en git (176 archivos, 5,89 MB de 8); sumas en
+`scripts/media/manifiesto-maqueta.json`, proceso en `scripts/media/tramos-maqueta.json`. Aire y nubes, los del material
+real. Longitud: aire 1 + 6 piezas de 0,5 + 2 paradas de 0,5 = 5 pantallas.
+
+OK del dueño, tal como lo comunicó Kara el 2026-11-04: «crear lo necesario con el local para un resultado óptimo».
+Canal y forma: por anotar.
+
+Entradas: 8 recortes de fotogramas reales, sin texto legible, caras, matrículas ni pantallas, en SDR y sin metadatos
+(`procesar.mjs foto r-…`, lista en `tramos.json` → `fotos`). Solo estos 8 se subieron a Higgsfield, con el OK de Kara del
+2026-11-04 y las sumas comprobadas antes de subir.
+
+| Referencia | Clip y segundo | Recorte (x, y, ancho×alto) | SHA-256 |
+|---|---|---|---|
+| `r-fachada` | IMG_4595, 2,4 | 0, 0, 640×1138 | `4223ffde…` |
+| `r-ladrillo` | IMG_4594, 0,0 | 0, 1400, 1080×440 | `b8409c1a…` |
+| `r-umbral` | IMG_4595, 2,4 | 205, 480, 695×1180 | `9af2fc0e…` |
+| `r-suelo` | IMG_4595, 4,3 | 0, 1450, 590×470 | `a65a0bd4…` |
+| `r-barrica` | IMG_4595, 4,3 | 435, 0, 645×795 | `f82b3547…` |
+| `r-escalera` | IMG_4595, 3,3 | 640, 240, 400×1130 | `6429ff66…` |
+| `r-granito` | IMG_4593, 2,5 | 0, 1600, 1080×320 | `1a8d8a93…` |
+| `r-cafetera` | IMG_4593, 2,5 | 570, 930, 340×370 | `cb1010d0…` |
+
+Todas las piezas son **IA** (`"ia": "local"`, `"origen": "creada"`) y se declaran con la etiqueta visible «Imagen creada
+con IA a partir de fotogramas reales del local» / «AI image created from real frames of the venue», en los créditos del
+recorrido (es/en) y en esta tabla. Se usan fijas: 28 fotogramas a 8 fps con recorte progresivo, WebP 55, sin imagen a
+vídeo. Modelo: `nano_banana_2_1`, 2k, 9:16, `thinking_level` alto; semilla 4112026 en los primeros intentos y 4112027 en
+los segundos. Aceptadas por Claude. **Falta el visto bueno de Kara, imagen a imagen.**
+
+| Pieza | Parada | Referencias | Variante aceptada | Trabajo | Uso |
+|---|---|---|---|---|---|
+| `llegada` | Puerta | r-fachada, r-umbral, r-ladrillo | Libre, intento 2 | `14f86da4-90bb-48f6-ac42-80a6bd4e4240` | Recorte 1536×2731 |
+| `umbral` | Puerta | r-umbral, r-suelo | Libre, intento 1 | `b94098cd-8fb0-434b-8b8a-97111674c327` | Recorte 1536×2731 |
+| `barrica` | Puerta | r-barrica, r-umbral | Fiel, intento 1 | `3e9ad380-dc52-4aab-949f-ee93b1b4cf13` | Recorte 1536×2731 |
+| `escalera` | Puerta, se queda en la parada | r-escalera, r-barrica | Fiel, intento 1 | `9e9c56d3-b85c-4eeb-bcdb-2739181b186f` | Recorte 1536×2731 |
+| `barra` | Barra | r-granito, r-cafetera | Libre, intento 1 | `674600b8-fe26-44b6-9cc3-d6bbb4d6313d` | Recorte 1536×2731 |
+| `cafetera` | Barra, se queda en la parada | r-cafetera, r-granito | Libre, intento 2 | `d2569651-b4ae-4486-9522-f6df7ba0b691` | Recorte 1200×2133 desde y = 60: quita el microtexto junto al mando |
+
+16 intentos, 2 créditos cada uno (32 en total), de los 36 posibles. Los envíos rechazados por el servicio (429 y 503) no
+se cobraron y no cuentan como intentos.
+
+| Intento | Trabajo | Resultado | Motivo |
+|---|---|---|---|
+| llegada fiel 1 | `c63e8a39-8c3a-4ea0-931d-825985ac7198` | Rechazado | Balcón inventado, puertas de madera con paneles e interior que no es el del local |
+| llegada libre 1 | `3fca0236-7df3-4a84-957c-ec30eb1274b1` | Rechazado | Inventa una calle, edificios y un tejado: zona no filmada |
+| llegada fiel 2 | `cf9c8856-058f-470b-b49d-6eda0c54ca48` | Válido, no elegido | Muy fiel, pero la escalera del fondo pierde el granito; la libre 2 aporta el punto de vista nuevo |
+| llegada libre 2 | `14f86da4-90bb-48f6-ac42-80a6bd4e4240` | **Aceptado** | Sin texto a tamaño completo; puerta, toldo, escalera y barrica coherentes |
+| umbral fiel 1 | `92492646-d026-40d5-a309-a0eca1114f7b` | Rechazado | Marco de madera con bisagras doradas en lugar del burdeos y mesa plegada sin su color |
+| umbral libre 1 | `b94098cd-8fb0-434b-8b8a-97111674c327` | **Aceptado** | Limpio; suelo, cenefa, mueble, arco y escalera coherentes |
+| barrica fiel 1 | `3e9ad380-dc52-4aab-949f-ee93b1b4cf13` | **Aceptado** | Espejo sin texto. El mueble de debajo desaparece (recomposición permitida). Marcas leves en las duelas, ilegibles |
+| barrica libre 1 | `c4c5cfef-78bc-4ea8-a4bf-5ee1486bbf62` | Rechazado | El espejo pasa a ser un paso abierto y aparece una repisa: cambia la distribución |
+| escalera fiel 1 | `9e9c56d3-b85c-4eeb-bcdb-2739181b186f` | **Aceptado** | Luces sin glifos; granito, pasamanos y zócalo coherentes |
+| escalera libre 1 | `2dfa30fd-cab7-4974-b21b-260c7d8c29b2` | Rechazado | Glifos parecidos a letras en las luces de los peldaños |
+| barra fiel 1 | `6dab5d63-7034-4120-a31e-47fb779830cd` | Rechazado | Inventa un suelo de cemento bajo la barra |
+| barra libre 1 | `674600b8-fe26-44b6-9cc3-d6bbb4d6313d` | **Aceptado** | Cafetera desenfocada, marcas ilegibles. Granito algo más saturado que el real |
+| cafetera fiel 1 | `5068484b-3c93-4c9a-a260-d25a4a676801` | Rechazado | Sobre granito, no sobre acero; platillos y un indicador inventado |
+| cafetera libre 1 | `058c5579-391f-43be-b474-e0a090b97344` | Rechazado | Pared parda en lugar de gris oscuro, caja de colores y platillos |
+| cafetera fiel 2 | `a47c7a3c-7640-4ac2-a57d-f5b59cc5cbb1` | Rechazado | Pizarra con cifras arriba y cajas en una estantería |
+| cafetera libre 2 | `d2569651-b4ae-4486-9522-f6df7ba0b691` | **Aceptado con recorte** | El microtexto junto al mando queda fuera del recorte |
+
+Prompts, en inglés. Inicio común: «Images 1 and 2 define the place, materials, colours and light; do not copy their
+framing.» Final común: «Realistic photograph, vertical 9:16. Exclude text, letters, numbers, logos, signs, people, hands,
+plates, food, drinks, labelled bottles, screens.»
+- **llegada fiel 1**: «Open burgundy double doors under the striped awning, seen from the terracotta pavement, three-quarter angle from the left, eye level, 35 mm. Clear sun with soft diagonal shadows on the brick.»
+- **llegada libre 1**: «Low camera close along the brick wall toward the open burgundy door and awning, 24 mm, deep perspective. Warm low sun raking the brick, the feeling of arriving at golden hour; fine grain.»
+- **llegada fiel 2** (tres referencias, «Images 1, 2 and 3…», y además excluye «balconies, upper floors, streets, other buildings»): «The entrance from the terracotta pavement, straight on, eye level, 35 mm, framed tightly on the doorway: striped awning at the top, burgundy metal-framed glass doors wide open, brick at the sides, the staircase and barrel visible inside. Clear sun with soft diagonal shadows on the brick.»
+- **llegada libre 2** (ídem): «Low camera on the terracotta pavement just outside the doorway, 24 mm, looking through the open burgundy metal-framed doors toward the staircase and barrel inside, awning edge at the top of the frame. Warm low sun raking the brick and doors, the feeling of arriving; fine grain.»
+- **umbral fiel 1**: «From just inside the doorway at standing height, 28 mm: staircase, barrel and wrought-iron arch, terracotta floor with its tile border in the foreground. Calm daylight from the door.»
+- **umbral libre 1**: «Camera a few centimetres above the terracotta, 24 mm, the tile border leading to the foot of the staircase, soft focus far away. A patch of sun crossing the tiles, a quiet morning before opening.»
+- **barrica fiel 1**: «The wooden barrel on the ochre block with the wrought-iron arch below it, seen from the floor looking slightly up, 50 mm, centred. The mirror shows only a plain warm ochre blur. Soft even light.»
+- **barrica libre 1**: «Across soft-focus wooden balusters in the foreground, the barrel sharp behind them, 85 mm, high angle from the stairs. Warm side light glinting on the iron hoops, intimate and still.»
+- **escalera fiel 1**: «Foot of the granite staircase looking up, centred, 28 mm, wooden handrail on the left, small square step lights, ochre wall at the top. Soft daylight.»
+- **escalera libre 1**: «Low camera beside the carved newel post in the foreground, 35 mm, looking up along the handrail and granite steps. Warm light falling down the ochre wall, an invitation to go up; fine grain.»
+- **barra fiel 1**: «Long speckled granite bar counter receding, camera at counter height, 35 mm, white espresso machine softly out of focus far away, dark grey stone wall behind. Bright even interior light.»
+- **barra libre 1**: «Camera almost resting on the granite, 50 mm at f/1.4, speckled stone sharp in the foreground, the white machine and stone wall dissolving into soft bokeh. Gleam along the polished stone.»
+- **cafetera fiel 1**: «Three-quarter view of the white espresso machine with stacked white cups on top, steel group heads, dark grey stone wall, counter level, 50 mm. Plain unbranded surfaces. Bright even light.»
+- **cafetera libre 1**: «Close on the stacked white cups on top of the machine, 85 mm, shallow depth of field, stone wall blurred. Warm highlights on the porcelain and steel, the calm of the first coffee of the day.»
+- **cafetera fiel 2** (excluye además «gauges, saucers»): «Three-quarter view of the white espresso machine standing on a stainless steel counter, white cups stacked on top, steel group heads, dark grey stone wall behind, counter level, 50 mm. Plain unbranded surfaces. Bright even light.»
+- **cafetera libre 2** (excluye además «gauges, saucers, boxes»): «Close on the white cups stacked on top of the white machine, 85 mm, shallow depth of field, the dark grey stone wall behind softly blurred and clearly grey. Warm highlights on the porcelain and steel, the calm of the first coffee of the day.»
