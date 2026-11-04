@@ -80,6 +80,70 @@
         },
         "zona": "barra",
         "notas": "Cafetera y barra con el mismo recorte que el tramo de la barra: las pantallas (hasta la fila 920) no entran."
+      },
+      {
+        "id": "r-fachada",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 2.4,
+        "recorte": { "x": 0, "y": 0, "ancho": 640, "alto": 1138 },
+        "notas": "Toldo, montante, puerta burdeos izquierda y ladrillo. La puerta derecha, con cartel tras el cristal, queda fuera."
+      },
+      {
+        "id": "r-umbral",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 2.4,
+        "recorte": { "x": 205, "y": 480, "ancho": 695, "alto": 1180 },
+        "notas": "El interior desde la puerta: barrica, arco, mueble, escalera y terracota. A esta distancia el espejo no muestra texto."
+      },
+      {
+        "id": "r-barrica",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 4.3,
+        "recorte": { "x": 435, "y": 0, "ancho": 645, "alto": 795 },
+        "notas": "Barrica, barandilla y la parte alta del arco de forja. El recorte acaba antes del nombre grabado en el espejo (fila 805) y a la derecha de la puerta de cristal."
+      },
+      {
+        "id": "r-escalera",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 3.3,
+        "recorte": { "x": 640, "y": 240, "ancho": 400, "alto": 1130 },
+        "notas": "Escalera de granito con sus luces, pasamanos y pared ocre."
+      },
+      {
+        "id": "r-suelo",
+        "referencia": true,
+        "clip": "IMG_4595",
+        "segundo": 4.3,
+        "recorte": { "x": 0, "y": 1450, "ancho": 590, "alto": 470 },
+        "notas": "Terracota con la cenefa y el sol en el suelo, sin el felpudo."
+      },
+      {
+        "id": "r-ladrillo",
+        "referencia": true,
+        "clip": "IMG_4594",
+        "segundo": 0,
+        "recorte": { "x": 0, "y": 1400, "ancho": 1080, "alto": 440 },
+        "notas": "Solo ladrillo y sombra diagonal: la placa con la lista de especialidades queda por encima del recorte y el mueble de madera, por debajo."
+      },
+      {
+        "id": "r-cafetera",
+        "referencia": true,
+        "clip": "IMG_4593",
+        "segundo": 2.5,
+        "recorte": { "x": 570, "y": 870, "ancho": 340, "alto": 430 },
+        "notas": "Cafetera blanca, tazas apiladas, soporte de la planta y pared de piedra oscura. Sin molinillo, sin botellas y sin pantallas."
+      },
+      {
+        "id": "r-granito",
+        "referencia": true,
+        "clip": "IMG_4593",
+        "segundo": 2.5,
+        "recorte": { "x": 0, "y": 1600, "ancho": 1080, "alto": 320 },
+        "notas": "Solo el granito de la barra, por debajo de los platos."
       }
     ],
     "descartadas": [

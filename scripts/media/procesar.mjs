@@ -259,9 +259,10 @@ function foto(id) {
     nitidez,
     'format=rgb24',
   ].join(',');
-  const salida = carpeta(F2, 'maqueta', 'fotos', `${id}.png`);
+  // Las referencias de la maqueta 2 son recortes de cualquier proporción: se guardan aparte y sin versión 540×960.
+  const salida = carpeta(F2, 'maqueta', f.referencia ? 'referencias' : 'fotos', `${id}.png`);
   ffmpeg(['-ss', String(f.segundo), '-i', entrada, '-map', '0:v:0', '-frames:v', '1', '-vf', filtro, ...SIN_EXTRAS, salida]);
-  ffmpeg(['-i', salida, '-vf', `scale=${ancho}:${alto}:flags=lanczos`, '-c:v', 'libwebp', '-quality', '90', ...SIN_EXTRAS, carpeta(F2, 'maqueta', 'fotos', `${id}-540.webp`)]);
+  if (!f.referencia) ffmpeg(['-i', salida, '-vf', `scale=${ancho}:${alto}:flags=lanczos`, '-c:v', 'libwebp', '-quality', '90', ...SIN_EXTRAS, carpeta(F2, 'maqueta', 'fotos', `${id}-540.webp`)]);
   console.log(`✓ foto «${id}»: ${f.clip}, segundo ${f.segundo}${r ? `, recorte ${r.ancho}×${r.alto} desde x=${r.x}, y=${r.y}` : ''} → ${salida}`);
 }
 
