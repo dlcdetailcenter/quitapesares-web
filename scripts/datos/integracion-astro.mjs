@@ -40,11 +40,11 @@ export default function datosRestaurante() {
   };
 }
 
-/** ¿Hay en el recorrido alguna pieza marcada como IA sobre el local («"ia": "local"»), a cualquier profundidad? */
+/** ¿Hay en el recorrido alguna pieza de IA sobre el local («"ia": "local"» o «"origen": "creada"»), a cualquier profundidad? */
 export function tieneIaDelLocal(valor) {
   if (Array.isArray(valor)) return valor.some(tieneIaDelLocal);
   if (valor === null || typeof valor !== 'object') return false;
-  return Object.entries(valor).some(([clave, v]) => (clave === 'ia' && v === 'local') || tieneIaDelLocal(v));
+  return Object.entries(valor).some(([clave, v]) => (clave === 'ia' && v === 'local') || (clave === 'origen' && v === 'creada') || tieneIaDelLocal(v));
 }
 
 /**
@@ -59,7 +59,7 @@ export function barreraMaqueta(modo, { variante, recorrido }) {
   if (modo === MODO_DEMO) return [];
   const motivos = [];
   if (variante === 'maqueta') motivos.push('RECORRIDO_VARIANTE=maqueta (la maqueta solo va a la demo privada)');
-  if (tieneIaDelLocal(recorrido)) motivos.push('public/recorrido/recorrido.json tiene piezas con "ia": "local" (maqueta)');
+  if (tieneIaDelLocal(recorrido)) motivos.push('public/recorrido/recorrido.json tiene piezas con IA del local o creadas con IA (maqueta)');
   return motivos;
 }
 

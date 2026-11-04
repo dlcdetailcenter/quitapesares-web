@@ -3,8 +3,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { barreraMaqueta, tieneIaDelLocal } from './integracion-astro.mjs';
 import { validarDatos } from './validar.mjs';
@@ -87,4 +88,56 @@ test('preparar: una variante que no existe para la compilación', () => {
   });
   assert.equal(r.status, 1);
   assert.match(r.stderr, /no existe/);
+});
+
+// Maqueta 2 (excepción ampliada de Kara del 2026-11-04, CLAUDE.md): imágenes nuevas creadas con IA.
+const conCreada = { ...real, tramos: [{ id: 'puerta' }, { id: 'umbral', ia: 'local', origen: 'creada' }] };
+
+test('una pieza creada con IA bloquea producción, aunque le falte «"ia": "local"» y la variante sea la real', () => {
+  assert.equal(barreraMaqueta('production', { variante: undefined, recorrido: conCreada }).length, 1);
+  const sinDeclarar = { ...real, tramos: [{ id: 'puerta' }, { id: 'umbral', origen: 'creada' }] };
+  assert.equal(tieneIaDelLocal(sinDeclarar), true);
+  assert.equal(barreraMaqueta('production', { variante: undefined, recorrido: sinDeclarar }).length, 1);
+  assert.deepEqual(barreraMaqueta('demo', { variante: 'maqueta', recorrido: conCreada }), []);
+});
+
+test('astro build en modo producción falla con una pieza creada en el recorrido preparado, sin la variable de la maqueta', () => {
+  const cache = join(raiz, 'node_modules', '.cache');
+  mkdirSync(cache, { recursive: true });
+  const salida = mkdtempSync(join(cache, 'barrera-creada-'));
+  const ruta = join(raiz, 'public', 'recorrido', 'recorrido.json');
+  const antes = existsSync(ruta) ? readFileSync(ruta) : null;
+  mkdirSync(dirname(ruta), { recursive: true });
+  writeFileSync(ruta, JSON.stringify(conCreada));
+  try {
+    const env = { ...process.env };
+    delete env.RECORRIDO_VARIANTE;
+    const r = spawnSync(process.execPath, [astro, 'build', '--mode', 'production', '--outDir', salida], { cwd: raiz, encoding: 'utf8', env });
+    const texto = `${r.stdout}\n${r.stderr}`;
+    assert.notEqual(r.status, 0, 'debía fallar y ha compilado');
+    assert.match(texto, /bloqueada por la maqueta/);
+    assert.match(texto, /creadas con IA/);
+  } finally {
+    if (antes) writeFileSync(ruta, antes);
+    else rmSync(ruta, { force: true });
+    rmSync(salida, { recursive: true, force: true });
+  }
+});
+
+test('una pieza creada sin «"ia": "local"» hace fallar el ensamblado, sin tocar recorrido-maqueta/', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'maqueta-'));
+  const config = join(dir, 'tramos.json');
+  const pieza = { id: 'umbral', origen: 'creada', imagen: 'x', recorte: { x: 0, y: 0, ancho: 9, alto: 16 }, zona: 'puerta', pantallas: 0.5, fps: 8 };
+  writeFileSync(config, JSON.stringify({ aire: { pantallas: 1 }, piezas: [pieza] }));
+  const script = join(raiz, 'scripts', 'media', 'maqueta.mjs');
+  const destino = join(raiz, 'recorrido-maqueta', 'recorrido.json');
+  const antes = existsSync(destino) ? readFileSync(destino) : null;
+  try {
+    const r = spawnSync(process.execPath, [script, 'ensamblar'], { cwd: raiz, encoding: 'utf8', env: { ...process.env, MAQUETA_CONFIG: config } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /pieza creada con IA sin "ia": "local": umbral/);
+    assert.deepEqual(existsSync(destino) ? readFileSync(destino) : null, antes);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

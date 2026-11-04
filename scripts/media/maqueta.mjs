@@ -5,11 +5,14 @@
 //   - «higgsfield»: un vídeo de imagen a vídeo ACEPTADO (solo movimiento de cámara), descargado en
 //     $MATERIAL/f2/maqueta/aceptadas/<id>.mp4; lleva "ia": "local" en recorrido.json y su etiqueta visible;
 //   - «foto»: la foto real sin IA, con acercamiento y desplazamiento lentos hechos con recortes de la propia foto
-//     (ningún píxel inventado), si ninguna versión de IA pasó la revisión.
+//     (ningún píxel inventado), si ninguna versión de IA pasó la revisión;
+//   - «creada» (excepción ampliada de Kara del 2026-11-04, CLAUDE.md): imagen NUEVA creada con IA a partir de fotogramas
+//     reales, aceptada en la revisión y guardada en $MATERIAL/f2/maqueta/creadas/intentos/<imagen>.png. Lleva
+//     "ia": "local" obligatoriamente: sin él, el ensamblado falla. Se usa fija, con el mismo recorte progresivo.
 //
 // Uso:
 //   node scripts/media/maqueta.mjs pieza <id>     vídeo aceptado → fotogramas WebP 540×960 (sin audio ni metadatos)
-//   node scripts/media/maqueta.mjs sinia <id>     foto real → fotogramas con recorte progresivo (sin IA)
+//   node scripts/media/maqueta.mjs sinia <id>     foto real o imagen creada → fotogramas con recorte progresivo
 //   node scripts/media/maqueta.mjs ensamblar      recorrido-maqueta/ (aire y nubes del real) y su manifiesto
 // Después: npm run media:check:maqueta. Despliegue: npm run demo:desplegar -- --maqueta.
 import { spawnSync } from 'node:child_process';
@@ -24,7 +27,7 @@ const MATERIAL = resolve(process.env.MATERIAL ?? join(homedir(), 'proyectos', 'q
 const DIR = join(MATERIAL, 'f2', 'maqueta');
 const REAL = join(RAIZ, 'recorrido-real');
 const DESTINO = join(RAIZ, 'recorrido-maqueta');
-const config = JSON.parse(readFileSync(join(RAIZ, 'scripts', 'media', 'tramos-maqueta.json'), 'utf8'));
+const config = JSON.parse(readFileSync(process.env.MAQUETA_CONFIG ? resolve(process.env.MAQUETA_CONFIG) : join(RAIZ, 'scripts', 'media', 'tramos-maqueta.json'), 'utf8'));
 const tramos = JSON.parse(readFileSync(join(RAIZ, 'scripts', 'media', 'tramos.json'), 'utf8'));
 const { ancho, alto } = tramos.salida;
 const SIN_EXTRAS = ['-an', '-sn', '-dn', '-map_metadata', '-1', '-map_chapters', '-1', '-fflags', '+bitexact'];
@@ -67,21 +70,32 @@ function exportarPieza(id) {
 /**
  * Sin IA: la foto real con un acercamiento y un desplazamiento lentos, hechos recortando una ventana que se mueve y
  * encoge sobre la propia foto (del 100 % al 88 % del encuadre). Solo se reescalan píxeles de la foto: nada se inventa.
+ * Una pieza «creada» sigue el mismo camino desde su imagen aceptada, con su recorte 9:16 (la IA ya está en la imagen).
  */
 function sinIa(id) {
   const p = pieza(id);
-  const entrada = join(DIR, 'fotos', `${p.foto}.png`);
-  if (!existsSync(entrada)) fallar(`falta la foto ${entrada} (npm run media:procesar -- foto ${p.foto})`);
+  const creada = p.origen === 'creada';
+  const entrada = creada ? join(DIR, 'creadas', 'intentos', `${p.imagen}.png`) : join(DIR, 'fotos', `${p.foto}.png`);
+  if (!existsSync(entrada)) fallar(creada ? `falta la imagen aceptada ${entrada}` : `falta la foto ${entrada} (npm run media:procesar -- foto ${p.foto})`);
+  const recorte = creada ? [`crop=${p.recorte.ancho}:${p.recorte.alto}:${p.recorte.x}:${p.recorte.y}`] : [];
   const n = Math.round((p.segundos ?? 5) * p.fps);
   const zoom = `(1-0.12*on/${n - 1})`;
   const filtro = [
+    ...recorte,
     `scale=${ancho * 2}:${alto * 2}:flags=lanczos`,
     `zoompan=z='1/${zoom}':x='(iw-iw*${zoom})*${p.desplazamiento?.x ?? 0.5}':y='(ih-ih*${zoom})*${p.desplazamiento?.y ?? 0.5}':d=${n}:s=${ancho}x${alto}:fps=${p.fps}`,
   ].join(',');
   ffmpeg(['-i', entrada, '-vf', filtro, '-frames:v', String(n), '-c:v', 'libwebp', '-quality', String(p.calidad ?? 60), '-compression_level', '6', '-preset', 'photo', ...SIN_EXTRAS, join(salida(id), '%04d.webp')]);
 }
 
+/** Una pieza creada con IA sin «"ia": "local"» no se ensambla: es lo que bloquea producción y enciende la etiqueta. */
+function validarPiezas() {
+  const sinDeclarar = config.piezas.filter((p) => p.origen === 'creada' && p.ia !== 'local').map((p) => p.id);
+  if (sinDeclarar.length > 0) fallar(`pieza creada con IA sin "ia": "local": ${sinDeclarar.join(', ')}`);
+}
+
 function ensamblar() {
+  validarPiezas();
   if (!existsSync(join(REAL, 'recorrido.json'))) fallar('falta recorrido-real/ (npm run media:ensamblar): la maqueta toma de ahí el aire y las nubes');
   const real = JSON.parse(readFileSync(join(REAL, 'recorrido.json'), 'utf8'));
   rmSync(DESTINO, { recursive: true, force: true });
@@ -100,7 +114,8 @@ function ensamblar() {
       patron: `${p.id}/%04d.webp`,
       pantallas: p.pantallas,
       zona: p.zona,
-      ...(p.origen === 'higgsfield' ? { ia: 'local' } : {}),
+      ...(p.origen === 'higgsfield' || p.origen === 'creada' ? { ia: 'local' } : {}),
+      ...(p.origen === 'creada' ? { origen: 'creada' } : {}),
     });
   }
   const recorrido = {
