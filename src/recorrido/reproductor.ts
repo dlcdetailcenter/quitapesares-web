@@ -60,6 +60,8 @@ export class SecuenciaCanvas implements Reproductor {
   private objetivo = 0;
   private pintado = -1;
   private liberado = false;
+  /** Sube al soltar el tramo: lo que aún se esté decodificando de antes se cierra al llegar. */
+  private generacion = 0;
   /** Solo pinta el tramo que se está viendo: varios tramos comparten el mismo lienzo. */
   activo = true;
   private readonly ctx: CanvasRenderingContext2D;
@@ -144,6 +146,7 @@ export class SecuenciaCanvas implements Reproductor {
 
   /** Libera los fotogramas decodificados (el tramo deja de verse) y conserva los comprimidos. */
   soltarDecodificados(): void {
+    this.generacion++;
     for (const b of this.decodificados.values()) b.close();
     this.decodificados.clear();
     this.pintado = -1;
@@ -171,9 +174,10 @@ export class SecuenciaCanvas implements Reproductor {
     const blob = this.blobs[i];
     if (!blob || this.decodificados.has(i) || this.pendientes.has(i) || this.liberado) return;
     this.pendientes.add(i);
+    const generacion = this.generacion;
     try {
       const bitmap = await createImageBitmap(blob);
-      if (this.liberado || Math.abs(i - this.objetivo) > this.ventana) {
+      if (this.liberado || generacion !== this.generacion || Math.abs(i - this.objetivo) > this.ventana) {
         bitmap.close();
         return;
       }
