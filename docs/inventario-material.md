@@ -53,3 +53,44 @@ Prompts de las nubes (sin imágenes de entrada, nada real subido a Higgsfield):
 
 Una pieza de IA solo se usa si no muestra edificios, personas, comida, logos ni texto, no tiene artefactos a
 tamaño de móvil, casa con el color de los tramos reales, cabe en 0,6 MB y tiene el visto bueno de Kara.
+
+## F2: maqueta de la demo al dueño
+
+Estado al 2026-11-04. Excepción a Fidelidad, solo para la demo privada (`CLAUDE.md`). **Producción nunca lleva
+maqueta y se retira después de la demo al dueño.** `recorrido-maqueta/` no entra en git (178 archivos, 6,37 MB de 8);
+sumas en `scripts/media/manifiesto-maqueta.json`, proceso en `scripts/media/tramos-maqueta.json`. El aire y las nubes
+son los del material real, con las mismas sumas. Longitud: aire 1 + 4 piezas de 0,75 + 2 paradas de 0,5 = 5 pantallas.
+
+Fotos de entrada: fotogramas fijos sin caras, matrículas, pantallas ni la lista de especialidades, en SDR y sin
+metadatos ni GPS (`procesar.mjs foto <id>`, lista en `tramos.json` → `fotos`). Solo estas 4 se subieron a Higgsfield,
+con el OK de Kara del 2026-11-03 y las sumas comprobadas antes de subir. IMG_4594 descartada (placa de especialidades).
+
+| Pieza | Foto de entrada | SHA-256 de la foto | Resultado | Real o IA | Dónde se declara la IA | Estado |
+|---|---|---|---|---|---|---|
+| `fachada` | IMG_4595, segundo 1,6 | `8f5206ed…` | Kling 4.0, intento 1 de 1: 50 fotogramas a 10 fps | **IA** (`"ia": "local"`) | Etiqueta visible mientras se ve y en su parada: «Simulación con IA a partir de una foto real del local» / «AI simulation based on a real photo of the venue»; créditos del recorrido (es/en); esta tabla | Aceptada por Claude. Falta el visto bueno de Kara |
+| `escalera` | IMG_4595, segundo 3,0 | `5fb722cb…` | 3 intentos rechazados: 40 fotogramas a 8 fps, recortes de la propia foto (acercamiento lento) | **Real**, sin IA | — | En uso sin IA. Falta el visto bueno de Kara |
+| `ventana` | IMG_4595, segundo 3,9 | `f1eb019e…` | 2 intentos rechazados: ídem | **Real**, sin IA | — | En uso sin IA. Falta el visto bueno de Kara |
+| `cafetera` | IMG_4593, segundo 1,0 | `d940cc3d…` | 3 intentos rechazados: ídem | **Real**, sin IA | — | En uso sin IA. Falta el visto bueno de Kara |
+
+Se pararon en 9 intentos de los 24 posibles (hasta 6 por foto): los modelos redibujan el texto pequeño en cualquier
+ajuste y cada intento gasta créditos. Todos con 5 s, 9:16, sin audio y sin preset de estilo. Higgsfield no expone la
+semilla.
+
+| Intento | Modelo y modo | Resolución | Trabajo | Resultado | Motivo |
+|---|---|---|---|---|---|
+| fachada 1 | `kling4_0`, imagen a vídeo | 720p | `0ec3a36d-a930-41dc-ac96-a026666cb461` | **Aceptado** | El primer fotograma es la foto (diferencia media 4,56 de 255: compresión y reescalado). El último coincide con la foto real de la escalera. Sin personas ni texto; EMPUJAR no aparece, porque la puerta se ve de canto. Solo cambia un poco la textura del granito |
+| escalera 1 | ídem | 720p | `59c757db-0e94-4a11-be2f-8e7e338c574c` | Rechazado | EMPUJAR acaba en garabato |
+| escalera 2 | ídem | 720p | `6575b03a-234e-4beb-a6ad-fc27b7462414` | Rechazado | EMPUJAR pasa a otras letras desde el fotograma del medio |
+| escalera 3 | ídem | 1080p | `68160cf2-a98a-414f-a8e0-55abd60d5915` | Rechazado | EMPUJAR cambia de letras también a 1080p |
+| ventana 1 | ídem | 720p | `46c02fba-5d1e-46db-9ee0-d7858df0c979` | Rechazado | EMPUJAR en garabato y Quitapesares emborronado en el espejo |
+| ventana 2 | ídem | 1080p | `07a87063-633d-4fe7-9428-71fccad8f866` | Rechazado | Quitapesares aguanta, pero EMPUJAR cambia de letras (visto a 4×) |
+| cafetera 1 | ídem | 720p | `c28fdb07-9df6-4ec1-82b8-8a29f48d5af8` | Rechazado | Texto inventado en el molinillo, contenido nuevo a la derecha y mancha con forma de letras en el granito |
+| cafetera 2 | ídem | 720p | `338f9e81-03f5-4d29-aef7-2bb11dfaef08` | Rechazado | Logos y texto del paquete, borrosos en la foto, salen como letras nítidas que no están en ella |
+| cafetera 3 | `seedance_2_5`, `omni_reference` | 720p | `ac41bdb9-8536-4386-bd87-4e9102219a1a` | Rechazado | El primer fotograma no es la foto: diferencia media 25,9 de 255, frente a unos 5 |
+
+Prompts, en inglés:
+- **fachada 1**: «Very slow, smooth camera push-in toward the open doorway, almost static. Keep everything in the photo exactly as it is: the same striped awning, burgundy doors, brick walls, staircase, floor tiles, colours and sunlight. No people, no animals, no new objects, no text, no changes to the building. Only the camera moves gently forward.»
+- **escalera 1**: «Very slow, smooth camera push-in through the open burgundy doors toward the staircase, almost static. Keep everything in the photo exactly as it is: the same wooden barrel, wrought-iron arch, wooden counter, staircase, terracotta floor, doormat, colours and sunlight. No people, no animals, no new objects, no text, no changes to the room. Only the camera moves gently forward.»
+- **ventana 1**: «Very slow, subtle camera push-in toward the wrought-iron arched mirror and the barrel, almost static. Keep everything in the photo exactly as it is: the same barrel, staircase, wooden counter, glass door, terracotta floor, colours and light. The engraved word on the wall and on the mirror and the small sign on the glass door must stay exactly identical and unchanged. No people, no animals, no new objects, no new text. Only the camera moves gently forward.»
+- **cafetera 1**: «Very slow, smooth lateral camera move along the bar counter with a slight parallax, almost static. Keep everything in the photo exactly as it is: the same espresso machine, coffee grinders, cups, saucers, granite counter, colours and light. No people, no hands, no animals, no new objects, no text, no steam, no screens. Only the camera moves gently.»
+- **Segundos y terceros intentos**: el prompt de su foto con menos movimiento y más control del texto. escalera 2: «Minimal, very slow camera push-in of only a few percent (…) The small white sign on the left glass door must stay exactly as it is». escalera 3, ventana 2 y cafetera 3: «Almost a still photograph: an extremely slow, barely perceptible camera push-in. Preserve every detail of the photo pixel for pixel (…) Do not redraw, sharpen or change any text.» cafetera 2: «Very slow, steady camera push-in straight toward the espresso machine, no sideways movement (…) Keep all small logos and labels blurred».
