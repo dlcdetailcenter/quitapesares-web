@@ -237,3 +237,22 @@ la quita (`check:media` lo comprueba).
 | barrido-salida 1 | `9e026a44-2a74-43e1-a055-800a7d4becf7` | **Aceptado** | No sale del vestíbulo y acaba en la luz de la puerta. La escalera pasa desenfocada, sin sus luces | Very fast single dolly backward with strong motion blur, the camera pulls through the room toward the open doors and ends in bright white sunlight. One continuous shot. |
 
 10 generaciones, 55,25 créditos: 4 imágenes a 2 y 6 vídeos (6,75, 6,75, 6,75, 6,75, 9 y 11,25).
+
+## F2: demo final, ajuste tras la revisión de Kara
+
+Estado al 2026-11-05. Sustituye a la lista de piezas de la sección anterior, que queda como historial de los intentos. Tras
+la revisión de Kara en PC e iPhone, `barrido-entrada`, `barrica` y `escalera` salen del recorrido. No se generó nada
+nuevo: 0 créditos. `recorrido-maqueta/` no entra en git (113 archivos, 3,06 MB de 8).
+
+| Pieza | Origen | Real o IA | Fotogramas | Pantallas de scroll | Panel | Dónde se declara la IA |
+|---|---|---|---|---|---|---|
+| Aire | Ortofoto y nubes del material real | Ortofoto real; nubes con IA | Sin cambios | 1 | Cómo llegar | Atribución del PNOA; créditos para las nubes |
+| `puerta` | `recorrido-real/puerta`, uno de cada dos, mismos nombres y sumas | **Real**, sin IA | 27 de 53 | 1 | Menú del día, platos de hoy y Ver carta | — |
+| `barra` | Vídeo `barra-1`, trabajo `e8273960-bc05-439b-a4a1-1909654f37ed` | **IA** | 24 | 0,4 | Llamar y horario de hoy | Etiqueta visible, créditos y este inventario |
+| `cafetera` | Vídeo `cafetera-1`, trabajo `1aa445c3-4070-407b-a506-4b958bfd0838` | **IA** | 30 | 0,6 | Llamar y horario de hoy | Ídem |
+| `barrido-salida` | Vídeo `barrido-salida-1`, trabajo `9e026a44-2a74-43e1-a055-800a7d4becf7` | **IA** | 24 | 1 | Dejar reseña e idioma | Ídem |
+
+Efecto de la entrada: **empuje a través de la puerta**, solo en el canvas y sobre fotogramas reales. Los 27 fotogramas
+pasan en las primeras 0,75 pantallas con un zoom que llega al 160 % y dos copias semitransparentes algo más grandes
+mientras va rápido, que hacen de desenfoque de movimiento; en el último cuarto queda quieto. No crea ni cambia ningún
+archivo: las sumas son las de `scripts/media/manifiesto-real.json`, y una prueba de `test:datos` lo comprueba.
