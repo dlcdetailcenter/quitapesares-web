@@ -8,15 +8,16 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-04 (maqueta 2: imágenes creadas con IA para la demo al dueño) |
+| Actualizado | 2026-11-05 (demo final, ajuste tras la revisión de Kara: recorrido más corto y acciones integradas) |
 | `main` al escribirlo | `06312b0` |
-| Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` |
+| Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` y, para la demo final, en `f2-demo-final` |
 
 ## Ramas y PR
 
 - `main`: protegida por la regla de repositorio «main protegida», activa y sin excepciones. VERIFICADO
 - `f0-base`, `f0-contexto` y `f1-carta`: fusionadas (PR #1, #5 y #6). VERIFICADO
-- `f2-recorrido`: en curso. Se fusiona sin aplastar, después de la sesión de comprobación de Kara.
+- `f2-recorrido`: en curso (PR #7). Se fusiona sin aplastar, después de la sesión de comprobación de Kara.
+- `f2-demo-final`: demo final para el dueño, PR #8 en borrador con base `f2-recorrido`. Sin fusionar. VERIFICADO
 
 ## F0: cerrada
 
@@ -83,6 +84,29 @@ Hecho en `f2-recorrido`:
   50 ms en local, justo en el límite, y 78 ms en la demo, por encima.** Con el mismo código, la diferencia es de servir
   por red; sin arreglar, se decide con el iPhone real. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
 
+## F2: demo final, en `f2-demo-final`
+
+- Diseño nuevo de portada, recorrido y /carta: crema y burdeos, marcos, tarjetas con flecha, cabecera con Llamar, carta con
+  pestañas y desplegables, y tres fuentes propias alojadas en el proyecto. Sin scroll horizontal a 360 y 390 px en
+  Chromium y WebKit, con y sin «reducir movimiento». VERIFICADO
+- Ajuste tras la revisión de Kara: recorrido de 4 pantallas de scroll (la pista mide 5 ventanas, con el escenario fijo) y
+  portada entera de 5,83 ventanas a 390×844. Cada grupo de acciones queda fijo en su zona, 1 pantalla de scroll seguida
+  como mínimo: Cómo llegar en el aire; menú, platos de hoy y Ver carta en la entrada; Llamar y horario de hoy en la barra y
+  la cafetera; Dejar reseña e idioma en la salida. Debajo, solo horario y pie. Con «reducir movimiento», la portada
+  estática con todas las acciones. VERIFICADO
+- Platos de hoy: ruta de solo lectura. Si la hoja falla sale la última versión válida; si cae la ruta, solo «Ver carta».
+  VERIFICADO
+- Maqueta final (fuera de git): entrada con fotogramas reales de la puerta, mismas sumas, y efecto de empuje en el canvas;
+  barra, cafetera y salida, creadas con IA, con etiqueta, créditos, `"ia": "local"` y `"origen": "creada"`. 113 archivos y
+  3,06 MB de 8. Detalle en el inventario. Desplegada en la demo privada con noindex y `recorrido.json` igual al local.
+  VERIFICADO; verla en móviles reales y la pregunta al dueño, «¿es tu local?», pendientes.
+- Pruebas: `npm test` 324 de 324 con el sintético y 162 de 162 con la maqueta a 390 px; `test:datos` 61 de 61. VERIFICADO
+- Lighthouse en local con la maqueta: portada rendimiento 0,98, accesibilidad 1,00, LCP 2,28 s, CLS 0, TBT 0 ms, 379 KB, JS
+  13 KB; /carta 1,00 y 1,00, LCP 1,67 s, 130 KB. VERIFICADO
+- Recorrido real, intervalo entre fotogramas al bajar, p95: WebKit 31 ms en local y en la demo; Chromium 17 ms. `lab:medir`,
+  canvas p95: Chromium 35 ms; **WebKit 68 ms en local y en la demo, por encima de los 50 ms**, en una página de prueba que no
+  usa estas piezas y que ya oscilaba entre 46 y 78 ms. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
+
 ## A medias
 
 - Sesión de comprobación de Kara con los móviles, preparada: visto bueno de la puerta, la barra, la ortofoto y cada
@@ -90,11 +114,12 @@ Hecho en `f2-recorrido`:
   pendiente de F1 (VoiceOver y los botones).
 - Probar las paradas con el material real.
 - **Retirar la maqueta después de la demo al dueño.**
+- Decidir con Kara qué del diseño de `f2-demo-final` pasa a `f2-recorrido`.
 - Las coordenadas de la ortofoto son las de `src/data/restaurante.json`, sin confirmar: si cambian, se regenera.
 
 ## Siguiente paso
 
-Sesión de comprobación de Kara y demo al dueño. Después: retirar la maqueta y, con el visto bueno de Kara, el último
+Sesión de comprobación de Kara con la demo final y demo al dueño. Después: retirar la maqueta y, con el visto bueno de Kara, el último
 commit con el material real (se quita la regla de `check:media` que hoy lo bloquea, decisión de Kara) y la fusión
 sin aplastar, con su OK.
 

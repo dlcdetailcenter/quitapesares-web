@@ -1,5 +1,5 @@
 ---
-// Portada estática en un idioma: foto real de la entrada, nombre, botones, menú del día y horario.
+// Portada estática en un idioma: nombre, foto real de la entrada, tarjetas de acción, menú del día y horario.
 // Con el interruptor encendido (src/recorrido/interruptor.ts), encima va el recorrido de F2 y abajo la barra «Ir a la carta».
 // Todos los datos salen de src/data/restaurante.json en la compilación.
 import { Picture } from 'astro:assets';
@@ -11,6 +11,8 @@ import type { Idioma } from '../lib/carta/hoja.ts';
 import { local } from '../lib/local.ts';
 import BarraCarta from '../recorrido/BarraCarta.astro';
 import Decision from '../recorrido/Decision.astro';
+import Flecha from '../recorrido/Flecha.astro';
+import PlatosHoy from '../recorrido/PlatosHoy.astro';
 import Recorrido from '../recorrido/Recorrido.astro';
 import { RECORRIDO_ENCENDIDO } from '../recorrido/interruptor.ts';
 
@@ -21,39 +23,67 @@ interface Props {
 const { idioma } = Astro.props;
 const t = TEXTOS[idioma];
 const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
+const rutaOtroIdioma = idioma === 'es' ? '/en/' : '/';
+// «Ver carta» solo sin la barra fija «Ir a la carta»: no se repite la misma acción en pantalla.
+const acciones = [
+  ...(RECORRIDO_ENCENDIDO ? [] : [{ href: rutaCarta, texto: t.verCarta }]),
+  { href: local.comoLlegarHref, texto: t.comoLlegar },
+  { href: local.resenaHref, texto: t.dejarResena },
+];
 ---
 
-<Base idioma={idioma} rutaOtroIdioma={idioma === 'es' ? '/en/' : '/'} nombreEnCabecera={false}>
+<Base idioma={idioma} rutaOtroIdioma={rutaOtroIdioma}>
   {RECORRIDO_ENCENDIDO && <Decision slot="head" />}
-  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} />}
+  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} rutaOtroIdioma={rutaOtroIdioma} />}
   <div class="contenedor portada">
-    <figure class="portada__foto">
-      <Picture
-        src={entrada}
-        formats={['avif', 'webp']}
-        widths={[480, 720, 1080]}
-        sizes="(min-width: 40rem) 38rem, calc(100vw - 2rem)"
-        alt={t.fotoPortada}
-        loading="eager"
-        fetchpriority="high"
-      />
-    </figure>
-
-    <!-- «Restaurante» en pequeño y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
+    <!-- «Restaurante» en versalitas y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
     <h1 class="portada__nombre">
-      {local.tipoDeLocal && <span class="portada__tipo">{local.tipoDeLocal}</span>}
+      {local.tipoDeLocal && <span class="portada__tipo versalitas">{local.tipoDeLocal}</span>}
       <span class="portada__rotulo">{local.nombreCorto}</span>
     </h1>
+    <!-- Con el recorrido activo sus acciones ya están en los paneles: debajo solo quedan el horario y el pie. -->
+    <div class="portada__resto">
     <p class="portada__direccion">{local.direccion}</p>
 
+    <figure class="marco portada__foto">
+      <div class="marco__imagen">
+        <Picture
+          src={entrada}
+          formats={['avif', 'webp']}
+          widths={[480, 720, 1080]}
+          sizes="(min-width: 40rem) 38rem, calc(100vw - 2rem)"
+          alt={t.fotoPortada}
+          loading="eager"
+          fetchpriority="high"
+        />
+      </div>
+    </figure>
+
     <ul class="portada__acciones">
-      <li><a class="boton" href={local.telefonoHref}>{t.llamar}</a></li>
-      <li><a class="boton" href={rutaCarta}>{t.verCarta}</a></li>
-      <li><a class="boton boton--borde" href={local.comoLlegarHref}>{t.comoLlegar}</a></li>
-      <li><a class="boton boton--borde" href={local.resenaHref}>{t.dejarResena}</a></li>
+      {
+        acciones.map(({ href, texto }) => (
+          <li>
+            <a class="tarjeta" href={href}>
+              {texto}
+              <Flecha />
+            </a>
+          </li>
+        ))
+      }
     </ul>
 
     <Pizarra idioma={idioma} id="menu-del-dia" />
+
+    {
+      RECORRIDO_ENCENDIDO && (
+        <section class="portada__hoy" aria-labelledby="platos-hoy">
+          <h2 id="platos-hoy">{t.platosHoy}</h2>
+          <PlatosHoy idioma={idioma} />
+        </section>
+      )
+    }
+
+    </div>
 
     <section class="portada__horario" aria-labelledby="horario">
       <h2 id="horario">{t.horario}</h2>
@@ -69,22 +99,73 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
       </dl>
     </section>
   </div>
+  <footer class="pie">
+    <p class="pie__nombre">{local.nombreCorto}</p>
+    <p class="pie__direccion">{local.direccion}</p>
+  </footer>
   {RECORRIDO_ENCENDIDO && <BarraCarta idioma={idioma} />}
 </Base>
 
 <style>
   .portada {
-    padding-bottom: 2.5rem;
+    padding-top: calc(var(--alto-cabecera) + 2.5rem);
+    padding-bottom: 3rem;
   }
 
-  .portada__foto {
-    margin: 0;
-    border: 0.375rem solid var(--burdeos);
-    border-radius: 0.25rem;
+  :global(html.recorrido-activo) .portada {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  :global(html.recorrido-activo) .portada__resto {
+    display: none;
+  }
+
+  /* El nombre ya está en el rótulo del recorrido: el título sigue para quien lee con lector de pantalla. */
+  :global(html.recorrido-activo) .portada__nombre {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :global(html.recorrido-activo) .portada__horario {
+    margin-top: 0;
+  }
+
+  .portada__nombre {
+    color: var(--burdeos);
+    text-align: center;
+  }
+
+  .portada__tipo {
+    display: block;
+    font-size: 1.125rem;
+    color: var(--texto-suave);
+  }
+
+  .portada__rotulo {
+    display: block;
+    margin-top: 0.25rem;
+    font-family: var(--fuente-rotulo-pila);
+    font-size: clamp(3.25rem, 16vw, 4.75rem);
+    line-height: 1;
+  }
+
+  .portada__direccion {
+    margin: 0.75rem auto 2rem;
+    max-width: 22rem;
+    color: var(--texto-suave);
+    text-align: center;
+  }
+
+  .portada__foto :global(picture) {
+    display: block;
+    aspect-ratio: 4 / 5;
     overflow: hidden;
     background: var(--madera);
-    aspect-ratio: 3 / 4;
-    max-height: 70vh;
   }
 
   .portada__foto :global(img) {
@@ -94,52 +175,30 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
     object-position: 50% 40%;
   }
 
-  .portada__nombre {
-    margin-top: 1rem;
-    color: var(--burdeos);
-    font-weight: 400;
-  }
-
-  .portada__tipo {
-    display: block;
-    font-size: 1.125rem;
-    font-weight: 700;
-    color: var(--texto-suave);
-  }
-
-  .portada__rotulo {
-    display: block;
-    font-family: var(--fuente-rotulo-pila);
-    font-size: clamp(3rem, 15vw, 4.5rem);
-    line-height: 1;
-  }
-
-  .portada__direccion {
-    margin: 0.5rem 0 0;
-    color: var(--texto-suave);
-  }
-
+  /* Las tarjetas se solapan con la foto. */
   .portada__acciones {
+    position: relative;
     list-style: none;
-    margin: 1.5rem 0;
-    padding: 0;
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
+    margin: -3.25rem 0 3.5rem;
+    padding: 0 1.25rem;
   }
 
-  .portada__acciones .boton {
-    height: 100%;
-  }
-
+  .portada__hoy,
   .portada__horario {
-    margin-top: 2rem;
+    margin-top: 3.5rem;
   }
 
+  .portada__hoy {
+    min-height: 13rem;
+  }
+
+  .portada__hoy h2,
   .portada__horario h2 {
-    font-size: 1.375rem;
-    padding-bottom: 0.375rem;
-    border-bottom: 3px double var(--ladrillo);
+    font-size: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--burdeos);
   }
 
   .portada__horario dl {
@@ -152,10 +211,6 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
     gap: 1rem;
     padding: 0.5rem 0;
     border-bottom: 1px solid var(--ocre);
-  }
-
-  .portada__dia dt {
-    font-weight: 700;
   }
 
   .portada__dia dd {

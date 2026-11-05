@@ -29,14 +29,22 @@ export default defineConfig({
     },
     {
       provider: fontProviders.local(),
-      name: 'Alegreya Sans',
-      cssVariable: '--fuente-texto',
-      fallbacks: ['sans-serif'],
+      name: 'Alegreya',
+      cssVariable: '--fuente-serifa',
+      fallbacks: ['serif'],
       options: {
         variants: [
-          { weight: 400, style: 'normal', display: 'swap', src: ['./src/assets/fonts/alegreya-sans-400-latin.woff2'] },
-          { weight: 700, style: 'normal', display: 'swap', src: ['./src/assets/fonts/alegreya-sans-700-latin.woff2'] },
+          { weight: 400, style: 'normal', display: 'swap', src: ['./src/assets/fonts/alegreya-400-latin.woff2'] },
         ],
+      },
+    },
+    {
+      provider: fontProviders.local(),
+      name: 'Alegreya SC',
+      cssVariable: '--fuente-versalitas',
+      fallbacks: ['serif'],
+      options: {
+        variants: [{ weight: 500, style: 'normal', display: 'swap', src: ['./src/assets/fonts/alegreya-sc-500-latin.woff2'] }],
       },
     },
   ],

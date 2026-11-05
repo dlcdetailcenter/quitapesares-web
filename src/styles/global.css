@@ -1,22 +1,25 @@
-/* Estilos comunes. Paleta sacada del fotograma de la portada (IMG_4595, segundo 3):
+/* Estilos comunes. Paleta sacada de los fotogramas del local (IMG_4595):
    burdeos de las puertas, crema del toldo, ocre del revoco, ladrillo de la fachada y madera de la escalera.
-   Contraste comprobado (WCAG AA): madera sobre crema 13:1, crema sobre burdeos 7:1, texto suave sobre crema 6,5:1. */
+   Contraste comprobado (WCAG AA): madera sobre crema 12:1, crema sobre burdeos 6,4:1, burdeos sobre crema 6,4:1,
+   texto suave sobre crema 6:1. */
 :root {
   --burdeos: #8e1b2a;
   --burdeos-oscuro: #6e1420;
-  --crema: #f1e3b8;
-  --crema-clara: #f8efd4;
+  --crema: #f3e6c4;
+  --crema-clara: #faf3df;
   --ocre: #d7b46a;
   --ladrillo: #a9532f;
   --madera: #2e1c13;
   --texto-suave: #5e4a3c;
 
   --fuente-rotulo-pila: var(--fuente-rotulo), 'Old English Text MT', serif;
-  --fuente-texto-pila: var(--fuente-texto), 'Segoe UI', system-ui, sans-serif;
+  --fuente-serifa-pila: var(--fuente-serifa), Georgia, serif;
+  --fuente-versalitas-pila: var(--fuente-versalitas), var(--fuente-serifa), Georgia, serif;
 
   --hueco: 1rem;
   --ancho: 40rem;
   --toque: 3rem; /* 48 px: por encima de los 44 px mínimos para el dedo */
+  --alto-cabecera: 3.5rem;
 
   color-scheme: light;
 }
@@ -30,15 +33,16 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--alto-cabecera) + 1rem);
 }
 
 body {
   margin: 0;
   background: var(--crema);
   color: var(--madera);
-  font-family: var(--fuente-texto-pila);
-  font-size: 1.125rem;
-  line-height: 1.5;
+  font-family: var(--fuente-serifa-pila);
+  font-size: 1.1875rem;
+  line-height: 1.55;
   overflow-wrap: break-word;
 }
 
@@ -63,13 +67,23 @@ h2,
 h3 {
   line-height: 1.15;
   margin: 0;
+  font-weight: 400;
+}
+
+/* Titulares: versalitas espaciadas, en la serifa. */
+.versalitas,
+h2,
+h3 {
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 .saltar {
   position: absolute;
   left: var(--hueco);
   top: -10rem;
-  z-index: 10;
+  z-index: 20;
   padding: 0.75rem 1rem;
   background: var(--madera);
   color: var(--crema);
@@ -79,22 +93,30 @@ h3 {
   top: var(--hueco);
 }
 
+/* Cabecera fija: el nombre, el idioma y la acción principal en píldora. */
 .cabecera {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--hueco);
-  max-width: var(--ancho);
-  margin: 0 auto;
-  padding: 0.5rem var(--hueco);
+  gap: 0.5rem;
+  height: var(--alto-cabecera);
+  padding: 0 var(--hueco);
+  background: var(--crema);
+  border-bottom: 1px solid var(--burdeos);
 }
 
 .cabecera__nombre {
   display: inline-flex;
   align-items: center;
   min-height: var(--toque);
+  margin-right: auto;
   font-family: var(--fuente-rotulo-pila);
-  font-size: 1.75rem;
+  font-size: 1.625rem;
+  line-height: 1;
   color: var(--burdeos);
   text-decoration: none;
 }
@@ -105,9 +127,31 @@ h3 {
   justify-content: center;
   min-height: var(--toque);
   min-width: var(--toque);
-  padding: 0 0.75rem;
+  padding: 0 0.25rem;
   color: var(--madera);
-  font-weight: 700;
+  font-size: 1rem;
+}
+
+.cabecera__llamar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75rem;
+  min-width: 4.5rem;
+  padding: 0 1rem;
+  border: 1px solid var(--burdeos);
+  border-radius: 999px;
+  background: var(--burdeos);
+  color: var(--crema-clara);
+  font-family: var(--fuente-versalitas-pila);
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+
+.cabecera__llamar:hover {
+  background: var(--burdeos-oscuro);
 }
 
 .contenedor {
@@ -123,11 +167,14 @@ h3 {
   justify-content: center;
   min-height: var(--toque);
   padding: 0.5rem 1rem;
-  border: 2px solid var(--burdeos);
-  border-radius: 0.25rem;
+  border: 1px solid var(--burdeos);
+  outline: 1px solid var(--burdeos);
+  outline-offset: 2px;
   background: var(--burdeos);
-  color: var(--crema);
-  font-weight: 700;
+  color: var(--crema-clara);
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-align: center;
   text-decoration: none;
 }
@@ -135,6 +182,10 @@ h3 {
 .boton:hover {
   background: var(--burdeos-oscuro);
   border-color: var(--burdeos-oscuro);
+}
+
+.boton:focus-visible {
+  outline: 3px solid var(--madera);
 }
 
 .boton--borde {
@@ -147,13 +198,76 @@ h3 {
   color: var(--burdeos-oscuro);
 }
 
-/* La pizarra: el menú del día escrito como en la pizarra de la entrada. */
+/* Foto enmarcada: filete fino y aire hasta la imagen, con su pie debajo. */
+.marco {
+  margin: 0;
+}
+
+.marco__imagen {
+  padding: 0.375rem;
+  border: 1px solid var(--burdeos);
+}
+
+.marco figcaption {
+  margin-top: 0.5rem;
+  color: var(--texto-suave);
+  font-size: 1rem;
+}
+
+/* Tarjeta con flecha: se solapa con lo que tiene encima. */
+.tarjeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 4.5rem;
+  padding: 0.75rem 1.25rem;
+  border: 1px solid var(--burdeos);
+  outline: 1px solid var(--burdeos);
+  outline-offset: -6px;
+  background: var(--crema-clara);
+  color: var(--burdeos);
+  font-family: var(--fuente-versalitas-pila);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.tarjeta:hover {
+  background: #fff9ea;
+}
+
+.tarjeta:focus-visible {
+  outline: 3px solid var(--madera);
+  outline-offset: 2px;
+}
+
+.tarjeta svg {
+  flex: none;
+  width: 4rem;
+  height: 0.75rem;
+}
+
+/* El menú del día: bloque de color con el toldo de la fachada colgando por arriba. */
 .pizarra {
-  background: var(--madera);
-  color: var(--crema);
-  border: 0.375rem solid #5a3a26;
-  border-radius: 0.25rem;
-  padding: 1.25rem var(--hueco);
+  position: relative;
+  padding: 3.5rem 1.5rem 2rem;
+  background: var(--burdeos);
+  color: var(--crema-clara);
+}
+
+.pizarra::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.25rem;
+  background: repeating-linear-gradient(90deg, var(--crema) 0 1.5rem, var(--burdeos-oscuro) 1.5rem 3rem);
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% 1.5rem no-repeat, radial-gradient(circle at 50% 0, #000 0.75rem, transparent 0.8rem) bottom / 1.5rem 0.75rem repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% 1.5rem no-repeat, radial-gradient(circle at 50% 0, #000 0.75rem, transparent 0.8rem) bottom / 1.5rem 0.75rem repeat-x;
 }
 
 .pizarra :focus-visible {
@@ -161,33 +275,109 @@ h3 {
 }
 
 .pizarra h2 {
-  font-family: var(--fuente-rotulo-pila);
-  font-weight: 400;
-  font-size: 1.75rem;
-  color: var(--ocre);
+  font-size: 1.5rem;
+  color: var(--crema);
 }
 
 .pizarra__precio {
-  margin: 0.25rem 0 0;
-  font-size: 2.5rem;
-  font-weight: 700;
+  margin: 0.5rem 0 0;
+  font-family: var(--fuente-versalitas-pila);
+  font-size: 3rem;
+  font-weight: 500;
   line-height: 1.1;
 }
 
 .pizarra__incluye {
-  margin: 0.5rem 0 0;
+  margin: 0.75rem 0 0;
 }
 
 .pizarra__otro {
-  margin: 1rem 0 0;
-  padding-top: 0.75rem;
-  border-top: 1px dashed var(--ocre);
+  margin: 1.25rem 0 0;
+  padding-top: 1rem;
+  border-top: 1px solid var(--ocre);
+}
+
+.pizarra__otro strong {
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
+}
+
+/* Filas de acción con flecha: las paradas y «Ver carta» cuando no hay platos de hoy. */
+.recorrido__parada a,
+.hoy__carta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-height: 3.5rem;
+  color: var(--burdeos);
+  font-family: var(--fuente-versalitas-pila);
+  font-size: 1.25rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.recorrido__parada svg,
+.hoy__carta svg {
+  flex: none;
+  width: 3.5rem;
+  height: 0.75rem;
+}
+
+.hoy__platos:not([hidden]) + .hoy__carta,
+.recorrido__parada .hoy + a,
+.recorrido__parada a + a {
+  border-top: 1px solid var(--ocre);
+}
+
+.hoy__carta[hidden],
+.hoy__platos[hidden] {
+  display: none;
+}
+
+.hoy__platos {
+  list-style: none;
+  margin: 0 0 0.5rem;
+  padding: 0;
+}
+
+.hoy__platos li {
+  padding: 0.375rem 0;
+}
+
+.hoy__platos li + li {
+  border-top: 1px solid var(--ocre);
+}
+
+/* Pie de la portada. */
+.pie {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 1.5rem var(--hueco) 2rem;
+  border-top: 1px solid var(--burdeos);
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.pie__nombre {
+  margin: 0;
+  color: var(--burdeos);
+  font-family: var(--fuente-rotulo-pila);
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.pie__direccion {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
 }
 
 .alergenos {
-  margin: 2rem 0;
-  border-top: 2px solid var(--ocre);
-  border-bottom: 2px solid var(--ocre);
+  margin: 2.5rem 0;
+  border-top: 1px solid var(--burdeos);
+  border-bottom: 1px solid var(--burdeos);
 }
 
 .alergenos summary {
@@ -196,7 +386,9 @@ h3 {
   align-items: center;
   min-height: var(--toque);
   cursor: pointer;
-  font-weight: 700;
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
+  letter-spacing: 0.08em;
 }
 
 /* Con display: flex el navegador quita el triángulo: se pone un signo que dice si está abierto o cerrado. */
@@ -229,8 +421,4 @@ h3 {
     transition: none !important;
     scroll-behavior: auto !important;
   }
-}
-
-.cabecera--sin-nombre {
-  justify-content: flex-end;
 }

@@ -7,9 +7,12 @@ const datos = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', im
 const placeId: string = datos.placeId.valor;
 const telefono = `tel:${String(datos.telefono.valor).replace(/[^\d+]/g, '')}`;
 
+// La portada estática, con todas las acciones: con el recorrido activo están en sus paneles (tests/recorrido.spec.ts).
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
 const PORTADAS = [
-  { ruta: '/', carta: '/carta', botones: ['Llamar', 'Ver carta', 'Cómo llegar', 'Dejar reseña'] },
-  { ruta: '/en/', carta: '/en/carta', botones: ['Call', 'See the menu', 'Directions', 'Write a review'] },
+  { ruta: '/', carta: '/carta', botones: ['Llamar', 'Ir a la carta', 'Cómo llegar', 'Dejar reseña'] },
+  { ruta: '/en/', carta: '/en/carta', botones: ['Call', 'Go to the menu', 'Directions', 'Write a review'] },
 ] as const;
 
 for (const { ruta, carta, botones } of PORTADAS) {
@@ -22,7 +25,7 @@ for (const { ruta, carta, botones } of PORTADAS) {
       await expect(page.locator('picture source[type="image/avif"]')).toHaveCount(1);
     });
 
-    test('Llamar, Ver carta, Cómo llegar y Dejar reseña llevan al sitio correcto', async ({ page }) => {
+    test('Llamar, Ir a la carta, Cómo llegar y Dejar reseña llevan al sitio correcto', async ({ page }) => {
       await page.goto(ruta);
       const [llamar, verCarta, comoLlegar, resena] = botones.map((texto) => page.getByRole('link', { name: texto, exact: true }));
       await expect(llamar).toHaveAttribute('href', telefono);
@@ -52,7 +55,7 @@ for (const { ruta, carta, botones } of PORTADAS) {
 
     test('cambio de idioma a la portada del otro idioma', async ({ page }) => {
       await page.goto(ruta);
-      const otro = page.locator('nav a[hreflang]');
+      const otro = page.locator('.cabecera a[hreflang]');
       await expect(otro).toHaveAttribute('href', ruta === '/' ? '/en/' : '/');
     });
   });

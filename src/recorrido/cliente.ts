@@ -1,6 +1,7 @@
-// Recorrido de la portada (F2): aire → puerta → parada → barra → parada, movido por el scroll nativo.
-// Las paradas (Recorrido.astro) son acciones que ya existen en la portada: Cómo llegar y Llamar tras la puerta; Ver carta
-// y Menú del día tras la barra. Cada una ocupa media pantalla y deja quieto el último fotograma de su zona.
+// Recorrido de la portada (F2): aire y piezas, movido por el scroll nativo.
+// Las acciones (Recorrido.astro) son las que ya existen en la portada. Con «panel» en recorrido.json, en el aire y en
+// cada tramo, cada grupo queda fijo durante toda su zona y se va con un fundido. Sin ese campo (material real), hay
+// dos paradas de media pantalla: la de la puerta tras su zona y la de la barra tras la suya.
 // Progresivo: la portada de F1 está completa en el HTML. El script de <head> (Recorrido.astro) solo marca
 // `recorrido-pendiente` si no hay «reducir movimiento», ahorro de datos ni red lenta. Aquí:
 //   1. se pregunta al Worker (/recorrido/estado), que dice que no si llega la cabecera Save-Data;
@@ -20,18 +21,32 @@ interface ConfigTramo {
   pantallas: number;
   /** Zona del local («puerta» o «barra»): su rótulo y su parada. Sin ella, la zona es el id. */
   zona?: string;
-  /** Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza animada con IA a partir de una foto real del local. */
+  /** Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza creada con IA a partir de fotogramas reales del local. */
   ia?: 'local';
+  /** Grupo de acciones que queda fijo mientras se ve este tramo. */
+  panel?: string;
+  /** Parte del tramo en la que pasan sus fotogramas (de 0 a 1); el resto, quieto en el último. */
+  fin?: number;
+  /** Zoom extra del efecto de empuje (reproductor.ts). */
+  empuje?: number;
+  /** Se toma un fotograma de cada tantos (mantiene los nombres y las sumas del material real). */
+  paso?: number;
+  /** El tramo acaba en luz y se funde con la crema de la página. */
+  fundido?: boolean;
 }
 
-/** Pantallas de scroll de cada parada con acciones (al final de la puerta y de la barra). */
+/** Pantallas de scroll de cada parada con acciones (material sin paneles). */
 const PANTALLAS_PARADA = 0.5;
+/** Con panel en el aire, el descenso se queda aquí, con el suelo a la vista, hasta que cierran las nubes. */
+const AIRE_DETENIDO = 0.72;
+/** Parte del aire con el suelo a la vista; en el resto cierran las nubes. */
+const AIRE_ABIERTO = 0.75;
 
 export interface ConfigRecorrido {
   material: 'real' | 'sintetico';
   ancho: number;
   alto: number;
-  aire: ConfigAire & { pantallas: number; pnoa: { anio: string } | null };
+  aire: ConfigAire & { pantallas: number; pnoa: { anio: string } | null; panel?: string };
   tramos: ConfigTramo[];
   /** Piezas de IA usadas en el recorrido (nunca el local): si hay alguna, se declara en los créditos. */
   ia: { es: string; en: string; herramienta: string }[];
@@ -92,10 +107,10 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     ...t,
     rep: Object.assign(new SecuenciaCanvas(
       canvas,
-      Array.from({ length: t.fotogramas }, (_, i) => BASE + t.patron.replace('%04d', String(i + 1).padStart(4, '0'))),
+      Array.from({ length: t.fotogramas }, (_, i) => BASE + t.patron.replace('%04d', String(i * (t.paso ?? 1) + 1).padStart(4, '0'))),
       config.ancho,
       config.alto,
-    ), { activo: false }),
+    ), { activo: false, empuje: t.empuje ?? 0 }),
     pedido: false,
   }));
   // Si el tramo se está viendo cuando termina una fase de su carga, se vuelve a pintar: sin scroll (por ejemplo, quieto
@@ -132,6 +147,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   }
   if (iaLocal) seccion.querySelector<HTMLElement>('[data-recorrido-ia-local]')?.removeAttribute('hidden');
   const etiquetaIa = seccion.querySelector<HTMLElement>('[data-recorrido-etiqueta-ia]');
+  const fundido = seccion.querySelector<HTMLElement>('[data-recorrido-fundido]');
   if (config.material === 'sintetico') seccion.querySelector<HTMLElement>('[data-recorrido-sintetico]')?.removeAttribute('hidden');
   const pnoa = seccion.querySelector<HTMLElement>('[data-recorrido-pnoa]');
   if (pnoa && config.aire.pnoa) {
@@ -140,25 +156,31 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     pnoa.removeAttribute('hidden');
   }
 
-  // Partes del recorrido: el aire, cada tramo y, tras el último tramo de cada zona que tenga parada, su parada.
+  // Partes del recorrido: el aire, cada tramo y sus paradas. El tramo -1 de una parada es el aire.
   type Parte =
-    | { tipo: 'aire'; pantallas: number }
-    | { tipo: 'tramo'; tramo: number; pantallas: number; primeroDeZona: boolean }
+    | { tipo: 'aire'; pantallas: number; panel?: HTMLElement }
+    | { tipo: 'tramo'; tramo: number; pantallas: number; primeroDeZona: boolean; panel?: HTMLElement }
     | { tipo: 'parada'; tramo: number; pantallas: number; panel: HTMLElement; zona: string };
   const zonaDe = (t: ConfigTramo) => t.zona ?? t.id;
   const paneles = new Map([...seccion.querySelectorAll<HTMLElement>('[data-parada]')].map((p) => [p.dataset.parada ?? '', p]));
-  const partes: Parte[] = [{ tipo: 'aire', pantallas: config.aire.pantallas }];
+  const conPaneles = Boolean(config.aire.panel);
+  const partes: Parte[] = [{ tipo: 'aire', pantallas: config.aire.pantallas, panel: paneles.get(config.aire.panel ?? '') }];
   tramos.forEach((t, i) => {
     const zona = zonaDe(t);
-    partes.push({ tipo: 'tramo', tramo: i, pantallas: t.pantallas, primeroDeZona: i === 0 || zonaDe(tramos[i - 1]) !== zona });
-    const panel = paneles.get(zona);
+    partes.push({ tipo: 'tramo', tramo: i, pantallas: t.pantallas, primeroDeZona: i === 0 || zonaDe(tramos[i - 1]) !== zona, panel: paneles.get(t.panel ?? '') });
     const ultimoDeZona = i === tramos.length - 1 || zonaDe(tramos[i + 1]) !== zona;
-    if (panel && ultimoDeZona) partes.push({ tipo: 'parada', tramo: i, pantallas: PANTALLAS_PARADA, panel, zona });
+    const panel = !conPaneles && ultimoDeZona ? paneles.get(zona) : undefined;
+    if (panel) partes.push({ tipo: 'parada', tramo: i, pantallas: PANTALLAS_PARADA, panel, zona });
   });
-  // Alto de la pista: la suma de las pantallas de todas las partes, con la del propio escenario incluida (4 con
-  // aire, puerta, barra y dos paradas). Cada parte avanza en proporción a sus pantallas a lo largo de lo que se desplaza.
+  // Con paneles, las pantallas de cada parte son pantallas de scroll: la pista mide una más, la del propio escenario.
+  // Sin paneles, la suma ya la incluye. Cada parte avanza en proporción a sus pantallas a lo largo de lo que se desplaza.
   const total = partes.reduce((a, p) => a + p.pantallas, 0);
-  pista.style.setProperty('--recorrido-pantallas', String(Math.max(total, 1)));
+  pista.style.setProperty('--recorrido-pantallas', String(Math.max(conPaneles ? total + 1 : total, 1)));
+  pista.dataset.pantallas = String(total);
+
+  // El horario de hoy, en la hora de Madrid, de los siete que trae la página.
+  const hoy = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', weekday: 'long' }).format(new Date()).toLowerCase();
+  seccion.querySelector<HTMLElement>(`[data-dia-en="${hoy}"]`)?.removeAttribute('hidden');
   html.classList.remove('recorrido-pendiente');
   html.classList.add('recorrido-activo');
   html.dataset.estadoRecorrido = 'activo';
@@ -211,22 +233,31 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       }
       visible = indice;
       seccion.dataset.parte = parte.tipo === 'aire' ? 'aire' : parte.tipo === 'parada' ? `parada-${parte.zona}` : tramos[parte.tramo].id;
-      for (const p of partes) if (p.tipo === 'parada') p.panel.classList.toggle('recorrido__parada--visible', p === parte);
-      // La etiqueta de IA del local, mientras se ve una pieza de la maqueta (también en su parada, que la deja quieta).
-      if (etiquetaIa) etiquetaIa.hidden = !(tramo >= 0 && tramos[tramo].ia === 'local');
+      for (const p of paneles.values()) p.classList.toggle('recorrido__parada--visible', p === parte.panel);
+    }
+    // La etiqueta de IA del local, mientras se ve una pieza de la maqueta. Sobre la crema del fundido ya no se ve ninguna.
+    if (etiquetaIa) etiquetaIa.hidden = !(tramo >= 0 && tramos[tramo].ia === 'local') || Boolean(tramo >= 0 && tramos[tramo].fundido && t > 0.95);
+    if (fundido) {
+      const seFunde = tramo >= 0 && tramos[tramo].fundido;
+      fundido.style.opacity = String(seFunde ? suave((t - 0.55) / 0.4) : 0);
     }
     if (parte.tipo === 'aire') {
-      aire.pintar(t);
+      if (!conPaneles) aire.pintar(t);
+      else if (t < AIRE_ABIERTO) aire.pintar((t / AIRE_ABIERTO) * AIRE_DETENIDO, 0.35 - 0.3 * suave(t / AIRE_ABIERTO / 0.8));
+      else {
+        const cierre = suave((t - AIRE_ABIERTO) / (1 - AIRE_ABIERTO));
+        aire.pintar(AIRE_DETENIDO + (1 - AIRE_DETENIDO) * cierre, 0.05 + 0.95 * cierre);
+      }
     } else {
-      const rep = tramos[parte.tramo].rep;
+      const rep = tramos[tramo].rep;
       if (parte.tipo === 'parada') {
         // La parada deja quieto el último fotograma de su zona.
         rep.mostrar(rep.fotogramas - 1);
       } else {
         // Al empezar el primer tramo, las nubes se abren sobre él.
-        const nubes = parte.tramo === 0 ? 1 - suave(t / 0.25) : 0;
+        const nubes = tramo === 0 ? 1 - suave(t / 0.25) : 0;
         if (nubes > 0) rep.invalidar();
-        rep.mostrar(t * (rep.fotogramas - 1));
+        rep.mostrar(Math.min(1, t / (tramos[tramo].fin ?? 1)) * (rep.fotogramas - 1));
         if (nubes > 0) aire.pintarNubes(1 + t, nubes);
       }
     }

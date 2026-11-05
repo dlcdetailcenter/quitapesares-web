@@ -104,7 +104,7 @@ export class Aire {
   }
 
   /** t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta). */
-  pintar(t: number): void {
+  pintar(t: number, densidad = 0.35 + 0.65 * suave((t - 0.7) / 0.3)): void {
     ajustarLienzo(this.canvas, 1080, 1920);
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'source-over';
@@ -124,7 +124,7 @@ export class Aire {
         ctx.globalAlpha = 1;
       }
     }
-    this.pintarNubes(t, 0.35 + 0.65 * suave((t - 0.7) / 0.3));
+    this.pintarNubes(t, densidad);
   }
 
   /** Nubes encima de cualquier cosa ya pintada (también al empezar la puerta, para destaparla). */
