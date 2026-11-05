@@ -68,7 +68,8 @@ async function partesDelRecorrido(page: Page): Promise<ParteRecorrido[]> {
     inicio += t.pantallas;
     const siguiente = config.tramos[i + 1];
     const ultimoDeZona = !siguiente || (siguiente.zona ?? siguiente.id) !== zona;
-    const clave = t.parada ?? (ultimoDeZona && (zona === 'puerta' || zona === 'barra') ? zona : undefined);
+    const declaradas = Boolean(config.aire.parada) || config.tramos.some((x) => x.parada);
+    const clave = t.parada ?? (!declaradas && ultimoDeZona && (zona === 'puerta' || zona === 'barra') ? zona : undefined);
     if (clave) {
       partes.push({ nombre: `parada-${clave}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
       inicio += 0.5;
@@ -180,6 +181,11 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const partes = await partesDelRecorrido(page);
       const paradas = partes.filter((p) => p.nombre.startsWith('parada-'));
+      // Tal como las pinta cliente.ts: si la prueba y el código difieren, este recorrido no coincide con las partes.
+      await irA(page, paradas[0].inicio + 0.25);
+      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', paradas[0].nombre);
+      const total = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height / innerHeight);
+      expect(total).toBeCloseTo(partes.reduce((a, p) => a + p.pantallas, 0), 1);
       // Del principio a la primera parada y entre paradas seguidas.
       let hasta = 0;
       for (const p of paradas) {
@@ -193,6 +199,13 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(panel('llegar')).toBeHidden();
 
       await irAParte(page, 'parada-llegar');
+      // Detrás se ve el suelo, no el velo blanco de las nubes.
+      await expect
+        .poll(() => page.locator('[data-recorrido-lienzo]').evaluate((c: HTMLCanvasElement) => {
+          const [r, g, b] = c.getContext('2d')?.getImageData(c.width / 2, c.height / 2, 1, 1).data ?? [];
+          return Math.abs(r - 244) + Math.abs(g - 241) + Math.abs(b - 234);
+        }))
+        .toBeGreaterThan(30);
       const llegar = panel('llegar').getByRole('link', { name: comoLlegar, exact: true });
       await expect(llegar).toHaveAttribute('href', new RegExp(`query_place_id=${datos.placeId.valor}`));
       await comprobarObjetivo(llegar);
@@ -225,6 +238,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       await irAParte(page, 'parada-resena');
       await expect(page.locator('[data-recorrido-fundido]')).toHaveCSS('opacity', '1');
+      // Sobre la crema ya no se ve ninguna pieza: sin etiqueta de IA.
+      await expect(page.locator('[data-recorrido-etiqueta-ia]')).toBeHidden();
       await irAParte(page, 'aire');
       await expect(page.locator('[data-recorrido-fundido]')).toHaveCSS('opacity', '0');
     });
@@ -253,10 +268,10 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
     }
 
     test('maqueta: la etiqueta «Creado con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
-      // El último tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo son todos).
+      // El penúltimo tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo son todos); el último se funde con la crema.
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
-        config.tramos[config.tramos.length - 1].ia = 'local';
+        config.tramos[config.tramos.length - 2].ia = 'local';
         config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
         await r.fulfill({ json: config });
       });
@@ -269,7 +284,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       const marca = page.locator('[data-recorrido-etiqueta-ia]');
       const partes = await partesDelRecorrido(page);
       const tramosDelRecorrido = partes.filter((p) => p.nombre !== 'aire' && !p.nombre.startsWith('parada-'));
-      const ultimo = tramosDelRecorrido[tramosDelRecorrido.length - 1];
+      const ultimo = tramosDelRecorrido[tramosDelRecorrido.length - 2];
       // En el aire y en cualquier tramo que no sea IA del local, la etiqueta no está.
       await irAParte(page, 'aire');
       await expect(marca).toBeHidden();
@@ -280,7 +295,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await irAParte(page, ultimo.nombre); // la pieza «ia: local»
       await expect(marca).toBeVisible();
       await expect(marca).toHaveText(etiqueta);
-      await irAParte(page, partes[partes.length - 1].nombre); // su parada deja quieta la pieza: la etiqueta sigue
+      await irAParte(page, partes[partes.indexOf(ultimo) + 1].nombre); // su parada deja quieta la pieza: la etiqueta sigue
       await expect(marca).toBeVisible();
       await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
       await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);

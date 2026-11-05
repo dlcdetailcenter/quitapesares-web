@@ -29,8 +29,10 @@ interface ConfigTramo {
   fundido?: boolean;
 }
 
-/** Pantallas de scroll de cada parada con acciones (al final de la puerta y de la barra). */
+/** Pantallas de scroll de cada parada con acciones. */
 const PANTALLAS_PARADA = 0.5;
+/** Con parada en el aire, el descenso se detiene aquí, con el suelo aún a la vista: las nubes cierran en la parada. */
+const AIRE_DETENIDO = 0.72;
 
 export interface ConfigRecorrido {
   material: 'real' | 'sintetico';
@@ -154,13 +156,14 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   const zonaDe = (t: ConfigTramo) => t.zona ?? t.id;
   const paneles = new Map([...seccion.querySelectorAll<HTMLElement>('[data-parada]')].map((p) => [p.dataset.parada ?? '', p]));
   const partes: Parte[] = [{ tipo: 'aire', pantallas: config.aire.pantallas }];
+  const declaradas = Boolean(config.aire.parada) || config.tramos.some((t) => t.parada);
   const panelDelAire = config.aire.parada ? paneles.get(config.aire.parada) : undefined;
   if (panelDelAire && config.aire.parada) partes.push({ tipo: 'parada', tramo: -1, pantallas: PANTALLAS_PARADA, panel: panelDelAire, zona: config.aire.parada });
   tramos.forEach((t, i) => {
     const zona = zonaDe(t);
     partes.push({ tipo: 'tramo', tramo: i, pantallas: t.pantallas, primeroDeZona: i === 0 || zonaDe(tramos[i - 1]) !== zona });
     const ultimoDeZona = i === tramos.length - 1 || zonaDe(tramos[i + 1]) !== zona;
-    const clave = t.parada ?? (ultimoDeZona ? zona : undefined);
+    const clave = t.parada ?? (!declaradas && ultimoDeZona ? zona : undefined);
     const panel = clave ? paneles.get(clave) : undefined;
     if (panel && clave) partes.push({ tipo: 'parada', tramo: i, pantallas: PANTALLAS_PARADA, panel, zona: clave });
   });
@@ -222,14 +225,22 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       seccion.dataset.parte = parte.tipo === 'aire' ? 'aire' : parte.tipo === 'parada' ? `parada-${parte.zona}` : tramos[parte.tramo].id;
       for (const p of partes) if (p.tipo === 'parada') p.panel.classList.toggle('recorrido__parada--visible', p === parte);
       // La etiqueta de IA del local, mientras se ve una pieza de la maqueta (también en su parada, que la deja quieta).
-      if (etiquetaIa) etiquetaIa.hidden = !(tramo >= 0 && tramos[tramo].ia === 'local');
+      // Sobre la crema del fundido ya no se ve ninguna pieza: fuera etiqueta.
+      const fundida = parte.tipo === 'parada' && tramo >= 0 && tramos[tramo].fundido;
+      if (etiquetaIa) etiquetaIa.hidden = fundida || !(tramo >= 0 && tramos[tramo].ia === 'local');
     }
     if (fundido) {
       const seFunde = tramo >= 0 && tramos[tramo].fundido;
       fundido.style.opacity = String(!seFunde ? 0 : parte.tipo === 'parada' ? 1 : suave((t - 0.55) / 0.45));
     }
     if (parte.tipo === 'aire' || tramo < 0) {
-      aire.pintar(parte.tipo === 'aire' ? t : 1);
+      if (!panelDelAire) aire.pintar(t);
+      else if (parte.tipo === 'aire') aire.pintar(t * AIRE_DETENIDO, 0.35 - 0.3 * suave(t / 0.8));
+      else {
+        // Las nubes se han abierto y el suelo se ve; cierran al final de la parada, para pasar a la primera pieza.
+        const cierre = suave((t - 0.6) / 0.4);
+        aire.pintar(AIRE_DETENIDO + (1 - AIRE_DETENIDO) * cierre, 0.05 + 0.95 * cierre);
+      }
     } else {
       const rep = tramos[tramo].rep;
       if (parte.tipo === 'parada') {
