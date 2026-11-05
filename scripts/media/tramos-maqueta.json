@@ -1,15 +1,13 @@
 {
-  "$comentario": "MAQUETA de la demo al dueño (excepciones ampliadas de Kara del 2026-11-04, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. origen «creada»: imagen («imagen») o vídeo («video») creados con IA a partir de fotogramas reales y aceptados en la revisión; llevan \"ia\": \"local\" y, sin él, el ensamblado falla. «parada»: la parada que va después. Longitud: aire 1 + 2 piezas de 0,5 + 3 de 0,75 + barra 0,5 + 5 paradas de 0,5 = 7,25 pantallas.",
+  "$comentario": "MAQUETA de la demo al dueño (excepciones ampliadas de Kara del 2026-11-04, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. origen «real»: fotogramas de recorrido-real/, tal cual, uno de cada «paso», sin IA. origen «creada»: vídeo creado con IA a partir de fotogramas reales y aceptado en la revisión; lleva \"ia\": \"local\" y, sin él, el ensamblado falla. «panel»: el grupo de acciones que queda fijo en la zona. «fin»: parte de la pieza en la que pasan sus fotogramas. Longitud: 4 pantallas de scroll, una por panel.",
   "aire": {
     "pantallas": 1,
-    "parada": "llegar"
+    "panel": "llegar"
   },
   "piezas": [
-    { "id": "barrido-entrada", "origen": "creada", "ia": "local", "video": "barrido-entrada-2", "zona": "puerta", "pantallas": 0.75, "fps": 12, "calidad": 66 },
-    { "id": "barrica", "origen": "creada", "ia": "local", "imagen": "barrica-fiel-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "parada": "hoy", "pantallas": 0.5, "fps": 8, "calidad": 60, "segundos": 2.5, "desplazamiento": { "x": 0.5, "y": 0.25 } },
-    { "id": "escalera", "origen": "creada", "ia": "local", "imagen": "escalera-fiel-1", "recorte": { "x": 0, "y": 10, "ancho": 1536, "alto": 2731 }, "zona": "puerta", "pantallas": 0.5, "fps": 8, "calidad": 60, "segundos": 2.5, "desplazamiento": { "x": 0.5, "y": 0.4 } },
-    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "parada": "menu", "pantallas": 0.5, "fps": 10, "calidad": 66 },
-    { "id": "cafetera", "origen": "creada", "ia": "local", "video": "cafetera-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "parada": "llamar", "pantallas": 0.75, "fps": 10, "calidad": 66 },
-    { "id": "barrido-salida", "origen": "creada", "ia": "local", "video": "barrido-salida-1", "zona": "salida", "parada": "resena", "fundido": true, "pantallas": 0.75, "fps": 12, "calidad": 66 }
+    { "id": "puerta", "origen": "real", "paso": 2, "zona": "puerta", "panel": "menu", "pantallas": 1, "fin": 0.75, "empuje": 0.6 },
+    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "llamar", "pantallas": 0.4, "fps": 6, "calidad": 62 },
+    { "id": "cafetera", "origen": "creada", "ia": "local", "video": "cafetera-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "llamar", "pantallas": 0.6, "fps": 6, "calidad": 62 },
+    { "id": "barrido-salida", "origen": "creada", "ia": "local", "video": "barrido-salida-1", "zona": "salida", "panel": "resena", "fundido": true, "pantallas": 1, "fin": 0.8, "fps": 8, "calidad": 62 }
   ]
 }
