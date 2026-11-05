@@ -24,4 +24,9 @@ async function rellenar(): Promise<void> {
   }
 }
 
-if (bloques.length > 0) rellenar().catch(() => {});
+// Después de cargar la página: no compite con el primer pintado.
+const pedir = () => void rellenar().catch(() => {});
+if (bloques.length > 0) {
+  if (document.readyState === 'complete') pedir();
+  else addEventListener('load', pedir, { once: true });
+}

@@ -15,7 +15,6 @@
   --fuente-rotulo-pila: var(--fuente-rotulo), 'Old English Text MT', serif;
   --fuente-serifa-pila: var(--fuente-serifa), Georgia, serif;
   --fuente-versalitas-pila: var(--fuente-versalitas), var(--fuente-serifa), Georgia, serif;
-  --fuente-texto-pila: var(--fuente-texto), 'Segoe UI', system-ui, sans-serif;
 
   --hueco: 1rem;
   --ancho: 40rem;
@@ -130,7 +129,6 @@ h3 {
   min-width: var(--toque);
   padding: 0 0.25rem;
   color: var(--madera);
-  font-family: var(--fuente-texto-pila);
   font-size: 1rem;
 }
 
@@ -145,9 +143,10 @@ h3 {
   border-radius: 999px;
   background: var(--burdeos);
   color: var(--crema-clara);
-  font-family: var(--fuente-texto-pila);
+  font-family: var(--fuente-versalitas-pila);
   font-size: 1rem;
-  font-weight: 700;
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-decoration: none;
 }
 
@@ -173,8 +172,9 @@ h3 {
   outline-offset: 2px;
   background: var(--burdeos);
   color: var(--crema-clara);
-  font-family: var(--fuente-texto-pila);
-  font-weight: 700;
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
+  letter-spacing: 0.04em;
   text-align: center;
   text-decoration: none;
 }
@@ -212,7 +212,6 @@ h3 {
   margin-top: 0.5rem;
   color: var(--texto-suave);
   font-size: 1rem;
-  font-style: italic;
 }
 
 /* Tarjeta con flecha: se solapa con lo que tiene encima. */
@@ -296,6 +295,11 @@ h3 {
   margin: 1.25rem 0 0;
   padding-top: 1rem;
   border-top: 1px solid var(--ocre);
+}
+
+.pizarra__otro strong {
+  font-family: var(--fuente-versalitas-pila);
+  font-weight: 500;
 }
 
 /* Filas de acción con flecha: las paradas y «Ver carta» cuando no hay platos de hoy. */
