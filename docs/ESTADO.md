@@ -8,7 +8,7 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-05 (demo final: diseño nuevo y vídeos creados con IA para la demo al dueño) |
+| Actualizado | 2026-11-05 (demo final, ajuste tras la revisión de Kara: recorrido más corto y acciones integradas) |
 | `main` al escribirlo | `06312b0` |
 | Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` y, para la demo final, en `f2-demo-final` |
 
@@ -89,20 +89,23 @@ Hecho en `f2-recorrido`:
 - Diseño nuevo de portada, recorrido y /carta: crema y burdeos, marcos, tarjetas con flecha, cabecera con Llamar, carta con
   pestañas y desplegables, y tres fuentes propias alojadas en el proyecto. Sin scroll horizontal a 360 y 390 px en
   Chromium y WebKit, con y sin «reducir movimiento». VERIFICADO
-- Recorrido de 7,25 pantallas con una interacción cada 1,25 como mucho, solo con acciones y datos existentes: Cómo llegar,
-  Platos de hoy, Menú del día, Llamar, Dejar reseña e idioma. La última pieza se funde con la crema. VERIFICADO
+- Ajuste tras la revisión de Kara: recorrido de 4 pantallas de scroll (la pista mide 5 ventanas, con el escenario fijo) y
+  portada entera de 5,83 ventanas a 390×844. Cada grupo de acciones queda fijo en su zona, 1 pantalla de scroll seguida
+  como mínimo: Cómo llegar en el aire; menú, platos de hoy y Ver carta en la entrada; Llamar y horario de hoy en la barra y
+  la cafetera; Dejar reseña e idioma en la salida. Debajo, solo horario y pie. Con «reducir movimiento», la portada
+  estática con todas las acciones. VERIFICADO
 - Platos de hoy: ruta de solo lectura. Si la hoja falla sale la última versión válida; si cae la ruta, solo «Ver carta».
   VERIFICADO
-- Maqueta final (fuera de git): cuatro vídeos y dos imágenes creados con IA, 212 archivos y 6,08 MB de 8, con etiqueta,
-  créditos, `"ia": "local"` y `"origen": "creada"`. El barrido interior salió con un sitio inventado: corte directo,
-  decisión de Kara. Detalle en el inventario. Desplegada en la demo privada con noindex y `recorrido.json` igual al
-  local. VERIFICADO; verla en móviles reales y la pregunta al dueño, «¿es tu local?», pendientes.
-- Pruebas: `npm test` 300 de 300 con el sintético y 150 de 150 con la
-  maqueta a 390 px; `test:datos` 59 de 59. VERIFICADO
-- Lighthouse en local con la maqueta: portada rendimiento 0,99, accesibilidad 1,00, LCP 2,12 s, CLS 0, TBT 0 ms, 377 KB, JS
-  12 KB; /carta 1,00 y 1,00, LCP 1,66 s, 130 KB, sin JS externo. VERIFICADO
-- `lab:medir`, canvas p95: Chromium 36 y 36,1 ms en local y en la demo; WebKit 47 y 46 ms, con una tanda local de 59 ms en
-  la misma sesión. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
+- Maqueta final (fuera de git): entrada con fotogramas reales de la puerta, mismas sumas, y efecto de empuje en el canvas;
+  barra, cafetera y salida, creadas con IA, con etiqueta, créditos, `"ia": "local"` y `"origen": "creada"`. 113 archivos y
+  3,06 MB de 8. Detalle en el inventario. Desplegada en la demo privada con noindex y `recorrido.json` igual al local.
+  VERIFICADO; verla en móviles reales y la pregunta al dueño, «¿es tu local?», pendientes.
+- Pruebas: `npm test` 324 de 324 con el sintético y 162 de 162 con la maqueta a 390 px; `test:datos` 61 de 61. VERIFICADO
+- Lighthouse en local con la maqueta: portada rendimiento 0,98, accesibilidad 1,00, LCP 2,28 s, CLS 0, TBT 0 ms, 379 KB, JS
+  13 KB; /carta 1,00 y 1,00, LCP 1,67 s, 130 KB. VERIFICADO
+- Recorrido real, intervalo entre fotogramas al bajar, p95: WebKit 31 ms en local y en la demo; Chromium 17 ms. `lab:medir`,
+  canvas p95: Chromium 35 ms; **WebKit 68 ms en local y en la demo, por encima de los 50 ms**, en una página de prueba que no
+  usa estas piezas y que ya oscilaba entre 46 y 78 ms. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
 
 ## A medias
 
