@@ -6,9 +6,10 @@
 //     $MATERIAL/f2/maqueta/aceptadas/<id>.mp4; lleva "ia": "local" en recorrido.json y su etiqueta visible;
 //   - «foto»: la foto real sin IA, con acercamiento y desplazamiento lentos hechos con recortes de la propia foto
 //     (ningún píxel inventado), si ninguna versión de IA pasó la revisión;
-//   - «creada» (excepción ampliada de Kara del 2026-11-04, CLAUDE.md): imagen NUEVA creada con IA a partir de fotogramas
-//     reales, aceptada en la revisión y guardada en $MATERIAL/f2/maqueta/creadas/intentos/<imagen>.png. Lleva
-//     "ia": "local" obligatoriamente: sin él, el ensamblado falla. Se usa fija, con el mismo recorte progresivo.
+//   - «creada» (excepciones ampliadas de Kara del 2026-11-04, CLAUDE.md): imagen o vídeo NUEVOS creados con IA a partir de
+//     fotogramas reales y aceptados en la revisión. Llevan "ia": "local" obligatoriamente: sin él, el ensamblado falla.
+//     Con «imagen», fija y con el mismo recorte progresivo, desde $MATERIAL/f2/maqueta/creadas/intentos/<imagen>.png.
+//     Con «video», fotogramas del vídeo aceptado en $MATERIAL/f2/maqueta/final/intentos/<video>.mp4.
 //
 // Uso:
 //   node scripts/media/maqueta.mjs pieza <id>     vídeo aceptado → fotogramas WebP 540×960 (sin audio ni metadatos)
@@ -59,11 +60,12 @@ function salida(id) {
 /** Vídeo aceptado → fotogramas: sin audio ni metadatos, el mismo ajuste de color de los tramos, 540×960, WebP. */
 function exportarPieza(id) {
   const p = pieza(id);
-  if (p.origen !== 'higgsfield') fallar(`la pieza «${id}» no es de Higgsfield (origen «${p.origen}»): usa «sinia»`);
-  const entrada = join(DIR, 'aceptadas', `${id}.mp4`);
+  if (p.origen !== 'higgsfield' && !p.video) fallar(`la pieza «${id}» no es un vídeo (origen «${p.origen}»): usa «sinia»`);
+  const entrada = p.video ? join(DIR, 'final', 'intentos', `${p.video}.mp4`) : join(DIR, 'aceptadas', `${id}.mp4`);
   if (!existsSync(entrada)) fallar(`falta el vídeo aceptado ${entrada}`);
   const { eq, nitidez } = tramos.color;
-  const filtro = [`scale=${ancho}:${alto}:force_original_aspect_ratio=increase:flags=lanczos`, `crop=${ancho}:${alto}`, `eq=${eq}`, nitidez, `fps=${p.fps}`].join(',');
+  const recorte = p.recorte ? [`crop=${p.recorte.ancho}:${p.recorte.alto}:${p.recorte.x}:${p.recorte.y}`] : [];
+  const filtro = [...recorte, `scale=${ancho}:${alto}:force_original_aspect_ratio=increase:flags=lanczos`, `crop=${ancho}:${alto}`, `eq=${eq}`, nitidez, `fps=${p.fps}`].join(',');
   ffmpeg(['-i', entrada, '-vf', filtro, '-c:v', 'libwebp', '-quality', String(p.calidad ?? 60), '-compression_level', '6', '-preset', 'photo', ...SIN_EXTRAS, join(salida(id), '%04d.webp')]);
 }
 
@@ -105,7 +107,7 @@ function ensamblar() {
   const piezas = [];
   for (const p of config.piezas) {
     const origen = join(DIR, '05-export', p.id);
-    if (!existsSync(origen)) fallar(`falta la pieza exportada ${origen} (maqueta.mjs ${p.origen === 'higgsfield' ? 'pieza' : 'sinia'} ${p.id})`);
+    if (!existsSync(origen)) fallar(`falta la pieza exportada ${origen} (maqueta.mjs ${p.origen === 'higgsfield' || p.video ? 'pieza' : 'sinia'} ${p.id})`);
     cpSync(origen, join(DESTINO, p.id), { recursive: true });
     const fotogramas = readdirSync(origen).filter((f) => f.endsWith('.webp')).length;
     piezas.push({
@@ -116,13 +118,15 @@ function ensamblar() {
       zona: p.zona,
       ...(p.origen === 'higgsfield' || p.origen === 'creada' ? { ia: 'local' } : {}),
       ...(p.origen === 'creada' ? { origen: 'creada' } : {}),
+      ...(p.parada ? { parada: p.parada } : {}),
+      ...(p.fundido ? { fundido: true } : {}),
     });
   }
   const recorrido = {
     material: 'maqueta',
     ancho,
     alto,
-    aire: { ...real.aire, pantallas: config.aire.pantallas },
+    aire: { ...real.aire, pantallas: config.aire.pantallas, ...(config.aire.parada ? { parada: config.aire.parada } : {}) },
     tramos: piezas,
     ia: real.ia,
   };
