@@ -40,7 +40,7 @@ Esa línea importa el estado del proyecto y lo carga junto con este CLAUDE.md al
   - **Entrada**: solo lo que ya está en Higgsfield (las 8 entradas y las 6 imágenes aceptadas de la maqueta 2) y las imágenes nuevas generadas a partir de ellas. Subir algo nuevo necesita antes el OK de Kara con la lista exacta.
   - **Método**: imagen primero y después vídeo desde esa imagen. Los barridos, con fotograma inicial y final de imágenes aceptadas y un solo movimiento rápido. Prompt de 15 a 40 palabras, solo movimiento y cámara; 5 s como mucho; sonido apagado; `get_cost` antes de cada generación; hasta 6 intentos por pieza.
   - **Aceptación**: sin texto legible, personas ni manos; materiales, colores y luz coherentes con los fotogramas; nada fuera de lo filmado; sin artefactos a tamaño de móvil. En la cafetera se permiten café, vapor y tazas; nada de comida.
-  - **Salida**: al canvas con el mismo pipeline, en fotogramas WebP sin audio ni metadatos, cada pieza con `"ia": "local"`, `"origen": "creada"` y su etiqueta visible.
+  - **Salida**: al canvas con el mismo pipeline, en fotogramas WebP sin audio ni metadatos, cada pieza con `"ia": "local"`, `"origen": "creada"` y su etiqueta visible («Creado con IA a partir de fotogramas reales del local» / «Created with AI from real frames of the venue»), también en los créditos.
 
 ### Material
 - Al repositorio solo entra material procesado, sin GPS, sin audio y sin caras identificables.
