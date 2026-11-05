@@ -177,3 +177,63 @@ plates, food, drinks, labelled bottles, screens.»
 - **cafetera libre 1**: «Close on the stacked white cups on top of the machine, 85 mm, shallow depth of field, stone wall blurred. Warm highlights on the porcelain and steel, the calm of the first coffee of the day.»
 - **cafetera fiel 2** (excluye además «gauges, saucers»): «Three-quarter view of the white espresso machine standing on a stainless steel counter, white cups stacked on top, steel group heads, dark grey stone wall behind, counter level, 50 mm. Plain unbranded surfaces. Bright even light.»
 - **cafetera libre 2** (excluye además «gauges, saucers, boxes»): «Close on the white cups stacked on top of the white machine, 85 mm, shallow depth of field, the dark grey stone wall behind softly blurred and clearly grey. Warm highlights on the porcelain and steel, the calm of the first coffee of the day.»
+
+## F2: demo final, vídeos e imágenes creados con IA
+
+Estado al 2026-11-05. Sustituye a las piezas de la maqueta 2, que quedan arriba como historial. Excepción ampliada otra
+vez, solo para la demo privada (`CLAUDE.md`). **Producción sigue solo con material real y la maqueta se retira después
+de la demo al dueño.** `recorrido-maqueta/` no entra en git (212 archivos, 6,08 MB de 8); sumas en
+`scripts/media/manifiesto-maqueta.json`, proceso en `scripts/media/tramos-maqueta.json`. Aire y nubes, los del material
+real. Longitud: 7,25 pantallas.
+
+Entradas: solo lo que ya estaba en Higgsfield, las 8 referencias y las 6 imágenes aceptadas de la maqueta 2, y las
+imágenes nuevas generadas a partir de ellas. **No se subió nada nuevo.**
+
+Todas las piezas son **IA** (`"ia": "local"`, `"origen": "creada"`) y se declaran con la etiqueta visible «Creado con IA
+a partir de fotogramas reales del local» / «Created with AI from real frames of the venue», en los créditos del recorrido
+(es/en) y en esta tabla. Fotogramas WebP de 540×960, sin audio ni metadatos. Falta verlas en un móvil real y la respuesta
+del dueño: «¿es tu local?».
+
+| Pieza | Tipo | Entradas | Trabajo | Fotogramas | Parada que sigue |
+|---|---|---|---|---|---|
+| `barrido-entrada` | Vídeo, 3 s | Inicio `llegada`, final `umbral` | `4e353c49-2769-4c42-9ed5-ac0312f0a25e` | 37 | — |
+| `barrica` | Imagen de la maqueta 2 | — | `3e9ad380-dc52-4aab-949f-ee93b1b4cf13` | 20 | Platos de hoy |
+| `escalera` | Imagen de la maqueta 2 | — | `9e9c56d3-b85c-4eeb-bcdb-2739181b186f` | 20 | — |
+| `barra` | Vídeo, 4 s | Inicio `barra`, final `cafetera-frente` | `e8273960-bc05-439b-a4a1-1909654f37ed` | 40 | Menú del día |
+| `cafetera` | Vídeo, 5 s | Inicio `cafetera-frente` | `1aa445c3-4070-407b-a506-4b958bfd0838` | 50 | Llamar |
+| `barrido-salida` | Vídeo, 3 s | Inicio `barrica`, final `salida` | `9e026a44-2a74-43e1-a055-800a7d4becf7` | 37 | Dejar reseña e idioma |
+
+Antes de la primera pieza va la parada Cómo llegar, sobre la ortofoto. `barra` y `cafetera` se recortan a 650×1156 desde
+x = 31, y = 110: quita la banda oscura de arriba de `cafetera-frente`. `barrica` y `escalera`, con recorte progresivo.
+
+Imágenes nuevas, modelo `nano_banana_2_1`, 2k, 9:16, `thinking_level` alto, semilla 5112026. Inicio común: «Images 1 and 2
+define the place, materials, colours and light; do not copy their framing.» Final común: «Realistic photograph, vertical
+9:16. Exclude text, letters, numbers, logos, signs, people, hands, plates, food, labelled bottles, screens, boards,
+shelves.»
+
+| Intento | Entradas | Trabajo | Resultado | Motivo |
+|---|---|---|---|---|
+| cafetera-frente fiel 1 | `cafetera` aceptada, `r-cafetera` | `39eb5a67-050a-4fd6-b698-a45187f9fadc` | **Aceptado** | Máquina blanca, tazas, acero y piedra, sin texto. La banda oscura de arriba se recorta |
+| cafetera-frente libre 1 | Ídem | `5861e72e-511d-4843-b100-46a34c101c2b` | Válido, no elegido | Limpio, pero el detalle del grupo no sirve de final para la barra |
+| salida fiel 1 | `umbral` aceptada, `r-fachada` | `5520e35d-5dce-4fb9-bc88-b423ceebdf69` | Rechazado | Puertas macizas de madera: las reales son de cristal |
+| salida libre 1 | Ídem | `56d1aa7e-9a20-4aa5-ab1a-b9fdc8cede1e` | **Aceptado** | Puertas de cristal, umbral de piedra y arranque de la escalera; fuera, solo luz |
+
+Prompts de las imágenes:
+- **cafetera-frente fiel**: «Front view of the white espresso machine on a stainless steel counter, one empty white cup under the group head, dark grey stone wall, counter level, 50 mm. Bright even light.»
+- **cafetera-frente libre**: «Close three-quarter view of the group head above one white cup on the steel drip tray, 70 mm, shallow depth of field, dark grey stone wall blurred. Warm highlights on the steel.»
+- **salida fiel**: «From inside at standing height, 28 mm: the open burgundy doors from behind, terracotta floor in the foreground, and beyond the doorway only pure white overexposed sunlight.»
+- **salida libre**: «From low on the terracotta floor, 24 mm, the open burgundy doors and threshold, sunlight flooding in and blooming to pure white beyond the doorway, no exterior visible.»
+
+Vídeos, modelo `kling4_0`, imagen a vídeo, 720p, 9:16, sin audio pedido. Kling devuelve una pista de audio y el pipeline
+la quita (`check:media` lo comprueba).
+
+| Intento | Trabajo | Resultado | Motivo | Prompt |
+|---|---|---|---|---|
+| barrido-entrada 1 | `3efb812a-d553-4195-9ac4-69bf0bed27d7` | Rechazado | Atraviesa el espejo e inventa otra puerta con toldo, vigas y un arco | Very fast single dolly forward through the open burgundy doors with strong motion blur; the camera rushes inside, drops low and stops sharply over the terracotta floor. One continuous shot. |
+| barrido-entrada 2 | `4e353c49-2769-4c42-9ed5-ac0312f0a25e` | **Aceptado** | Cruza el umbral, baja al suelo y no sale de la entrada | One quick short dolly just across the threshold, tilting down toward the terracotta floor with motion blur, camera lands low and stops. Stays in this one room. |
+| barrido-interior 1 | `00062f8a-ff6c-4e61-9b18-45cadaa5414e` | Rechazado | Pasa por un comedor inventado, con cuadro y muebles. Decisión de Kara: corte directo, con `escalera` en su lugar | Very fast whip pan to the right with strong horizontal motion blur, one continuous move that settles sharply on the granite counter. Camera only, nothing else moves. |
+| barra 1 | `e8273960-bc05-439b-a4a1-1909654f37ed` | **Aceptado** | Avance continuo por el granito hasta la cafetera | Smooth fast glide low along the granite counter toward the white espresso machine, focus pulling onto it, stopping steady in front of the machine. One continuous shot. |
+| cafetera 1 | `1aa445c3-4070-407b-a506-4b958bfd0838` | **Aceptado** | Café en dos hilos, vapor y acercamiento a la taza, sin texto ni comida | Locked camera, then a slow push-in that stops on the cup. Coffee runs from the group head into the white cup and soft steam rises. |
+| barrido-salida 1 | `9e026a44-2a74-43e1-a055-800a7d4becf7` | **Aceptado** | No sale del vestíbulo y acaba en la luz de la puerta. La escalera pasa desenfocada, sin sus luces | Very fast single dolly backward with strong motion blur, the camera pulls through the room toward the open doors and ends in bright white sunlight. One continuous shot. |
+
+10 generaciones, 55,25 créditos: 4 imágenes a 2 y 6 vídeos (6,75, 6,75, 6,75, 6,75, 9 y 11,25).
