@@ -29,13 +29,12 @@ function peticionesDeMaterial(page: Page): string[] {
   return urls;
 }
 
-/** Lleva el scroll a un punto del recorrido, en pantallas desde el principio (la pista mide la suma de todas). */
+/** Lleva el scroll a un punto del recorrido, en las pantallas de sus partes desde el principio. */
 async function irA(page: Page, pantalla: number) {
   await page.evaluate((p) => {
-    const caja = (document.querySelector('[data-recorrido-pista]') as HTMLElement).getBoundingClientRect();
-    const total = caja.height / innerHeight;
-    const desplazable = caja.height - innerHeight;
-    scrollTo(0, caja.top + scrollY + (p / total) * desplazable);
+    const pista = document.querySelector('[data-recorrido-pista]') as HTMLElement;
+    const caja = pista.getBoundingClientRect();
+    scrollTo(0, caja.top + scrollY + (p / Number(pista.dataset.pantallas)) * (caja.height - innerHeight));
   }, pantalla);
   await page.waitForTimeout(200);
 }
@@ -45,37 +44,54 @@ interface ParteRecorrido {
   inicio: number;
   pantallas: number;
   ia: boolean;
+  panel?: string;
 }
 
 /**
  * Partes del recorrido tal como las monta cliente.ts, a partir del recorrido.json que se sirve: así las pruebas valen
- * con el material sintético (CI), con el real y con la maqueta. Tras el último tramo de cada zona con parada, su parada.
+ * con el material sintético (CI), con el real y con la maqueta. Con «panel», sin paradas; sin él, las de zona.
  */
 async function partesDelRecorrido(page: Page): Promise<ParteRecorrido[]> {
   const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as {
-    aire: { pantallas: number; parada?: string };
-    tramos: { id: string; pantallas: number; zona?: string; ia?: string; parada?: string }[];
+    aire: { pantallas: number; panel?: string };
+    tramos: { id: string; pantallas: number; zona?: string; ia?: string; panel?: string }[];
   };
-  const partes: ParteRecorrido[] = [{ nombre: 'aire', inicio: 0, pantallas: config.aire.pantallas, ia: false }];
+  const conPaneles = Boolean(config.aire.panel);
+  const partes: ParteRecorrido[] = [{ nombre: 'aire', inicio: 0, pantallas: config.aire.pantallas, ia: false, panel: config.aire.panel }];
   let inicio = config.aire.pantallas;
-  if (config.aire.parada) {
-    partes.push({ nombre: `parada-${config.aire.parada}`, inicio, pantallas: 0.5, ia: false });
-    inicio += 0.5;
-  }
   config.tramos.forEach((t, i) => {
     const zona = t.zona ?? t.id;
-    partes.push({ nombre: t.id, inicio, pantallas: t.pantallas, ia: t.ia === 'local' });
+    partes.push({ nombre: t.id, inicio, pantallas: t.pantallas, ia: t.ia === 'local', panel: t.panel });
     inicio += t.pantallas;
     const siguiente = config.tramos[i + 1];
     const ultimoDeZona = !siguiente || (siguiente.zona ?? siguiente.id) !== zona;
-    const declaradas = Boolean(config.aire.parada) || config.tramos.some((x) => x.parada);
-    const clave = t.parada ?? (!declaradas && ultimoDeZona && (zona === 'puerta' || zona === 'barra') ? zona : undefined);
-    if (clave) {
-      partes.push({ nombre: `parada-${clave}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
+    if (!conPaneles && ultimoDeZona && (zona === 'puerta' || zona === 'barra')) {
+      partes.push({ nombre: `parada-${zona}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
       inicio += 0.5;
     }
   });
   return partes;
+}
+
+const ALTO = 844;
+
+/** Grupo de acciones a la vista y enlaces en pantalla, fuera de la cabecera. */
+async function aLaVista(page: Page, pantallaDeScroll: number) {
+  await page.evaluate(([y]) => scrollTo(0, y), [pantallaDeScroll * ALTO]);
+  await page.waitForTimeout(40);
+  return page.evaluate(() => {
+    const seVe = (a: Element) => {
+      const r = a.getBoundingClientRect();
+      const estilo = getComputedStyle(a);
+      return estilo.visibility === 'visible' && estilo.display !== 'none' && r.height > 0 && r.bottom > 56 && r.top < innerHeight;
+    };
+    const enlaces = [...document.querySelectorAll('a')].filter((a) => !a.closest('.cabecera') && !a.classList.contains('saltar') && seVe(a));
+    return {
+      panel: document.querySelector<HTMLElement>('.recorrido__parada--visible')?.dataset.parada ?? null,
+      enPanel: enlaces.filter((a) => a.closest('[data-parada]')).length,
+      total: enlaces.length,
+    };
+  });
 }
 
 /** Lleva el scroll a una parte del recorrido (por defecto, a su centro). */
@@ -124,7 +140,6 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(seccion).toHaveAttribute('data-parte', 'aire');
       // Se va al centro de cada parte, en el orden del recorrido.json servido.
       const partes = await partesDelRecorrido(page);
-      expect(partes.filter((p) => p.nombre.startsWith('parada-')).length).toBeGreaterThanOrEqual(2);
       const vistas: string[] = [];
       for (const p of partes) {
         await irA(page, p.inicio + p.pantallas / 2);
@@ -134,8 +149,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       // Con el material sintético (CI), lo dice en los créditos.
       const { material } = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { material: string };
       if (material === 'sintetico') await expect(page.locator('[data-recorrido-sintetico]')).toBeVisible();
-      // Después del recorrido sigue la portada de F1.
-      await mismasFunciones(page, botones);
+      // Después del recorrido, el horario.
+      await expect(page.locator('.portada__horario dd')).toHaveCount(7);
     });
 
     test('rótulo del aire: el nombre completo del archivo de datos, con su espacio y en dos líneas', async ({ page }) => {
@@ -156,76 +171,96 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       expect(tipo.abajo).toBeLessThan(gotica.mitad);
     });
 
-    test('longitud: ningún tramo pasa de 1 pantalla, cada parada 0,5 y a 390×844 la pista mide 8 ventanas como mucho', async ({ page }) => {
-      // Encargo de la demo final (2026-11-04): tramos ≤ 1 pantalla, paradas de 0,5, total ≤ 8.
-      await page.setViewportSize({ width: 390, height: 844 });
-      const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { aire: { pantallas: number }; tramos: { pantallas: number }[] };
-      expect(config.aire.pantallas).toBeLessThanOrEqual(1);
-      for (const t of config.tramos) expect(t.pantallas).toBeLessThanOrEqual(1);
+    test('longitud a 390×844: 4 pantallas de scroll como mucho y la portada entera, 7', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: ALTO });
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
-      const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
       const partes = await partesDelRecorrido(page);
-      for (const p of partes.filter((x) => x.nombre.startsWith('parada-'))) expect(p.pantallas).toBe(0.5);
+      for (const p of partes) expect(p.pantallas).toBeLessThanOrEqual(1);
       const pantallas = partes.reduce((a, p) => a + p.pantallas, 0);
-      expect(alto).toBeCloseTo(pantallas * 844, 0);
-      expect(alto).toBeLessThanOrEqual(8 * 844);
+      expect(pantallas).toBeLessThanOrEqual(4);
+      const pista = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
+      // El escenario fijo mide 1 ventana: la pista mide esa más lo que se desplaza.
+      expect(pista - ALTO).toBeCloseTo(pantallas * ALTO, 0);
+      const pagina = await page.evaluate(() => document.documentElement.scrollHeight);
+      expect(pagina).toBeLessThanOrEqual(7 * ALTO);
     });
 
-    test('una interacción cada 1,5 pantallas como mucho, y cada parada solo con acciones y datos que ya existen', async ({ page }) => {
+    test('paneles a 390×844: el menú antes de 1,5 pantallas, cada grupo 1 pantalla seguida y siempre una acción a la vista', async ({ page }) => {
+      await page.setViewportSize({ width: 390, height: ALTO });
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const partes = await partesDelRecorrido(page);
+      const fin = partes.reduce((a, p) => a + p.pantallas, 0);
+
+      // Cada 0,05 pantallas por el recorrido: ningún punto sin acciones del panel.
+      const seguidas = new Map<string, number>();
+      let anterior: string | null = null;
+      let racha = 0;
+      for (let i = 0; i <= Math.round(fin / 0.05); i++) {
+        const { panel, enPanel } = await aLaVista(page, i * 0.05);
+        expect(panel, `pantalla ${(i * 0.05).toFixed(2)}`).not.toBeNull();
+        expect(enPanel, `pantalla ${(i * 0.05).toFixed(2)}`).toBeGreaterThan(0);
+        racha = panel === anterior ? racha + 1 : 1;
+        anterior = panel;
+        if (panel) seguidas.set(panel, Math.max(seguidas.get(panel) ?? 0, racha));
+      }
+      expect([...seguidas.keys()]).toEqual(['llegar', 'menu', 'llamar', 'resena']);
+      for (const [panel, muestras] of seguidas) expect(muestras * 0.05, panel).toBeGreaterThanOrEqual(1);
+
+      // Cada 0,25 pantallas por toda la página: siempre una acción además de la cabecera.
+      const pagina = await page.evaluate(() => document.documentElement.scrollHeight / innerHeight);
+      for (let s = 0; s <= pagina - 1; s += 0.25) {
+        const { total } = await aLaVista(page, s);
+        expect(total, `pantalla ${s}`).toBeGreaterThan(0);
+      }
+    });
+
+    test('acciones de cada panel: solo las que ya existen, con datos del archivo', async ({ page }) => {
       const datos = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', import.meta.url), 'utf8'));
       const telefono = `tel:${String(datos.telefono.valor).replace(/[^\d+]/g, '')}`;
       const precio = new Intl.NumberFormat(ruta === '/' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(datos.menuDiario.valor.precio);
-      const [comoLlegar, llamar, menu, resena, otroIdioma] = ruta === '/' ? ['Cómo llegar', 'Llamar', 'Menú del día', 'Dejar reseña', 'English'] : ['Directions', 'Call', 'Set menu of the day', 'Write a review', 'Español'];
+      const [comoLlegar, llamar, menu, verCarta, hoy, resena, otroIdioma] =
+        ruta === '/'
+          ? ['Cómo llegar', 'Llamar', 'Menú del día', 'Ver carta', 'Hoy', 'Dejar reseña', 'English']
+          : ['Directions', 'Call', 'Set menu of the day', 'See the menu', 'Today', 'Write a review', 'Español'];
+      await page.setViewportSize({ width: 390, height: ALTO });
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
-      const partes = await partesDelRecorrido(page);
-      const paradas = partes.filter((p) => p.nombre.startsWith('parada-'));
-      // Tal como las pinta cliente.ts: si la prueba y el código difieren, este recorrido no coincide con las partes.
-      await irA(page, paradas[0].inicio + 0.25);
-      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', paradas[0].nombre);
-      const total = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height / innerHeight);
-      expect(total).toBeCloseTo(partes.reduce((a, p) => a + p.pantallas, 0), 1);
-      // Del principio a la primera parada y entre paradas seguidas.
-      let hasta = 0;
-      for (const p of paradas) {
-        expect(p.inicio - hasta).toBeLessThanOrEqual(1.5);
-        hasta = p.inicio + p.pantallas;
-      }
       const normalizar = (s: string) => s.replace(/\s+/g, ' ').trim();
       const panel = (clave: string) => page.locator(`[data-parada="${clave}"]`);
-      // Fuera de su media pantalla no se ven ni se pueden enfocar.
-      await irAParte(page, partes.find((p) => !p.nombre.startsWith('parada-') && p.nombre !== 'aire')?.nombre ?? 'aire');
-      await expect(panel('llegar')).toBeHidden();
 
-      await irAParte(page, 'parada-llegar');
-      // Detrás se ve el suelo, no el velo blanco de las nubes.
-      await expect
-        .poll(() => page.locator('[data-recorrido-lienzo]').evaluate((c: HTMLCanvasElement) => {
-          const [r, g, b] = c.getContext('2d')?.getImageData(c.width / 2, c.height / 2, 1, 1).data ?? [];
-          return Math.abs(r - 244) + Math.abs(g - 241) + Math.abs(b - 234);
-        }))
-        .toBeGreaterThan(30);
+      await aLaVista(page, 0.5);
       const llegar = panel('llegar').getByRole('link', { name: comoLlegar, exact: true });
       await expect(llegar).toHaveAttribute('href', new RegExp(`query_place_id=${datos.placeId.valor}`));
       await comprobarObjetivo(llegar);
 
-      await irAParte(page, 'parada-hoy');
-      await expect(panel('hoy')).toBeVisible();
-
-      await irAParte(page, 'parada-menu');
+      // El menú, antes de 1,5 pantallas.
+      await aLaVista(page, 1.25);
+      await page.waitForTimeout(300);
       const enlaceMenu = panel('menu').getByRole('link', { name: new RegExp(`^${menu}`) });
+      const enlaceCarta = panel('menu').getByRole('link', { name: verCarta, exact: true });
+      await expect(enlaceMenu).toBeInViewport();
+      await expect(enlaceCarta).toBeInViewport();
       await expect(enlaceMenu).toHaveAttribute('href', `${carta}#menu-del-dia`);
-      // El precio sale del archivo de datos. (Intl pone un espacio duro antes de «€»: se normalizan los dos lados.)
+      await expect(enlaceCarta).toHaveAttribute('href', carta);
+      // Intl pone un espacio duro antes de «€»: se normalizan los dos lados.
       expect(normalizar((await enlaceMenu.textContent()) ?? '')).toBe(normalizar(`${menu}: ${precio}`));
-      await comprobarObjetivo(enlaceMenu);
+      for (const enlace of [enlaceMenu, enlaceCarta]) await comprobarObjetivo(enlace);
 
-      await irAParte(page, 'parada-llamar');
+      await aLaVista(page, 2.5);
       const enlaceLlamar = panel('llamar').getByRole('link', { name: llamar, exact: true });
       await expect(enlaceLlamar).toHaveAttribute('href', telefono);
       await comprobarObjetivo(enlaceLlamar);
+      // El horario de hoy, en la hora de Madrid y del archivo de datos.
+      const dia = new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', weekday: 'long' }).format(new Date()).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const horas: string = datos.horario.valor[dia];
+      const visibles = panel('llamar').locator('.recorrido__horario:not([hidden])');
+      await expect(visibles).toHaveCount(1);
+      expect(normalizar((await visibles.textContent()) ?? '')).toMatch(new RegExp(`^${hoy}: `));
+      if (/\d/.test(horas)) await expect(visibles).toContainText(horas);
 
-      await irAParte(page, 'parada-resena');
+      await aLaVista(page, 3.5);
       const enlaceResena = panel('resena').getByRole('link', { name: resena, exact: true });
       const enlaceIdioma = panel('resena').getByRole('link', { name: otroIdioma, exact: true });
       await expect(enlaceResena).toHaveAttribute('href', new RegExp(`placeid=${datos.placeId.valor}`));
@@ -233,10 +268,33 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       for (const enlace of [enlaceResena, enlaceIdioma]) await comprobarObjetivo(enlace);
     });
 
+    test('la entrada es real: sin marca de IA ni etiqueta', async ({ page }) => {
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { tramos: { id: string; ia?: string; origen?: string }[] };
+      const entrada = config.tramos[0];
+      expect(entrada.id).toBe('puerta');
+      expect(entrada.ia).toBeUndefined();
+      expect(entrada.origen).not.toBe('creada');
+      await irAParte(page, 'puerta');
+      await expect(page.locator('[data-recorrido-etiqueta-ia]')).toBeHidden();
+    });
+
+    test('debajo del recorrido, solo el horario y el pie: ninguna función repetida', async ({ page }) => {
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      await expect(page.locator('.portada__horario')).toBeVisible();
+      await expect(page.locator('.pie')).toBeVisible();
+      for (const repetido of ['.tarjeta', '.pizarra', '.portada__hoy', '.portada__foto']) await expect(page.locator(repetido).first()).toBeHidden();
+      // El título sigue en la página para el lector de pantalla.
+      await expect(page.locator('h1')).toHaveCount(1);
+    });
+
     test('la última pieza se funde con la crema de la página', async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
-      await irAParte(page, 'parada-resena');
+      const partes = await partesDelRecorrido(page);
+      await irAParte(page, partes[partes.length - 1].nombre, 0.99);
       await expect(page.locator('[data-recorrido-fundido]')).toHaveCSS('opacity', '1');
       // Sobre la crema ya no se ve ninguna pieza: sin etiqueta de IA.
       await expect(page.locator('[data-recorrido-etiqueta-ia]')).toBeHidden();
@@ -251,14 +309,22 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
         const page = await contexto.newPage();
         await page.route('**/recorrido/hoy*', (r) => r.fulfill({ json: { platos: ['Plato uno', 'Plato dos'] } }));
         await page.goto(ruta);
-        const bloque = page.locator('.portada [data-hoy]');
+        const conRecorrido = movimiento === 'no-preference';
+        // Con recorrido, en el panel del menú; sin él, en la portada.
+        const bloque = page.locator(conRecorrido ? '[data-parada="menu"] [data-hoy]' : '.portada [data-hoy]');
+        if (conRecorrido) {
+          await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+          await irAParte(page, 'puerta');
+        }
         await expect(bloque.locator('li')).toHaveText(['Plato uno', 'Plato dos']);
-        await expect(bloque.getByRole('link', { name: verCarta })).toHaveCount(0);
+        // El panel lleva siempre Ver carta; la portada no lo repite con la barra fija en pantalla.
+        await expect(bloque.getByRole('link', { name: verCarta })).toHaveCount(conRecorrido ? 1 : 0);
 
         await page.unroute('**/recorrido/hoy*');
         await page.route('**/recorrido/hoy*', (r) => r.abort());
         await page.goto(ruta);
         await expect(page.locator('html')).not.toHaveClass(/recorrido-pendiente/);
+        if (conRecorrido) await irAParte(page, 'puerta');
         await expect(bloque.locator('ul')).toBeHidden();
         const enlace = bloque.getByRole('link', { name: verCarta });
         await expect(enlace).toBeVisible();
@@ -295,13 +361,11 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await irAParte(page, ultimo.nombre); // la pieza «ia: local»
       await expect(marca).toBeVisible();
       await expect(marca).toHaveText(etiqueta);
-      await irAParte(page, partes[partes.indexOf(ultimo) + 1].nombre); // su parada deja quieta la pieza: la etiqueta sigue
-      await expect(marca).toBeVisible();
       await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
       await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);
     });
 
-    test('con «reducir movimiento»: sin canvas animado ni vídeo, sin material y con las mismas funciones', async ({ browser }) => {
+    test('con «reducir movimiento»: sin canvas animado ni vídeo, sin material y con todas las acciones en la portada', async ({ browser }) => {
       const contexto = await browser.newContext({ reducedMotion: 'reduce' });
       const page = await contexto.newPage();
       const material = peticionesDeMaterial(page);
@@ -313,6 +377,10 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       expect(material).toEqual([]);
       await mismasFunciones(page, botones);
       await expect(page.getByRole('link', { name: barra })).toBeVisible();
+      // Idioma, menú con su precio y horario, también aquí.
+      await expect(page.locator('.cabecera a[hreflang]')).toBeVisible();
+      await expect(page.locator('.pizarra__precio')).toBeVisible();
+      await expect(page.locator('.portada__hoy')).toBeVisible();
       await contexto.close();
     });
 

@@ -7,6 +7,9 @@ const datos = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', im
 const placeId: string = datos.placeId.valor;
 const telefono = `tel:${String(datos.telefono.valor).replace(/[^\d+]/g, '')}`;
 
+// La portada estática, con todas las acciones: con el recorrido activo están en sus paneles (tests/recorrido.spec.ts).
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
 const PORTADAS = [
   { ruta: '/', carta: '/carta', botones: ['Llamar', 'Ir a la carta', 'Cómo llegar', 'Dejar reseña'] },
   { ruta: '/en/', carta: '/en/carta', botones: ['Call', 'Go to the menu', 'Directions', 'Write a review'] },

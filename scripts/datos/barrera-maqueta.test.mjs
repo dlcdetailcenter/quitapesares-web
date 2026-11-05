@@ -141,3 +141,29 @@ test('una pieza creada sin «"ia": "local"» hace fallar el ensamblado, sin toca
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('la entrada de la maqueta es material real: sin IA y con las sumas del material real', () => {
+  const config = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'tramos-maqueta.json'), 'utf8'));
+  const entrada = config.piezas[0];
+  assert.equal(entrada.origen, 'real');
+  assert.equal(entrada.ia, undefined);
+  const maqueta = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'manifiesto-maqueta.json'), 'utf8')).archivos;
+  const real = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'manifiesto-real.json'), 'utf8')).archivos;
+  const fotogramas = Object.keys(maqueta).filter((f) => f.startsWith(`${entrada.id}/`));
+  assert.ok(fotogramas.length > 0);
+  for (const f of fotogramas) assert.equal(maqueta[f].sha256, real[f]?.sha256, f);
+});
+
+test('una pieza real con "ia" hace fallar el ensamblado', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'maqueta-'));
+  const config = join(dir, 'tramos.json');
+  writeFileSync(config, JSON.stringify({ aire: { pantallas: 1 }, piezas: [{ id: 'puerta', origen: 'real', ia: 'local', zona: 'puerta', pantallas: 1 }] }));
+  try {
+    const script = join(raiz, 'scripts', 'media', 'maqueta.mjs');
+    const r = spawnSync(process.execPath, [script, 'ensamblar'], { cwd: raiz, encoding: 'utf8', env: { ...process.env, MAQUETA_CONFIG: config } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /pieza real con "ia": puerta/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
