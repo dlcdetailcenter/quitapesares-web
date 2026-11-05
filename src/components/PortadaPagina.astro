@@ -11,6 +11,8 @@ import type { Idioma } from '../lib/carta/hoja.ts';
 import { local } from '../lib/local.ts';
 import BarraCarta from '../recorrido/BarraCarta.astro';
 import Decision from '../recorrido/Decision.astro';
+import Flecha from '../recorrido/Flecha.astro';
+import PlatosHoy from '../recorrido/PlatosHoy.astro';
 import Recorrido from '../recorrido/Recorrido.astro';
 import { RECORRIDO_ENCENDIDO } from '../recorrido/interruptor.ts';
 
@@ -21,16 +23,18 @@ interface Props {
 const { idioma } = Astro.props;
 const t = TEXTOS[idioma];
 const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
+const rutaOtroIdioma = idioma === 'es' ? '/en/' : '/';
+// «Ver carta» solo sin la barra fija «Ir a la carta»: no se repite la misma acción en pantalla.
 const acciones = [
-  { href: rutaCarta, texto: t.verCarta },
+  ...(RECORRIDO_ENCENDIDO ? [] : [{ href: rutaCarta, texto: t.verCarta }]),
   { href: local.comoLlegarHref, texto: t.comoLlegar },
   { href: local.resenaHref, texto: t.dejarResena },
 ];
 ---
 
-<Base idioma={idioma} rutaOtroIdioma={idioma === 'es' ? '/en/' : '/'}>
+<Base idioma={idioma} rutaOtroIdioma={rutaOtroIdioma}>
   {RECORRIDO_ENCENDIDO && <Decision slot="head" />}
-  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} />}
+  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} rutaOtroIdioma={rutaOtroIdioma} />}
   <div class="contenedor portada">
     <!-- «Restaurante» en versalitas y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
     <h1 class="portada__nombre">
@@ -59,9 +63,7 @@ const acciones = [
           <li>
             <a class="tarjeta" href={href}>
               {texto}
-              <svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor">
-                <path d="M0 6h62M56 1l6 5-6 5" />
-              </svg>
+              <Flecha />
             </a>
           </li>
         ))
@@ -69,6 +71,15 @@ const acciones = [
     </ul>
 
     <Pizarra idioma={idioma} id="menu-del-dia" />
+
+    {
+      RECORRIDO_ENCENDIDO && (
+        <section class="portada__hoy" aria-labelledby="platos-hoy">
+          <h2 id="platos-hoy">{t.platosHoy}</h2>
+          <PlatosHoy idioma={idioma} />
+        </section>
+      )
+    }
 
     <section class="portada__horario" aria-labelledby="horario">
       <h2 id="horario">{t.horario}</h2>
@@ -144,10 +155,16 @@ const acciones = [
     padding: 0 1.25rem;
   }
 
+  .portada__hoy,
   .portada__horario {
     margin-top: 3.5rem;
   }
 
+  .portada__hoy {
+    min-height: 13rem;
+  }
+
+  .portada__hoy h2,
   .portada__horario h2 {
     font-size: 1.5rem;
     padding-bottom: 0.5rem;

@@ -1,6 +1,7 @@
-// Recorrido de la portada (F2): aire → puerta → parada → barra → parada, movido por el scroll nativo.
-// Las paradas (Recorrido.astro) son acciones que ya existen en la portada: Cómo llegar y Llamar tras la puerta; Ver carta
-// y Menú del día tras la barra. Cada una ocupa media pantalla y deja quieto el último fotograma de su zona.
+// Recorrido de la portada (F2): aire, piezas y paradas, movido por el scroll nativo.
+// Las paradas (Recorrido.astro) son acciones que ya existen en la portada. Cada una ocupa media pantalla y deja quieto
+// el último fotograma de lo que tiene delante. Las dice «parada» en recorrido.json, en el aire y en cada tramo; sin ese
+// campo (material real), la de la puerta tras su zona y la de la barra tras la suya.
 // Progresivo: la portada de F1 está completa en el HTML. El script de <head> (Recorrido.astro) solo marca
 // `recorrido-pendiente` si no hay «reducir movimiento», ahorro de datos ni red lenta. Aquí:
 //   1. se pregunta al Worker (/recorrido/estado), que dice que no si llega la cabecera Save-Data;
@@ -20,8 +21,12 @@ interface ConfigTramo {
   pantallas: number;
   /** Zona del local («puerta» o «barra»): su rótulo y su parada. Sin ella, la zona es el id. */
   zona?: string;
-  /** Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza animada con IA a partir de una foto real del local. */
+  /** Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza creada con IA a partir de fotogramas reales del local. */
   ia?: 'local';
+  /** Parada que va después de este tramo. */
+  parada?: string;
+  /** El tramo acaba en luz y se funde con la crema de la página. */
+  fundido?: boolean;
 }
 
 /** Pantallas de scroll de cada parada con acciones (al final de la puerta y de la barra). */
@@ -31,7 +36,7 @@ export interface ConfigRecorrido {
   material: 'real' | 'sintetico';
   ancho: number;
   alto: number;
-  aire: ConfigAire & { pantallas: number; pnoa: { anio: string } | null };
+  aire: ConfigAire & { pantallas: number; pnoa: { anio: string } | null; parada?: string };
   tramos: ConfigTramo[];
   /** Piezas de IA usadas en el recorrido (nunca el local): si hay alguna, se declara en los créditos. */
   ia: { es: string; en: string; herramienta: string }[];
@@ -132,6 +137,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   }
   if (iaLocal) seccion.querySelector<HTMLElement>('[data-recorrido-ia-local]')?.removeAttribute('hidden');
   const etiquetaIa = seccion.querySelector<HTMLElement>('[data-recorrido-etiqueta-ia]');
+  const fundido = seccion.querySelector<HTMLElement>('[data-recorrido-fundido]');
   if (config.material === 'sintetico') seccion.querySelector<HTMLElement>('[data-recorrido-sintetico]')?.removeAttribute('hidden');
   const pnoa = seccion.querySelector<HTMLElement>('[data-recorrido-pnoa]');
   if (pnoa && config.aire.pnoa) {
@@ -140,7 +146,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     pnoa.removeAttribute('hidden');
   }
 
-  // Partes del recorrido: el aire, cada tramo y, tras el último tramo de cada zona que tenga parada, su parada.
+  // Partes del recorrido: el aire, cada tramo y sus paradas. El tramo -1 de una parada es el aire.
   type Parte =
     | { tipo: 'aire'; pantallas: number }
     | { tipo: 'tramo'; tramo: number; pantallas: number; primeroDeZona: boolean }
@@ -148,12 +154,15 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   const zonaDe = (t: ConfigTramo) => t.zona ?? t.id;
   const paneles = new Map([...seccion.querySelectorAll<HTMLElement>('[data-parada]')].map((p) => [p.dataset.parada ?? '', p]));
   const partes: Parte[] = [{ tipo: 'aire', pantallas: config.aire.pantallas }];
+  const panelDelAire = config.aire.parada ? paneles.get(config.aire.parada) : undefined;
+  if (panelDelAire && config.aire.parada) partes.push({ tipo: 'parada', tramo: -1, pantallas: PANTALLAS_PARADA, panel: panelDelAire, zona: config.aire.parada });
   tramos.forEach((t, i) => {
     const zona = zonaDe(t);
     partes.push({ tipo: 'tramo', tramo: i, pantallas: t.pantallas, primeroDeZona: i === 0 || zonaDe(tramos[i - 1]) !== zona });
-    const panel = paneles.get(zona);
     const ultimoDeZona = i === tramos.length - 1 || zonaDe(tramos[i + 1]) !== zona;
-    if (panel && ultimoDeZona) partes.push({ tipo: 'parada', tramo: i, pantallas: PANTALLAS_PARADA, panel, zona });
+    const clave = t.parada ?? (ultimoDeZona ? zona : undefined);
+    const panel = clave ? paneles.get(clave) : undefined;
+    if (panel && clave) partes.push({ tipo: 'parada', tramo: i, pantallas: PANTALLAS_PARADA, panel, zona: clave });
   });
   // Alto de la pista: la suma de las pantallas de todas las partes, con la del propio escenario incluida (4 con
   // aire, puerta, barra y dos paradas). Cada parte avanza en proporción a sus pantallas a lo largo de lo que se desplaza.
@@ -215,16 +224,20 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       // La etiqueta de IA del local, mientras se ve una pieza de la maqueta (también en su parada, que la deja quieta).
       if (etiquetaIa) etiquetaIa.hidden = !(tramo >= 0 && tramos[tramo].ia === 'local');
     }
-    if (parte.tipo === 'aire') {
-      aire.pintar(t);
+    if (fundido) {
+      const seFunde = tramo >= 0 && tramos[tramo].fundido;
+      fundido.style.opacity = String(!seFunde ? 0 : parte.tipo === 'parada' ? 1 : suave((t - 0.55) / 0.45));
+    }
+    if (parte.tipo === 'aire' || tramo < 0) {
+      aire.pintar(parte.tipo === 'aire' ? t : 1);
     } else {
-      const rep = tramos[parte.tramo].rep;
+      const rep = tramos[tramo].rep;
       if (parte.tipo === 'parada') {
         // La parada deja quieto el último fotograma de su zona.
         rep.mostrar(rep.fotogramas - 1);
       } else {
         // Al empezar el primer tramo, las nubes se abren sobre él.
-        const nubes = parte.tramo === 0 ? 1 - suave(t / 0.25) : 0;
+        const nubes = tramo === 0 ? 1 - suave(t / 0.25) : 0;
         if (nubes > 0) rep.invalidar();
         rep.mostrar(t * (rep.fotogramas - 1));
         if (nubes > 0) aire.pintarNubes(1 + t, nubes);
@@ -237,7 +250,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       const o = enSuParte ? suave((t - 0.08) / 0.15) * (1 - suave((t - 0.75) / 0.15)) : 0;
       r.style.opacity = String(r.dataset.rotulo === 'aire' && parte.tipo === 'aire' ? Math.max(o, 1 - suave(t / 0.6)) : o);
     }
-    if (pnoa) pnoa.classList.toggle('recorrido__pnoa--oculta', parte.tipo !== 'aire');
+    if (pnoa) pnoa.classList.toggle('recorrido__pnoa--oculta', tramo >= 0);
   };
 
   addEventListener(

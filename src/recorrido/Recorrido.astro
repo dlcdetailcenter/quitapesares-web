@@ -2,23 +2,30 @@
 // Recorrido de F2 como capa sobre la portada de F1. Sin JavaScript, o con «reducir movimiento», ahorro de datos o red
 // lenta, la sección no se muestra y la portada es la de F1 más la barra «Ir a la carta».
 // Textos: el nombre sale de src/data/restaurante.json; los rótulos son neutros (src/i18n/textos.ts).
+import Flecha from './Flecha.astro';
+import PlatosHoy from './PlatosHoy.astro';
 import { TEXTOS } from '../i18n/textos.ts';
 import type { Idioma } from '../lib/carta/hoja.ts';
 import { local } from '../lib/local.ts';
 
 interface Props {
   idioma: Idioma;
+  /** La misma página en el otro idioma. */
+  rutaOtroIdioma: string;
 }
 
-const { idioma } = Astro.props;
+const { idioma, rutaOtroIdioma } = Astro.props;
 const t = TEXTOS[idioma];
 const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
+const otroIdioma: Idioma = idioma === 'es' ? 'en' : 'es';
 ---
 
 <section class="recorrido" data-recorrido aria-label={t.recorrido}>
   <div class="recorrido__pista" data-recorrido-pista>
     <div class="recorrido__escena">
       <canvas class="recorrido__lienzo" data-recorrido-lienzo aria-hidden="true"></canvas>
+      <!-- La última pieza acaba en luz y se funde con la crema de la página (cliente.ts). -->
+      <div class="recorrido__fundido" data-recorrido-fundido aria-hidden="true"></div>
       <div class="recorrido__rotulos" aria-hidden="true">
         <!-- Nombre completo como en la portada: «Restaurante» en pequeño encima y el nombre en gótica. El espacio entre
              los dos trozos va escrito para que el texto sea el nombre del archivo de datos y no «RestauranteQuitapesares». -->
@@ -33,17 +40,36 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
         <!-- El texto va en un solo span: el enlace es flex y, sin él, se perdían los espacios a los lados del año. -->
         <a href="https://www.scne.es/"><span>{t.pnoaPrefijo} <span data-anio></span> CC-BY 4.0 scne.es</span></a>
       </p>
-      <!-- Maqueta (excepción a FIDELIDAD, CLAUDE.md): visible mientras se ve una pieza animada con IA a partir de una foto. -->
+      <!-- Maqueta (excepción a FIDELIDAD, CLAUDE.md): visible mientras se ve una pieza creada con IA. -->
       <p class="recorrido__etiqueta-ia" data-recorrido-etiqueta-ia hidden>{t.etiquetaIaLocal}</p>
-      <!-- Paradas: al final de la puerta y de la barra, acciones que ya existen en la portada, con datos del archivo.
-           Solo se ven (y solo se pueden enfocar) en su media pantalla; fuera, visibility: hidden (cliente.ts). -->
+      <!-- Paradas: acciones que ya existen en la portada, con datos del archivo. La pieza que manda cada una dice cuál
+           («parada» en recorrido.json); sin ese campo, las de la puerta y la barra (material real). Solo se ven (y solo
+           se pueden enfocar) en su media pantalla; fuera, visibility: hidden (cliente.ts). -->
+      <nav class="recorrido__parada" data-parada="llegar" aria-label={t.comoLlegar}>
+        <a href={local.comoLlegarHref}>{t.comoLlegar}<Flecha /></a>
+      </nav>
+      <nav class="recorrido__parada" data-parada="hoy" aria-label={t.platosHoy}>
+        <p class="recorrido__parada-titulo">{t.platosHoy}</p>
+        <PlatosHoy idioma={idioma} />
+      </nav>
+      <nav class="recorrido__parada" data-parada="menu" aria-label={t.menuDelDia}>
+        <a href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span><Flecha /></a>
+      </nav>
+      <nav class="recorrido__parada" data-parada="llamar" aria-label={t.llamar}>
+        <a href={local.telefonoHref}>{t.llamar}<Flecha /></a>
+      </nav>
+      <nav class="recorrido__parada" data-parada="resena" aria-label={t.dejarResena}>
+        <a href={local.resenaHref}>{t.dejarResena}<Flecha /></a>
+        <a href={rutaOtroIdioma} hreflang={otroIdioma} lang={otroIdioma}>{t.otroIdioma}<Flecha /></a>
+      </nav>
       <nav class="recorrido__parada" data-parada="puerta" aria-label={t.paradaPuerta}>
-        <a href={local.comoLlegarHref}>{t.comoLlegar}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
-        <a href={local.telefonoHref}>{t.llamar}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
+        <a href={local.comoLlegarHref}>{t.comoLlegar}<Flecha /></a>
+        <a href={local.telefonoHref}>{t.llamar}<Flecha /></a>
       </nav>
       <nav class="recorrido__parada" data-parada="barra" aria-label={t.paradaBarra}>
-        <a href={rutaCarta}>{t.verCarta}<svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
-        <a href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span><svg viewBox="0 0 64 12" aria-hidden="true" fill="none" stroke="currentColor"><path d="M0 6h62M56 1l6 5-6 5" /></svg></a>
+        <p class="recorrido__parada-titulo">{t.platosHoy}</p>
+        <PlatosHoy idioma={idioma} />
+        <a href={`${rutaCarta}#menu-del-dia`}><span>{t.menuDelDia}: {local.precioMenuDiario(idioma)}</span><Flecha /></a>
       </nav>
     </div>
   </div>
@@ -92,6 +118,14 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
     height: 100%;
   }
 
+  .recorrido__fundido {
+    position: absolute;
+    inset: 0;
+    background: var(--crema);
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .recorrido__rotulos {
     position: absolute;
     inset: 0;
@@ -132,7 +166,7 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
     position: absolute;
     left: 0;
     right: 0;
-    bottom: 4.5rem;
+    top: calc(var(--alto-cabecera) + 0.25rem);
     margin: 0;
     padding: 0.25rem 0.75rem;
     text-align: center;
@@ -187,29 +221,13 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
     transition: opacity 0.2s ease;
   }
 
-  .recorrido__parada a {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    min-height: 3.5rem;
+  .recorrido__parada-titulo {
+    margin: 0.5rem 0 0.25rem;
     color: var(--burdeos);
     font-family: var(--fuente-versalitas-pila);
     font-size: 1.25rem;
     font-weight: 500;
     letter-spacing: 0.08em;
-    line-height: 1.2;
-    text-decoration: none;
-  }
-
-  .recorrido__parada a + a {
-    border-top: 1px solid var(--ocre);
-  }
-
-  .recorrido__parada svg {
-    flex: none;
-    width: 3.5rem;
-    height: 0.75rem;
   }
 
   .recorrido__parada--visible {
@@ -219,8 +237,8 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
 
   .recorrido__creditos {
     padding: 1rem var(--hueco);
-    background: var(--madera);
-    color: var(--crema);
+    background: var(--crema);
+    color: var(--texto-suave);
     font-size: 0.9375rem;
   }
 

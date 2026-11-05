@@ -8,8 +8,8 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 
 const PORTADAS = [
-  { ruta: '/', carta: '/carta', barra: 'Ir a la carta', botones: ['Llamar', 'Ver carta', 'Cómo llegar', 'Dejar reseña'] },
-  { ruta: '/en/', carta: '/en/carta', barra: 'Go to the menu', botones: ['Call', 'See the menu', 'Directions', 'Write a review'] },
+  { ruta: '/', carta: '/carta', barra: 'Ir a la carta', botones: ['Cómo llegar', 'Dejar reseña'] },
+  { ruta: '/en/', carta: '/en/carta', barra: 'Go to the menu', botones: ['Directions', 'Write a review'] },
 ] as const;
 
 async function estado(page: Page) {
@@ -24,7 +24,7 @@ function peticionesDeMaterial(page: Page): string[] {
   const urls: string[] = [];
   page.on('request', (r) => {
     const { pathname } = new URL(r.url());
-    if (pathname.startsWith('/recorrido/') && pathname !== '/recorrido/estado') urls.push(pathname);
+    if (pathname.startsWith('/recorrido/') && pathname !== '/recorrido/estado' && pathname !== '/recorrido/hoy') urls.push(pathname);
   });
   return urls;
 }
@@ -53,18 +53,24 @@ interface ParteRecorrido {
  */
 async function partesDelRecorrido(page: Page): Promise<ParteRecorrido[]> {
   const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as {
-    aire: { pantallas: number };
-    tramos: { id: string; pantallas: number; zona?: string; ia?: string }[];
+    aire: { pantallas: number; parada?: string };
+    tramos: { id: string; pantallas: number; zona?: string; ia?: string; parada?: string }[];
   };
   const partes: ParteRecorrido[] = [{ nombre: 'aire', inicio: 0, pantallas: config.aire.pantallas, ia: false }];
   let inicio = config.aire.pantallas;
+  if (config.aire.parada) {
+    partes.push({ nombre: `parada-${config.aire.parada}`, inicio, pantallas: 0.5, ia: false });
+    inicio += 0.5;
+  }
   config.tramos.forEach((t, i) => {
     const zona = t.zona ?? t.id;
     partes.push({ nombre: t.id, inicio, pantallas: t.pantallas, ia: t.ia === 'local' });
     inicio += t.pantallas;
     const siguiente = config.tramos[i + 1];
-    if ((zona === 'puerta' || zona === 'barra') && (!siguiente || (siguiente.zona ?? siguiente.id) !== zona)) {
-      partes.push({ nombre: `parada-${zona}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
+    const ultimoDeZona = !siguiente || (siguiente.zona ?? siguiente.id) !== zona;
+    const clave = t.parada ?? (ultimoDeZona && (zona === 'puerta' || zona === 'barra') ? zona : undefined);
+    if (clave) {
+      partes.push({ nombre: `parada-${clave}`, inicio, pantallas: 0.5, ia: t.ia === 'local' });
       inicio += 0.5;
     }
   });
@@ -88,10 +94,11 @@ async function comprobarObjetivo(enlace: ReturnType<Page['locator']>) {
   expect(contorno).not.toBe('none');
 }
 
-/** La portada de F1 entera: foto, nombre y los cuatro botones, más la pizarra y el horario. */
+/** La portada entera: foto, nombre, Llamar en la cabecera, sus tarjetas, la pizarra y el horario. */
 async function mismasFunciones(page: Page, botones: readonly string[]) {
   await expect(page.locator('picture img')).toBeVisible();
   await expect(page.locator('h1')).toBeVisible();
+  await expect(page.locator('.cabecera__llamar')).toBeVisible();
   // Los de la portada (las paradas del recorrido repiten algunos: aquí se miran los de la portada).
   for (const texto of botones) await expect(page.locator('.portada').getByRole('link', { name: texto, exact: true })).toBeVisible();
   // La pizarra lleva el menú del día con su precio: la misma información que la parada de la barra.
@@ -109,15 +116,14 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page).toHaveURL(new RegExp(`${carta}$`));
     });
 
-    test('se activa con el primer tramo y avanza con el scroll: aire, puerta, parada, barra, parada', async ({ page }) => {
+    test('se activa con el primer tramo y avanza con el scroll, parte a parte', async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const seccion = page.locator('[data-recorrido]');
       await expect(seccion).toHaveAttribute('data-parte', 'aire');
-      // Se va al centro de cada parte, en el orden del recorrido.json servido (sintético: aire, puerta, parada,
-      // barra, parada; la maqueta tiene varias piezas en la zona de la puerta).
+      // Se va al centro de cada parte, en el orden del recorrido.json servido.
       const partes = await partesDelRecorrido(page);
-      expect(partes.map((p) => p.nombre)).toEqual(expect.arrayContaining(['aire', 'parada-puerta', 'parada-barra']));
+      expect(partes.filter((p) => p.nombre.startsWith('parada-')).length).toBeGreaterThanOrEqual(2);
       const vistas: string[] = [];
       for (const p of partes) {
         await irA(page, p.inicio + p.pantallas / 2);
@@ -149,8 +155,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       expect(tipo.abajo).toBeLessThan(gotica.mitad);
     });
 
-    test('longitud: ningún tramo pasa de 1 pantalla, cada parada 0,5 y a 390×844 la pista mide 5 ventanas como mucho', async ({ page }) => {
-      // Encargo de la maqueta (2026-11-03): tramos ≤ 1 pantalla, paradas de 0,5, total ≤ 5 (antes eran unas 7).
+    test('longitud: ningún tramo pasa de 1 pantalla, cada parada 0,5 y a 390×844 la pista mide 8 ventanas como mucho', async ({ page }) => {
+      // Encargo de la demo final (2026-11-04): tramos ≤ 1 pantalla, paradas de 0,5, total ≤ 8.
       await page.setViewportSize({ width: 390, height: 844 });
       const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { aire: { pantallas: number }; tramos: { pantallas: number }[] };
       expect(config.aire.pantallas).toBeLessThanOrEqual(1);
@@ -159,52 +165,94 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
       const partes = await partesDelRecorrido(page);
-      expect(partes.filter((p) => p.nombre.startsWith('parada-')).map((p) => p.pantallas)).toEqual([0.5, 0.5]);
+      for (const p of partes.filter((x) => x.nombre.startsWith('parada-'))) expect(p.pantallas).toBe(0.5);
       const pantallas = partes.reduce((a, p) => a + p.pantallas, 0);
       expect(alto).toBeCloseTo(pantallas * 844, 0);
-      expect(alto).toBeLessThanOrEqual(5 * 844);
+      expect(alto).toBeLessThanOrEqual(8 * 844);
     });
 
-    test('paradas: tras la puerta, Cómo llegar y Llamar; tras la barra, Ver carta y el menú del día con su precio', async ({ page }) => {
+    test('una interacción cada 1,5 pantallas como mucho, y cada parada solo con acciones y datos que ya existen', async ({ page }) => {
       const datos = JSON.parse(readFileSync(new URL('../src/data/restaurante.json', import.meta.url), 'utf8'));
       const telefono = `tel:${String(datos.telefono.valor).replace(/[^\d+]/g, '')}`;
       const precio = new Intl.NumberFormat(ruta === '/' ? 'es-ES' : 'en-GB', { style: 'currency', currency: 'EUR' }).format(datos.menuDiario.valor.precio);
-      const [comoLlegar, llamar, verCarta, menu] = ruta === '/' ? ['Cómo llegar', 'Llamar', 'Ver carta', 'Menú del día'] : ['Directions', 'Call', 'See the menu', 'Set menu of the day'];
+      const [comoLlegar, llamar, menu, resena, otroIdioma] = ruta === '/' ? ['Cómo llegar', 'Llamar', 'Menú del día', 'Dejar reseña', 'English'] : ['Directions', 'Call', 'Set menu of the day', 'Write a review', 'Español'];
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
-      const puerta = page.locator('[data-parada="puerta"]');
-      const barra = page.locator('[data-parada="barra"]');
-      // Fuera de su media pantalla no se ven ni se pueden enfocar (en el primer tramo, por ejemplo).
-      await irAParte(page, (await partesDelRecorrido(page))[1].nombre);
-      await expect(puerta).toBeHidden();
-      await expect(barra).toBeHidden();
-
-      await irAParte(page, 'parada-puerta');
-      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-puerta');
-      // Enlaces reales y accesibles (por su rol y su nombre, nada de aria-hidden).
-      const enlaceLlegar = puerta.getByRole('link', { name: comoLlegar, exact: true });
-      const enlaceLlamar = puerta.getByRole('link', { name: llamar, exact: true });
-      await expect(enlaceLlegar).toBeVisible();
-      await expect(enlaceLlegar).toHaveAttribute('href', new RegExp(`query_place_id=${datos.placeId.valor}`));
-      await expect(enlaceLlamar).toHaveAttribute('href', telefono);
-      await expect(barra).toBeHidden();
-      for (const enlace of [enlaceLlegar, enlaceLlamar]) await comprobarObjetivo(enlace);
-
-      await irAParte(page, 'parada-barra');
-      await expect(page.locator('[data-recorrido]')).toHaveAttribute('data-parte', 'parada-barra');
-      const enlaceCarta = barra.getByRole('link', { name: verCarta, exact: true });
-      const enlaceMenu = barra.getByRole('link', { name: new RegExp(`^${menu}`) });
-      await expect(enlaceCarta).toHaveAttribute('href', carta);
-      await expect(enlaceMenu).toHaveAttribute('href', `${carta}#menu-del-dia`);
-      // El precio sale del archivo de datos, con sus espacios: «Menú del día: <precio del JSON>».
-      // (Intl pone un espacio duro antes de «€»: se normalizan los dos lados.)
+      const partes = await partesDelRecorrido(page);
+      const paradas = partes.filter((p) => p.nombre.startsWith('parada-'));
+      // Del principio a la primera parada y entre paradas seguidas.
+      let hasta = 0;
+      for (const p of paradas) {
+        expect(p.inicio - hasta).toBeLessThanOrEqual(1.5);
+        hasta = p.inicio + p.pantallas;
+      }
       const normalizar = (s: string) => s.replace(/\s+/g, ' ').trim();
+      const panel = (clave: string) => page.locator(`[data-parada="${clave}"]`);
+      // Fuera de su media pantalla no se ven ni se pueden enfocar.
+      await irAParte(page, partes.find((p) => !p.nombre.startsWith('parada-') && p.nombre !== 'aire')?.nombre ?? 'aire');
+      await expect(panel('llegar')).toBeHidden();
+
+      await irAParte(page, 'parada-llegar');
+      const llegar = panel('llegar').getByRole('link', { name: comoLlegar, exact: true });
+      await expect(llegar).toHaveAttribute('href', new RegExp(`query_place_id=${datos.placeId.valor}`));
+      await comprobarObjetivo(llegar);
+
+      await irAParte(page, 'parada-hoy');
+      await expect(panel('hoy')).toBeVisible();
+
+      await irAParte(page, 'parada-menu');
+      const enlaceMenu = panel('menu').getByRole('link', { name: new RegExp(`^${menu}`) });
+      await expect(enlaceMenu).toHaveAttribute('href', `${carta}#menu-del-dia`);
+      // El precio sale del archivo de datos. (Intl pone un espacio duro antes de «€»: se normalizan los dos lados.)
       expect(normalizar((await enlaceMenu.textContent()) ?? '')).toBe(normalizar(`${menu}: ${precio}`));
-      await expect(puerta).toBeHidden();
-      for (const enlace of [enlaceCarta, enlaceMenu]) await comprobarObjetivo(enlace);
+      await comprobarObjetivo(enlaceMenu);
+
+      await irAParte(page, 'parada-llamar');
+      const enlaceLlamar = panel('llamar').getByRole('link', { name: llamar, exact: true });
+      await expect(enlaceLlamar).toHaveAttribute('href', telefono);
+      await comprobarObjetivo(enlaceLlamar);
+
+      await irAParte(page, 'parada-resena');
+      const enlaceResena = panel('resena').getByRole('link', { name: resena, exact: true });
+      const enlaceIdioma = panel('resena').getByRole('link', { name: otroIdioma, exact: true });
+      await expect(enlaceResena).toHaveAttribute('href', new RegExp(`placeid=${datos.placeId.valor}`));
+      await expect(enlaceIdioma).toHaveAttribute('href', ruta === '/' ? '/en/' : '/');
+      for (const enlace of [enlaceResena, enlaceIdioma]) await comprobarObjetivo(enlace);
     });
 
-    test('maqueta: la etiqueta «Imagen creada con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
+    test('la última pieza se funde con la crema de la página', async ({ page }) => {
+      await page.goto(ruta);
+      await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
+      await irAParte(page, 'parada-resena');
+      await expect(page.locator('[data-recorrido-fundido]')).toHaveCSS('opacity', '1');
+      await irAParte(page, 'aire');
+      await expect(page.locator('[data-recorrido-fundido]')).toHaveCSS('opacity', '0');
+    });
+
+    for (const movimiento of ['no-preference', 'reduce'] as const) {
+      test(`platos de hoy con «${movimiento}»: con la ruta bien salen los platos; con la ruta caída, solo Ver carta`, async ({ browser }) => {
+        const verCarta = ruta === '/' ? 'Ver carta' : 'See the menu';
+        const contexto = await browser.newContext({ reducedMotion: movimiento });
+        const page = await contexto.newPage();
+        await page.route('**/recorrido/hoy*', (r) => r.fulfill({ json: { platos: ['Plato uno', 'Plato dos'] } }));
+        await page.goto(ruta);
+        const bloque = page.locator('.portada [data-hoy]');
+        await expect(bloque.locator('li')).toHaveText(['Plato uno', 'Plato dos']);
+        await expect(bloque.getByRole('link', { name: verCarta })).toHaveCount(0);
+
+        await page.unroute('**/recorrido/hoy*');
+        await page.route('**/recorrido/hoy*', (r) => r.abort());
+        await page.goto(ruta);
+        await expect(page.locator('html')).not.toHaveClass(/recorrido-pendiente/);
+        await expect(bloque.locator('ul')).toBeHidden();
+        const enlace = bloque.getByRole('link', { name: verCarta });
+        await expect(enlace).toBeVisible();
+        await expect(enlace).toHaveAttribute('href', carta);
+        await contexto.close();
+      });
+    }
+
+    test('maqueta: la etiqueta «Creado con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
       // El último tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo son todos).
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
@@ -214,8 +262,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       });
       const [etiqueta, creditos, soloReal] =
         ruta === '/'
-          ? ['Imagen creada con IA a partir de fotogramas reales del local', 'Imágenes creadas con IA a partir de fotogramas reales del local', 'solo en vídeo real']
-          : ['AI image created from real frames of the venue', 'AI images created from real frames of the venue', 'only in real video'];
+          ? ['Creado con IA a partir de fotogramas reales del local', 'Creado con IA a partir de fotogramas reales del local', 'solo en vídeo real']
+          : ['Created with AI from real frames of the venue', 'Created with AI from real frames of the venue', 'only in real video'];
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const marca = page.locator('[data-recorrido-etiqueta-ia]');
@@ -232,7 +280,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await irAParte(page, ultimo.nombre); // la pieza «ia: local»
       await expect(marca).toBeVisible();
       await expect(marca).toHaveText(etiqueta);
-      await irAParte(page, 'parada-barra'); // su parada deja quieta la pieza: la etiqueta sigue
+      await irAParte(page, partes[partes.length - 1].nombre); // su parada deja quieta la pieza: la etiqueta sigue
       await expect(marca).toBeVisible();
       await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
       await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);

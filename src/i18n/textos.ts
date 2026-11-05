@@ -15,6 +15,7 @@ const es = {
   comoLlegar: 'Cómo llegar',
   dejarResena: 'Dejar reseña',
   menuDelDia: 'Menú del día',
+  platosHoy: 'Platos de hoy',
   menuIncluye: 'Incluye',
   menuFinDeSemana: 'Menú fin de semana',
   horario: 'Horario',
@@ -37,12 +38,12 @@ const es = {
   rotuloComedor: 'El comedor',
   creditosSoloReal: 'El local sale solo en vídeo real.',
   creditosIa: 'Generado con IA:',
-  creditosIaLocal: 'Imágenes creadas con IA a partir de fotogramas reales del local (Higgsfield).',
+  creditosIaLocal: 'Creado con IA a partir de fotogramas reales del local (Higgsfield).',
   creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
   pnoaPrefijo: 'Obra derivada de PNOA',
-  etiquetaIaLocal: 'Imagen creada con IA a partir de fotogramas reales del local',
+  etiquetaIaLocal: 'Creado con IA a partir de fotogramas reales del local',
   paradaPuerta: 'Cómo llegar o llamar',
-  paradaBarra: 'La carta y el menú del día',
+  paradaBarra: 'Platos de hoy y menú del día',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -58,6 +59,7 @@ const en: Textos = {
   comoLlegar: 'Directions',
   dejarResena: 'Write a review',
   menuDelDia: 'Set menu of the day',
+  platosHoy: 'Today’s dishes',
   menuIncluye: 'Includes',
   menuFinDeSemana: 'Weekend set menu',
   horario: 'Opening hours',
@@ -80,12 +82,12 @@ const en: Textos = {
   rotuloComedor: 'The dining room',
   creditosSoloReal: 'The restaurant is shown only in real video.',
   creditosIa: 'AI-generated:',
-  creditosIaLocal: 'AI images created from real frames of the venue (Higgsfield).',
+  creditosIaLocal: 'Created with AI from real frames of the venue (Higgsfield).',
   creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
   pnoaPrefijo: 'Derived from PNOA',
-  etiquetaIaLocal: 'AI image created from real frames of the venue',
+  etiquetaIaLocal: 'Created with AI from real frames of the venue',
   paradaPuerta: 'Directions or call',
-  paradaBarra: 'The menu and the set menu of the day',
+  paradaBarra: 'Today’s dishes and the set menu',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };
