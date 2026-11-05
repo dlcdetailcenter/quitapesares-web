@@ -1,7 +1,7 @@
 // MAQUETA de la demo al dueño (excepción a FIDELIDAD de Kara del 2026-11-03, CLAUDE.md). Solo demo privada:
 // build:produccion falla con ella (scripts/datos/integracion-astro.mjs) y no entra nunca en git (check:media).
 //
-// Piezas (scripts/media/tramos-maqueta.json): cada una sale de una foto fija real (procesar.mjs foto <id>) y es
+// Piezas (scripts/media/tramos-maqueta.json): cada una sale de material real y es
 //   - «higgsfield»: un vídeo de imagen a vídeo ACEPTADO (solo movimiento de cámara), descargado en
 //     $MATERIAL/f2/maqueta/aceptadas/<id>.mp4; lleva "ia": "local" en recorrido.json y su etiqueta visible;
 //   - «foto»: la foto real sin IA, con acercamiento y desplazamiento lentos hechos con recortes de la propia foto
@@ -10,6 +10,8 @@
 //     fotogramas reales y aceptados en la revisión. Llevan "ia": "local" obligatoriamente: sin él, el ensamblado falla.
 //     Con «imagen», fija y con el mismo recorte progresivo, desde $MATERIAL/f2/maqueta/creadas/intentos/<imagen>.png.
 //     Con «video», fotogramas del vídeo aceptado en $MATERIAL/f2/maqueta/final/intentos/<video>.mp4.
+//   - «real»: fotogramas del tramo de recorrido-real/, tal cual (mismos nombres y sumas), uno de cada «paso». Sin IA:
+//     con "ia" en la configuración, el ensamblado falla.
 //
 // Uso:
 //   node scripts/media/maqueta.mjs pieza <id>     vídeo aceptado → fotogramas WebP 540×960 (sin audio ni metadatos)
@@ -94,6 +96,8 @@ function sinIa(id) {
 function validarPiezas() {
   const sinDeclarar = config.piezas.filter((p) => p.origen === 'creada' && p.ia !== 'local').map((p) => p.id);
   if (sinDeclarar.length > 0) fallar(`pieza creada con IA sin "ia": "local": ${sinDeclarar.join(', ')}`);
+  const realesConIa = config.piezas.filter((p) => p.origen === 'real' && p.ia).map((p) => p.id);
+  if (realesConIa.length > 0) fallar(`pieza real con "ia": ${realesConIa.join(', ')}`);
 }
 
 function ensamblar() {
@@ -106,10 +110,20 @@ function ensamblar() {
   for (const carpeta of ['aire', 'nubes']) if (existsSync(join(REAL, carpeta))) cpSync(join(REAL, carpeta), join(DESTINO, carpeta), { recursive: true });
   const piezas = [];
   for (const p of config.piezas) {
-    const origen = join(DIR, '05-export', p.id);
-    if (!existsSync(origen)) fallar(`falta la pieza exportada ${origen} (maqueta.mjs ${p.origen === 'higgsfield' || p.video ? 'pieza' : 'sinia'} ${p.id})`);
-    cpSync(origen, join(DESTINO, p.id), { recursive: true });
-    const fotogramas = readdirSync(origen).filter((f) => f.endsWith('.webp')).length;
+    let fotogramas;
+    if (p.origen === 'real') {
+      // Del material real, tal cual: mismos nombres y sumas.
+      const paso = p.paso ?? 1;
+      const elegidos = readdirSync(join(REAL, p.id)).filter((f) => f.endsWith('.webp')).sort().filter((_, i) => i % paso === 0);
+      mkdirSync(join(DESTINO, p.id), { recursive: true });
+      for (const f of elegidos) cpSync(join(REAL, p.id, f), join(DESTINO, p.id, f));
+      fotogramas = elegidos.length;
+    } else {
+      const origen = join(DIR, '05-export', p.id);
+      if (!existsSync(origen)) fallar(`falta la pieza exportada ${origen} (maqueta.mjs ${p.origen === 'higgsfield' || p.video ? 'pieza' : 'sinia'} ${p.id})`);
+      cpSync(origen, join(DESTINO, p.id), { recursive: true });
+      fotogramas = readdirSync(origen).filter((f) => f.endsWith('.webp')).length;
+    }
     piezas.push({
       id: p.id,
       fotogramas,
@@ -118,7 +132,10 @@ function ensamblar() {
       zona: p.zona,
       ...(p.origen === 'higgsfield' || p.origen === 'creada' ? { ia: 'local' } : {}),
       ...(p.origen === 'creada' ? { origen: 'creada' } : {}),
-      ...(p.parada ? { parada: p.parada } : {}),
+      ...(p.panel ? { panel: p.panel } : {}),
+      ...(p.fin ? { fin: p.fin } : {}),
+      ...(p.empuje ? { empuje: p.empuje } : {}),
+      ...(p.paso ? { paso: p.paso } : {}),
       ...(p.fundido ? { fundido: true } : {}),
     });
   }
@@ -126,7 +143,7 @@ function ensamblar() {
     material: 'maqueta',
     ancho,
     alto,
-    aire: { ...real.aire, pantallas: config.aire.pantallas, ...(config.aire.parada ? { parada: config.aire.parada } : {}) },
+    aire: { ...real.aire, pantallas: config.aire.pantallas, ...(config.aire.panel ? { panel: config.aire.panel } : {}) },
     tramos: piezas,
     ia: real.ia,
   };

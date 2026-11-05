@@ -64,6 +64,8 @@ export class SecuenciaCanvas implements Reproductor {
   private generacion = 0;
   /** Solo pinta el tramo que se está viendo: varios tramos comparten el mismo lienzo. */
   activo = true;
+  /** Zoom extra al final del tramo (0, sin efecto): empuje hacia delante, hecho aquí, sin fotogramas nuevos. */
+  empuje = 0;
   private readonly ctx: CanvasRenderingContext2D;
 
   constructor(
@@ -213,7 +215,17 @@ export class SecuenciaCanvas implements Reproductor {
     const bitmap = this.decodificados.get(mejor);
     if (!bitmap) return;
     ajustarLienzo(this.canvas, this.ancho, this.alto);
-    pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height);
+    const p = this.urls.length > 1 ? mejor / (this.urls.length - 1) : 0;
+    const zoom = 1 + this.empuje * p * p;
+    pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom);
+    // Desenfoque de movimiento: dos copias algo más grandes y transparentes, solo mientras el empuje va rápido.
+    const velocidad = this.empuje > 0 ? Math.sin(Math.PI * p) : 0;
+    if (velocidad > 0.25) {
+      this.ctx.globalAlpha = 0.3 * velocidad;
+      pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom * 1.03);
+      pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom * 1.07);
+      this.ctx.globalAlpha = 1;
+    }
     this.pintado = mejor;
     this.onPintado?.(mejor, performance.now());
   }
