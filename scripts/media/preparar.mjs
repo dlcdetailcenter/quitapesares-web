@@ -64,25 +64,25 @@ function sintetico() {
     return `aire/nivel-${i}.png`;
   });
   // Tramos: 24 fotogramas lisos cada uno, el tono cambia de un fotograma a otro para ver que se mueven.
-  // La misma estructura que la maqueta: el aire y cuatro tramos, cada uno con su parada.
+  // La misma estructura que la maqueta: el aire y cuatro tramos, con sus paneles fijos por zona.
   const bases = {
-    puerta: { color: [142, 27, 42], parada: 'hoy' },
-    barra: { color: [110, 70, 40], parada: 'menu' },
-    cafetera: { color: [60, 60, 70], parada: 'llamar' },
-    salida: { color: [200, 180, 140], parada: 'resena', fundido: true },
+    puerta: { color: [142, 27, 42], pantallas: 1, panel: 'menu', fin: 0.75, empuje: 0.6 },
+    barra: { color: [110, 70, 40], pantallas: 0.4, panel: 'llamar' },
+    cafetera: { color: [60, 60, 70], pantallas: 0.6, panel: 'llamar' },
+    salida: { color: [200, 180, 140], pantallas: 1, panel: 'resena', fundido: true },
   };
-  const tramos = Object.entries(bases).map(([id, { color: [r, g, b], parada, fundido }]) => {
+  const tramos = Object.entries(bases).map(([id, { color: [r, g, b], ...resto }]) => {
     for (let i = 0; i < 24; i++) {
       const k = i * 4;
       escribir(`${id}/${String(i + 1).padStart(4, '0')}.png`, pngLiso(36, 64, [Math.min(255, r + k), g, Math.max(0, b - k / 2)]));
     }
-    return { id, fotogramas: 24, patron: `${id}/%04d.png`, pantallas: 0.75, parada, ...(fundido ? { fundido } : {}) };
+    return { id, fotogramas: 24, patron: `${id}/%04d.png`, ...resto };
   });
   const config = {
     material: 'sintetico',
     ancho: 720,
     alto: 1280,
-    aire: { niveles, nubes: [], pantallas: 1, pnoa: null, parada: 'llegar' },
+    aire: { niveles, nubes: [], pantallas: 1, pnoa: null, panel: 'llegar' },
     tramos,
     ia: [],
   };

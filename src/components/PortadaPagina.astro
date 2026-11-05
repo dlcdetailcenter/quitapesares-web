@@ -41,6 +41,8 @@ const acciones = [
       {local.tipoDeLocal && <span class="portada__tipo versalitas">{local.tipoDeLocal}</span>}
       <span class="portada__rotulo">{local.nombreCorto}</span>
     </h1>
+    <!-- Con el recorrido activo sus acciones ya están en los paneles: debajo solo quedan el horario y el pie. -->
+    <div class="portada__resto">
     <p class="portada__direccion">{local.direccion}</p>
 
     <figure class="marco portada__foto">
@@ -81,6 +83,8 @@ const acciones = [
       )
     }
 
+    </div>
+
     <section class="portada__horario" aria-labelledby="horario">
       <h2 id="horario">{t.horario}</h2>
       <dl>
@@ -95,6 +99,10 @@ const acciones = [
       </dl>
     </section>
   </div>
+  <footer class="pie">
+    <p class="pie__nombre">{local.nombreCorto}</p>
+    <p class="pie__direccion">{local.direccion}</p>
+  </footer>
   {RECORRIDO_ENCENDIDO && <BarraCarta idioma={idioma} />}
 </Base>
 
@@ -102,6 +110,29 @@ const acciones = [
   .portada {
     padding-top: calc(var(--alto-cabecera) + 2.5rem);
     padding-bottom: 3rem;
+  }
+
+  :global(html.recorrido-activo) .portada {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  :global(html.recorrido-activo) .portada__resto {
+    display: none;
+  }
+
+  /* El nombre ya está en el rótulo del recorrido: el título sigue para quien lee con lector de pantalla. */
+  :global(html.recorrido-activo) .portada__nombre {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  :global(html.recorrido-activo) .portada__horario {
+    margin-top: 0;
   }
 
   .portada__nombre {

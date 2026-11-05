@@ -326,6 +326,7 @@ h3 {
   height: 0.75rem;
 }
 
+.hoy__platos:not([hidden]) + .hoy__carta,
 .recorrido__parada .hoy + a,
 .recorrido__parada a + a {
   border-top: 1px solid var(--ocre);
@@ -348,6 +349,29 @@ h3 {
 
 .hoy__platos li + li {
   border-top: 1px solid var(--ocre);
+}
+
+/* Pie de la portada. */
+.pie {
+  max-width: var(--ancho);
+  margin: 0 auto;
+  padding: 1.5rem var(--hueco) 2rem;
+  border-top: 1px solid var(--burdeos);
+  color: var(--texto-suave);
+  text-align: center;
+}
+
+.pie__nombre {
+  margin: 0;
+  color: var(--burdeos);
+  font-family: var(--fuente-rotulo-pila);
+  font-size: 1.75rem;
+  line-height: 1.1;
+}
+
+.pie__direccion {
+  margin: 0.25rem 0 0;
+  font-size: 1rem;
 }
 
 .alergenos {

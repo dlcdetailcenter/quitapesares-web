@@ -6,13 +6,15 @@ import type { Idioma } from '../lib/carta/hoja.ts';
 
 interface Props {
   idioma: Idioma;
+  /** «Ver carta» se queda también cuando hay platos. */
+  conCarta?: boolean;
 }
 
-const { idioma } = Astro.props;
+const { idioma, conCarta = false } = Astro.props;
 const t = TEXTOS[idioma];
 ---
 
-<div class="hoy" data-hoy>
+<div class="hoy" data-hoy data-hoy-fija={conCarta ? '' : undefined}>
   <ul class="hoy__platos" hidden></ul>
   <a class="hoy__carta" href={idioma === 'es' ? '/carta' : '/en/carta'}>
     {t.verCarta}

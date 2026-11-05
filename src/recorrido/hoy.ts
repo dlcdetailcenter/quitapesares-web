@@ -20,7 +20,8 @@ async function rellenar(): Promise<void> {
       }),
     );
     lista.hidden = false;
-    enlace.hidden = true;
+    // El panel del menú lleva siempre «Ver carta».
+    if (!bloque.hasAttribute('data-hoy-fija')) enlace.hidden = true;
   }
 }
 
