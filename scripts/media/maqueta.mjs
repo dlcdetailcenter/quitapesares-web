@@ -133,10 +133,10 @@ function ensamblar() {
       ...(p.origen === 'higgsfield' || p.origen === 'creada' ? { ia: 'local' } : {}),
       ...(p.origen === 'creada' ? { origen: 'creada' } : {}),
       ...(p.panel ? { panel: p.panel } : {}),
-      ...(p.fin ? { fin: p.fin } : {}),
+      ...(p.ritmo ? { ritmo: p.ritmo } : {}),
       ...(p.empuje ? { empuje: p.empuje } : {}),
       ...(p.paso ? { paso: p.paso } : {}),
-      ...(p.fundido ? { fundido: true } : {}),
+      ...(p.encadenado ? { encadenado: p.encadenado } : {}),
     });
   }
   const recorrido = {
