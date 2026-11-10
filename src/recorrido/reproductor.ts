@@ -66,6 +66,8 @@ export class SecuenciaCanvas implements Reproductor {
   activo = true;
   /** Zoom extra al final del tramo (0, sin efecto): empuje hacia delante, hecho aquí, sin fotogramas nuevos. */
   empuje = 0;
+  /** Se llama después de cada pintado, también de los que llegan al terminar una decodificación: lo que va encima. */
+  encima?: () => void;
   private readonly ctx: CanvasRenderingContext2D;
 
   constructor(
@@ -167,6 +169,22 @@ export class SecuenciaCanvas implements Reproductor {
     this.blobs.fill(undefined);
   }
 
+  /**
+   * Un fotograma decodificado aparte, fuera de la ventana (negativo: desde el final). Quien lo pide lo cierra.
+   * Si todavía no se ha descargado, nada.
+   */
+  async suelto(indice: number): Promise<ImageBitmap | undefined> {
+    const blob = this.blobs[indice < 0 ? this.urls.length + indice : indice];
+    return blob && !this.liberado ? createImageBitmap(blob) : undefined;
+  }
+
+  /** Pinta otra imagen encima de lo que haya, cubriendo el lienzo, con la opacidad dada. */
+  pintarEncima(fuente: ImageBitmap, alfa: number): void {
+    this.ctx.globalAlpha = Math.min(1, Math.max(0, alfa));
+    pintarCubriendo(this.ctx, fuente, fuente.width, fuente.height);
+    this.ctx.globalAlpha = 1;
+  }
+
   /** Cuántos fotogramas hay decodificados ahora mismo (para comprobar la ventana). */
   get enMemoria(): number {
     return this.decodificados.size;
@@ -216,17 +234,10 @@ export class SecuenciaCanvas implements Reproductor {
     if (!bitmap) return;
     ajustarLienzo(this.canvas, this.ancho, this.alto);
     const p = this.urls.length > 1 ? mejor / (this.urls.length - 1) : 0;
-    const zoom = 1 + this.empuje * p * p;
-    pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom);
-    // Desenfoque de movimiento: dos copias algo más grandes y transparentes, solo mientras el empuje va rápido.
-    const velocidad = this.empuje > 0 ? Math.sin(Math.PI * p) : 0;
-    if (velocidad > 0.25) {
-      this.ctx.globalAlpha = 0.3 * velocidad;
-      pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom * 1.03);
-      pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, zoom * 1.07);
-      this.ctx.globalAlpha = 1;
-    }
+    // Empuje suave: solo un zoom que crece con el tramo. Sin copias encima: el fotograma se ve tal cual es.
+    pintarCubriendo(this.ctx, bitmap, bitmap.width, bitmap.height, 1 + this.empuje * p * p);
     this.pintado = mejor;
+    this.encima?.();
     this.onPintado?.(mejor, performance.now());
   }
 }

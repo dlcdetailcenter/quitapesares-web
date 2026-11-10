@@ -302,8 +302,7 @@ h3 {
   font-weight: 500;
 }
 
-/* Filas de acción con flecha: las paradas y «Ver carta» cuando no hay platos de hoy. */
-.recorrido__parada a,
+/* «Ver carta», fila de acción con flecha bajo los platos de hoy (o sola, si no los hay). */
 .hoy__carta {
   display: flex;
   align-items: center;
@@ -319,16 +318,13 @@ h3 {
   text-decoration: none;
 }
 
-.recorrido__parada svg,
 .hoy__carta svg {
   flex: none;
   width: 3.5rem;
   height: 0.75rem;
 }
 
-.hoy__platos:not([hidden]) + .hoy__carta,
-.recorrido__parada .hoy + a,
-.recorrido__parada a + a {
+.hoy__platos:not([hidden]) + .hoy__carta {
   border-top: 1px solid var(--ocre);
 }
 

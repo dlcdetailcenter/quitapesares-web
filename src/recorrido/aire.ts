@@ -103,8 +103,12 @@ export class Aire {
     };
   }
 
-  /** t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta). */
-  pintar(t: number, densidad = 0.35 + 0.65 * suave((t - 0.7) / 0.3)): void {
+  /**
+   * t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta).
+   * `debajo`: imagen que aparece bajo las nubes, sobre la ortofoto (el primer fotograma de la puerta), con su opacidad.
+   * `velo`: tope del velo blanco; por debajo de 1, entre las nubes siempre se ve algo.
+   */
+  pintar(t: number, densidad = 0.35 + 0.65 * suave((t - 0.7) / 0.3), debajo?: { fuente: ImageBitmap; alfa: number }, velo = 1): void {
     ajustarLienzo(this.canvas, 1080, 1920);
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'source-over';
@@ -124,11 +128,16 @@ export class Aire {
         ctx.globalAlpha = 1;
       }
     }
-    this.pintarNubes(t, densidad);
+    if (debajo && debajo.alfa > 0) {
+      ctx.globalAlpha = Math.min(1, debajo.alfa);
+      pintarCubriendo(ctx, debajo.fuente, debajo.fuente.width, debajo.fuente.height);
+      ctx.globalAlpha = 1;
+    }
+    this.pintarNubes(t, densidad, velo);
   }
 
   /** Nubes encima de cualquier cosa ya pintada (también al empezar la puerta, para destaparla). */
-  pintarNubes(t: number, densidad: number): void {
+  pintarNubes(t: number, densidad: number, veloMax = 1): void {
     if (densidad <= 0.01 || this.capas.length === 0) return;
     const ctx = this.ctx;
     const { width: w, height: h } = this.canvas;
@@ -143,7 +152,7 @@ export class Aire {
       ctx.drawImage(capa, (w - dw) / 2, y, dw, dh);
     });
     // Con densidad alta, un velo blanco termina de tapar: es el «dentro de la nube».
-    const velo = suave((densidad - 0.75) / 0.25);
+    const velo = suave((densidad - 0.75) / 0.25) * veloMax;
     if (velo > 0) {
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = velo;
