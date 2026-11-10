@@ -34,12 +34,8 @@ const es = {
   irALaCarta: 'Ir a la carta',
   navCarta: 'Acceso a la carta',
   recorrido: 'Recorrido por el local',
-  creditosSoloReal: 'El local sale solo en vídeo real.',
-  creditosIa: 'Generado con IA:',
-  creditosIaLocal: 'Creado con IA a partir de fotogramas reales del local (Higgsfield).',
   creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
   pnoaPrefijo: 'Obra derivada de PNOA',
-  etiquetaIaLocal: 'Creado con IA a partir de fotogramas reales del local',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -74,12 +70,8 @@ const en: Textos = {
   irALaCarta: 'Go to the menu',
   navCarta: 'Menu shortcut',
   recorrido: 'Walk through the restaurant',
-  creditosSoloReal: 'The restaurant is shown only in real video.',
-  creditosIa: 'AI-generated:',
-  creditosIaLocal: 'Created with AI from real frames of the venue (Higgsfield).',
   creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
   pnoaPrefijo: 'Derived from PNOA',
-  etiquetaIaLocal: 'Created with AI from real frames of the venue',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };

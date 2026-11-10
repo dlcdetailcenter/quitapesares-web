@@ -20,7 +20,10 @@ interface ConfigTramo {
   pantallas: number;
   /** Zona del local («puerta» o «barra»). Sin ella, la zona es el id. */
   zona?: string;
-  /** Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza creada con IA a partir de fotogramas reales del local. */
+  /**
+   * Maqueta (excepción a FIDELIDAD, CLAUDE.md): pieza creada con IA a partir de fotogramas reales del local. Aquí no
+   * se usa: es el registro que hace fallar build:produccion (scripts/datos/integracion-astro.mjs).
+   */
   ia?: 'local';
   /** Grupo de acciones que queda fijo mientras se ve este tramo. */
   panel?: string;
@@ -54,7 +57,10 @@ export interface ConfigRecorrido {
   alto: number;
   aire: ConfigAire & { pantallas: number; pnoa: { anio: string } | null; panel?: string };
   tramos: ConfigTramo[];
-  /** Piezas de IA usadas en el recorrido (nunca el local): si hay alguna, se declara en los créditos. */
+  /**
+   * Registro de las piezas hechas con IA que no son el local (las nubes). No se muestra en la página (decisión de Kara
+   * del 2026-11-10): queda aquí, en recorrido.json, y en docs/inventario-material.md.
+   */
   ia: { es: string; en: string; herramienta: string }[];
 }
 
@@ -151,19 +157,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       .catch(() => {});
   };
 
-  // Créditos: IA declarada si hay alguna pieza; atribución del PNOA al pie del tramo aéreo.
-  const iaLocal = config.tramos.some((t) => t.ia === 'local');
-  const ia = seccion.querySelector<HTMLElement>('[data-recorrido-ia]');
-  if (ia && config.ia.length > 0) {
-    const idioma = html.lang === 'en' ? 'en' : 'es';
-    const lista = ia.querySelector('[data-lista]');
-    if (lista) lista.textContent = config.ia.map((p) => `${p[idioma]} (${p.herramienta})`).join(', ');
-    // Con piezas de IA del local (maqueta), «el local sale solo en vídeo real» ya no es verdad: se quita.
-    if (iaLocal) ia.querySelector('[data-solo-real]')?.remove();
-    ia.removeAttribute('hidden');
-  }
-  if (iaLocal) seccion.querySelector<HTMLElement>('[data-recorrido-ia-local]')?.removeAttribute('hidden');
-  const etiquetaIa = seccion.querySelector<HTMLElement>('[data-recorrido-etiqueta-ia]');
+  // El material de prueba lo dice bajo el recorrido; la atribución del PNOA, al pie del tramo aéreo.
   if (config.material === 'sintetico') seccion.querySelector<HTMLElement>('[data-recorrido-sintetico]')?.removeAttribute('hidden');
   const pnoa = seccion.querySelector<HTMLElement>('[data-recorrido-pnoa]');
   if (pnoa && config.aire.pnoa) {
@@ -273,8 +267,6 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
       seccion.dataset.parte = tramo < 0 ? 'aire' : tramos[tramo].id;
       for (const p of paneles.values()) p.classList.toggle('recorrido__parada--visible', p === parte.panel);
     }
-    // La etiqueta de IA del local, mientras se ve una pieza de la maqueta.
-    if (etiquetaIa) etiquetaIa.hidden = !(tramo >= 0 && tramos[tramo].ia === 'local');
     if (tramo < 0) {
       if (t < AIRE_ABIERTO) {
         soltarPuente();

@@ -2,7 +2,8 @@
 // Comprueba: barra «Ir a la carta» en 1 s y de un toque; versión estática con «reducir movimiento», Save-Data o red
 // lenta, con las mismas funciones; el recorrido avanza con el scroll; la carta a 1,5 pantallas como mucho, 4 pantallas
 // de recorrido, ninguna pantalla sin contenido ni acción y nada después de la cafetera; solo una ventana de fotogramas
-// en memoria; créditos de IA y atribución del PNOA cuando el material los lleva; noindex en las rutas nuevas; axe.
+// en memoria; ningún texto de IA en la página y atribución del PNOA cuando el material la lleva; noindex en las rutas
+// nuevas; axe.
 // El interruptor apagado (portada de F1) se prueba al compilar: scripts/media/interruptor.test.mjs.
 import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
@@ -70,6 +71,27 @@ async function partesDelRecorrido(page: Page): Promise<ParteRecorrido[]> {
 }
 
 const ALTO = 844;
+
+/**
+ * Texto que no puede salir en la página (decisión de Kara del 2026-11-10): ni etiqueta ni créditos de IA. La IA queda
+ * registrada en recorrido.json ("ia": "local", "origen": "creada") y en docs/inventario-material.md.
+ */
+const TEXTO_DE_IA = [/\bIA\b/, /\bAI\b/, /higgsfield/i, /generad/i, /creado con/i, /created with/i, /inteligencia artificial/i, /artificial intelligence/i];
+
+/** Todo lo que se lee en la página: nodos de texto (también los ocultos), comentarios y atributos con texto. */
+async function textoDeLaPagina(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const trozos: string[] = [document.title];
+    const paseo = document.createTreeWalker(document.documentElement, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_COMMENT);
+    for (let nodo = paseo.nextNode(); nodo; nodo = paseo.nextNode()) {
+      if (!nodo.parentElement?.closest('script, style')) trozos.push(nodo.nodeValue ?? '');
+    }
+    for (const e of document.querySelectorAll('[alt], [aria-label], [title], meta[content]')) {
+      for (const atributo of ['alt', 'aria-label', 'title', 'content']) trozos.push(e.getAttribute(atributo) ?? '');
+    }
+    return trozos.join('\n');
+  });
+}
 
 /**
  * Lo que hay a la vista en un punto del scroll (en pantallas desde arriba): el grupo de acciones, sus enlaces enteros
@@ -315,7 +337,7 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await expect(page.locator('.cabecera__llamar')).toBeInViewport();
     });
 
-    test('la entrada es real: sin marca de IA ni etiqueta', async ({ page }) => {
+    test('la entrada es real: sin marca de IA en recorrido.json', async ({ page }) => {
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
       const config = (await (await page.request.get('/recorrido/recorrido.json')).json()) as { tramos: { id: string; ia?: string; origen?: string }[] };
@@ -323,8 +345,6 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       expect(entrada.id).toBe('puerta');
       expect(entrada.ia).toBeUndefined();
       expect(entrada.origen).not.toBe('creada');
-      await irAParte(page, 'puerta');
-      await expect(page.locator('[data-recorrido-etiqueta-ia]')).toBeHidden();
     });
 
     test('debajo del recorrido, solo el horario y el pie: ninguna función repetida', async ({ page }) => {
@@ -379,36 +399,31 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       });
     }
 
-    test('maqueta: la etiqueta «Creado con IA…» se ve mientras se ve una pieza «ia: local», y en los créditos', async ({ page }) => {
-      // El penúltimo tramo pasa a ser una pieza «ia: local» (en la maqueta ya lo es).
+    test('ningún texto de IA ni de Higgsfield en la página, tampoco con piezas «ia: local» y nubes de IA en el material', async ({ page }) => {
+      // Como la maqueta: todos los tramos menos el primero son piezas «ia: local» creadas, y las nubes están en la lista.
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
-        config.tramos[config.tramos.length - 2].ia = 'local';
+        config.tramos.slice(1).forEach((t: { ia?: string; origen?: string }) => Object.assign(t, { ia: 'local', origen: 'creada' }));
         config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
         await r.fulfill({ json: config });
       });
-      const [etiqueta, creditos, soloReal] =
-        ruta === '/'
-          ? ['Creado con IA a partir de fotogramas reales del local', 'Creado con IA a partir de fotogramas reales del local', 'solo en vídeo real']
-          : ['Created with AI from real frames of the venue', 'Created with AI from real frames of the venue', 'only in real video'];
       await page.goto(ruta);
       await expect(page.locator('html')).toHaveClass(/recorrido-activo/);
-      const marca = page.locator('[data-recorrido-etiqueta-ia]');
+      // En cada parte del recorrido y al final de la página, y también en la carta.
       const partes = await partesDelRecorrido(page);
-      const tramosDelRecorrido = partes.filter((p) => p.nombre !== 'aire');
-      const ultimo = tramosDelRecorrido[tramosDelRecorrido.length - 2];
-      // En el aire y en cualquier tramo que no sea IA del local, la etiqueta no está.
-      await irAParte(page, 'aire');
-      await expect(marca).toBeHidden();
-      for (const t of tramosDelRecorrido.filter((p) => !p.ia && p !== ultimo)) {
-        await irAParte(page, t.nombre);
-        await expect(marca).toBeHidden();
+      const textos: { donde: string; texto: string }[] = [];
+      for (const p of partes) {
+        await irAParte(page, p.nombre);
+        textos.push({ donde: `${ruta} en ${p.nombre}`, texto: await textoDeLaPagina(page) });
       }
-      await irAParte(page, ultimo.nombre); // la pieza «ia: local»
-      await expect(marca).toBeVisible();
-      await expect(marca).toHaveText(etiqueta);
-      await expect(page.locator('[data-recorrido-ia-local]')).toContainText(creditos);
-      await expect(page.locator('[data-recorrido-ia]')).not.toContainText(soloReal);
+      await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+      textos.push({ donde: `${ruta} al final`, texto: await textoDeLaPagina(page) });
+      await page.goto(carta);
+      textos.push({ donde: carta, texto: await textoDeLaPagina(page) });
+      for (const { donde, texto } of textos) {
+        expect(texto.length, donde).toBeGreaterThan(100);
+        for (const patron of TEXTO_DE_IA) expect(texto.match(patron)?.[0] ?? null, `${donde}: ${patron}`).toBeNull();
+      }
     });
 
     test('con «reducir movimiento»: sin canvas animado ni vídeo, sin material y con todas las acciones en la portada', async ({ browser }) => {
@@ -453,11 +468,10 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       await mismasFunciones(page, botones);
     });
 
-    test('créditos: IA declarada y atribución del PNOA con enlace al pie del tramo aéreo', async ({ page }) => {
+    test('atribución del PNOA, con enlace, al pie del tramo aéreo', async ({ page }) => {
       await page.route('**/recorrido/recorrido.json', async (r) => {
         const config = await (await r.fetch()).json();
         config.aire.pnoa = { anio: '2099' };
-        config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
         await r.fulfill({ json: config });
       });
       await page.goto(ruta);
@@ -486,8 +500,6 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
       });
       expect(huecos.izquierda).toBeGreaterThan(1);
       expect(huecos.derecha).toBeGreaterThan(1);
-      const ia = page.locator('[data-recorrido-ia]');
-      await expect(ia).toContainText(ruta === '/' ? 'nubes (Higgsfield)' : 'clouds (Higgsfield)');
       // Fuera del tramo aéreo, la atribución se va.
       const alto = await page.locator('[data-recorrido-pista]').evaluate((e) => e.getBoundingClientRect().height);
       await page.evaluate(([y]) => scrollTo(0, y), [alto * 0.5]);
@@ -573,7 +585,6 @@ test('axe sin fallos graves con el recorrido activo y en el tramo aéreo', async
   await page.route('**/recorrido/recorrido.json', async (r) => {
     const config = await (await r.fetch()).json();
     config.aire.pnoa = { anio: '2099' };
-    config.ia = [{ es: 'nubes', en: 'clouds', herramienta: 'Higgsfield' }];
     await r.fulfill({ json: config });
   });
   await page.goto('/');
