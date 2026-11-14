@@ -3,10 +3,11 @@
 // prueba /lab/scroll, que no usa estas piezas.
 //
 // Cómo: se baja de arriba abajo del recorrido a velocidad constante, lo bastante deprisa para que el fotograma que
-// toca cambie más rápido que la pantalla (unos 25 ms por fotograma). Se anota cada vez que el lienzo pinta un
-// fotograma distinto del anterior y se mira el tiempo entre dos seguidos, solo donde los fotogramas avanzan: las
-// pausas de cada pieza (su «ritmo» en recorrido.json) y el aire no cuentan. Un recorrido que va al día da de 17 a
-// 33 ms; uno que se atasca, intervalos largos.
+// toca cambie más rápido que la pantalla (unos 25 ms por fotograma). Se anota cada pintado del lienzo cuyo fotograma
+// es distinto del pintado anterior (lo que va encima, nubes o barrido, no cuenta como fotograma) y se mira el tiempo
+// entre dos seguidos, solo donde los fotogramas avanzan: las pausas de cada pieza (su «ritmo» en recorrido.json), los
+// intervalos que cruzan una pausa y el aire no cuentan. Un recorrido que va al día da de 17 a 33 ms; uno que se
+// atasca, intervalos largos.
 //
 // En Chromium se puede limitar la CPU (CPU=4). En WebKit, Playwright no puede limitar ni la CPU ni la red.
 //
@@ -72,15 +73,22 @@ async function medir(motor) {
       const cdp = await contexto.newCDPSession(page);
       await cdp.send('Emulation.setCPUThrottlingRate', { rate: CPU });
     }
-    // Cada fotograma distinto que llega al lienzo, con su instante.
+    // Cada pintado del lienzo con un fotograma distinto del pintado anterior, con su instante. Un pintado son todas
+    // las llamadas a drawImage seguidas, sin ceder el hilo; su fotograma es lo primero que se dibuja (después van las
+    // nubes o el barrido, que no son fotogramas).
     await page.addInitScript(() => {
       const pintados = [];
       const original = CanvasRenderingContext2D.prototype.drawImage;
       let anterior = null;
+      let enPintado = false;
       CanvasRenderingContext2D.prototype.drawImage = function (fuente, ...resto) {
-        if (fuente !== anterior) {
-          anterior = fuente;
-          pintados.push(performance.now());
+        if (!enPintado) {
+          enPintado = true;
+          queueMicrotask(() => (enPintado = false));
+          if (fuente !== anterior) {
+            anterior = fuente;
+            pintados.push(performance.now());
+          }
         }
         return original.call(this, fuente, ...resto);
       };
@@ -131,10 +139,13 @@ async function medir(motor) {
       }
       return null;
     };
+    // El intervalo cuenta si los fotogramas avanzan en la misma zona en sus dos extremos y en los puntos intermedios
+    // (si no, cruza una pausa y mide la pausa, no el pintado).
     const porZona = {};
     for (let i = 1; i < pintados.length; i++) {
-      const zona = enMovimiento(pintados[i]);
-      if (zona && zona === enMovimiento(pintados[i - 1])) (porZona[zona] ??= []).push(pintados[i] - pintados[i - 1]);
+      const [a, b] = [pintados[i - 1], pintados[i]];
+      const zonas = [0, 0.25, 0.5, 0.75, 1].map((k) => enMovimiento(a + (b - a) * k));
+      if (zonas[0] && zonas.every((z) => z === zonas[0])) (porZona[zonas[0]] ??= []).push(b - a);
     }
     const todos = Object.values(porZona).flat();
     ejecuciones.push({
