@@ -25,6 +25,10 @@ async function rellenar(): Promise<void> {
   }
 }
 
+// El día de hoy en el horario de la página, con la hora de Madrid (el estilo, en PortadaPagina.astro).
+const hoy = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', weekday: 'long' }).format(new Date()).toLowerCase();
+document.querySelector(`.portada__dia[data-dia-en="${hoy}"]`)?.setAttribute('aria-current', 'date');
+
 // Después de cargar la página: no compite con el primer pintado.
 const pedir = () => void rellenar().catch(() => {});
 if (bloques.length > 0) {

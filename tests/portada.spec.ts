@@ -53,6 +53,14 @@ for (const { ruta, carta, botones } of PORTADAS) {
       }
     });
 
+    test('el día de hoy, en la hora de Madrid, está marcado en el horario', async ({ page }) => {
+      await page.goto(ruta);
+      const hoy = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', weekday: 'long' }).format(new Date()).toLowerCase();
+      const marcados = page.locator('.portada__dia[aria-current="date"]');
+      await expect(marcados).toHaveCount(1);
+      await expect(marcados).toHaveAttribute('data-dia-en', hoy);
+    });
+
     test('cambio de idioma a la portada del otro idioma', async ({ page }) => {
       await page.goto(ruta);
       const otro = page.locator('.cabecera a[hreflang]');

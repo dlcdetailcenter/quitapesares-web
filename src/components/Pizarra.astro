@@ -16,9 +16,9 @@ const incluye = local.menuIncluye.map((palabra) => palabraDatos(palabra, idioma)
 const lista = new Intl.ListFormat(idioma === 'es' ? 'es' : 'en', { type: 'conjunction' }).format(incluye);
 ---
 
-<section class="pizarra" aria-labelledby={id}>
+<section class="pizarra toldo" aria-labelledby={id}>
   <h2 id={id}>{t.menuDelDia}</h2>
   <p class="pizarra__precio">{local.precioMenuDiario(idioma)}</p>
   <p class="pizarra__incluye">{t.menuIncluye}: {lista}.</p>
-  <p class="pizarra__otro">{t.menuFinDeSemana}: <strong>{local.precioMenuFinDeSemana(idioma)}</strong></p>
+  <p class="pizarra__otro"><span>{t.menuFinDeSemana}</span> <strong>{local.precioMenuFinDeSemana(idioma)}</strong></p>
 </section>

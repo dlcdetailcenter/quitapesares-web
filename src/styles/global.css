@@ -16,6 +16,9 @@
   --fuente-serifa-pila: var(--fuente-serifa), Georgia, serif;
   --fuente-versalitas-pila: var(--fuente-versalitas), var(--fuente-serifa), Georgia, serif;
 
+  /* Grano de papel: ruido muy tenue en el tono de la madera, sobre la crema. Sin archivos: va en la propia hoja. */
+  --papel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .37 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .6 -.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)'/%3E%3C/svg%3E");
+
   --hueco: 1rem;
   --ancho: 40rem;
   --toque: 3rem; /* 48 px: por encima de los 44 px mínimos para el dedo */
@@ -38,7 +41,7 @@ html {
 
 body {
   margin: 0;
-  background: var(--crema);
+  background: var(--crema) var(--papel);
   color: var(--madera);
   font-family: var(--fuente-serifa-pila);
   font-size: 1.1875rem;
@@ -106,7 +109,9 @@ h3 {
   height: var(--alto-cabecera);
   padding: 0 var(--hueco);
   background: var(--crema);
+  /* Doble filete, como los marcos: una línea, aire y otra línea. */
   border-bottom: 1px solid var(--burdeos);
+  box-shadow: 0 3px 0 var(--crema), 0 4px 0 var(--burdeos);
 }
 
 .cabecera__nombre {
@@ -188,6 +193,10 @@ h3 {
   outline: 3px solid var(--madera);
 }
 
+.boton:active {
+  transform: translateY(1px);
+}
+
 .boton--borde {
   background: transparent;
   color: var(--burdeos);
@@ -250,24 +259,72 @@ h3 {
   height: 0.75rem;
 }
 
-/* El menú del día: bloque de color con el toldo de la fachada colgando por arriba. */
-.pizarra {
-  position: relative;
-  padding: 3.5rem 1.5rem 2rem;
-  background: var(--burdeos);
-  color: var(--crema-clara);
+/* La flecha responde al dedo o al ratón: se adelanta un poco. */
+.tarjeta svg,
+.hoy__carta svg {
+  transition: transform 0.2s ease;
 }
 
-.pizarra::before {
+.tarjeta:hover svg,
+.tarjeta:active svg,
+.hoy__carta:hover svg,
+.hoy__carta:active svg {
+  transform: translateX(0.25rem);
+}
+
+/* Orla: filete con un rombo en el centro, para cerrar un bloque. */
+.orla {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--burdeos);
+}
+
+.orla::before,
+.orla::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid currentColor;
+}
+
+.orla i {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  background: currentColor;
+  transform: rotate(45deg);
+}
+
+/* Toldo de la fachada: franjas crema y burdeos con el borde de ondas, colgando por arriba de un bloque. */
+.toldo {
+  --franja: 1.5rem;
+  position: relative;
+}
+
+.toldo::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 2.25rem;
-  background: repeating-linear-gradient(90deg, var(--crema) 0 1.5rem, var(--burdeos-oscuro) 1.5rem 3rem);
-  -webkit-mask: linear-gradient(#000 0 0) top / 100% 1.5rem no-repeat, radial-gradient(circle at 50% 0, #000 0.75rem, transparent 0.8rem) bottom / 1.5rem 0.75rem repeat-x;
-  mask: linear-gradient(#000 0 0) top / 100% 1.5rem no-repeat, radial-gradient(circle at 50% 0, #000 0.75rem, transparent 0.8rem) bottom / 1.5rem 0.75rem repeat-x;
+  height: calc(var(--franja) * 1.5);
+  background: repeating-linear-gradient(90deg, var(--crema) 0 var(--franja), var(--burdeos-oscuro) var(--franja) calc(var(--franja) * 2));
+  -webkit-mask: linear-gradient(#000 0 0) top / 100% var(--franja) no-repeat, radial-gradient(circle at 50% 0, #000 calc(var(--franja) * 0.5), transparent calc(var(--franja) * 0.5 + 0.5px)) bottom / var(--franja) calc(var(--franja) * 0.5) repeat-x;
+  mask: linear-gradient(#000 0 0) top / 100% var(--franja) no-repeat, radial-gradient(circle at 50% 0, #000 calc(var(--franja) * 0.5), transparent calc(var(--franja) * 0.5 + 0.5px)) bottom / var(--franja) calc(var(--franja) * 0.5) repeat-x;
+}
+
+/* El menú del día: bloque de color con el toldo de la fachada colgando por arriba (.toldo) y un filete fino dentro. */
+.pizarra {
+  padding: 3.75rem 1.75rem 2rem;
+  background: var(--burdeos);
+  color: var(--crema-clara);
+}
+
+.pizarra::after {
+  content: '';
+  position: absolute;
+  inset: 2.875rem 0.5rem 0.5rem;
+  border: 1px solid rgb(250 243 223 / 0.4);
+  pointer-events: none;
 }
 
 .pizarra :focus-visible {
@@ -280,26 +337,43 @@ h3 {
 }
 
 .pizarra__precio {
-  margin: 0.5rem 0 0;
+  margin: 0.375rem 0 0;
   font-family: var(--fuente-versalitas-pila);
-  font-size: 3rem;
+  font-size: 3.25rem;
   font-weight: 500;
-  line-height: 1.1;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
 }
 
 .pizarra__incluye {
   margin: 0.75rem 0 0;
 }
 
+/* El otro menú: nombre, puntos y precio, como una línea de carta. */
 .pizarra__otro {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
   margin: 1.25rem 0 0;
   padding-top: 1rem;
   border-top: 1px solid var(--ocre);
 }
 
+.pizarra__otro::after {
+  content: '';
+  flex: 1;
+  order: 1;
+  min-width: 1rem;
+  border-bottom: 2px dotted rgb(250 243 223 / 0.5);
+  transform: translateY(-0.25em);
+}
+
 .pizarra__otro strong {
+  order: 2;
   font-family: var(--fuente-versalitas-pila);
+  font-size: 1.375rem;
   font-weight: 500;
+  font-variant-numeric: tabular-nums;
 }
 
 /* «Ver carta», fila de acción con flecha bajo los platos de hoy (o sola, si no los hay). */
@@ -347,21 +421,20 @@ h3 {
   border-top: 1px solid var(--ocre);
 }
 
-/* Pie de la portada. */
+/* Pie: la orla, el nombre en gótica y la dirección. */
 .pie {
   max-width: var(--ancho);
   margin: 0 auto;
-  padding: 1.5rem var(--hueco) 2rem;
-  border-top: 1px solid var(--burdeos);
+  padding: 0.5rem var(--hueco) 2.5rem;
   color: var(--texto-suave);
   text-align: center;
 }
 
 .pie__nombre {
-  margin: 0;
+  margin: 1.5rem 0 0;
   color: var(--burdeos);
   font-family: var(--fuente-rotulo-pila);
-  font-size: 1.75rem;
+  font-size: 2.25rem;
   line-height: 1.1;
 }
 
