@@ -4,6 +4,7 @@
 import { env } from 'cloudflare:workers';
 import plantilla from '../../docs/carta/plantilla-hoja-carta.csv?raw';
 import Base from '../layouts/Base.astro';
+import Pie from './Pie.astro';
 import Pizarra from './Pizarra.astro';
 import { CATEGORIAS_TRADUCIDAS, TEXTOS } from '../i18n/textos.ts';
 import { agrupar, type Idioma } from '../lib/carta/hoja.ts';
@@ -37,6 +38,7 @@ const hora = actualizada
 <Base idioma={idioma} titulo={t.tituloCarta} rutaOtroIdioma={idioma === 'es' ? '/en/carta' : '/carta'}>
   <div class="contenedor carta">
     <h1>{t.carta}</h1>
+    <span class="orla carta__orla" aria-hidden="true"><i></i></span>
 
     {
       grupos.length > 0 && (
@@ -115,6 +117,7 @@ const hora = actualizada
       <a class="boton" href={local.telefonoHref}>{t.llamar}</a>
     </p>
   </div>
+  <Pie />
 </Base>
 
 <script is:inline>
@@ -130,15 +133,26 @@ const hora = actualizada
 
 <style>
   .carta {
-    padding-top: calc(var(--alto-cabecera) + 2rem);
-    padding-bottom: 2rem;
+    padding-top: calc(var(--alto-cabecera) + 2.25rem);
+    padding-bottom: 2.5rem;
   }
 
   h1 {
     font-family: var(--fuente-rotulo-pila);
-    font-size: 3.25rem;
+    font-size: 3.75rem;
+    line-height: 1;
     color: var(--burdeos);
     text-align: center;
+  }
+
+  .carta__orla {
+    max-width: 11rem;
+    margin: 0.875rem auto 0;
+  }
+
+  /* Sin pestañas (carta sin platos en este idioma), la pizarra va justo debajo: se separa de la orla. */
+  .carta__orla + :global(.pizarra) {
+    margin-top: 2.25rem;
   }
 
   /* Pestañas: se desplazan de lado sin mover la página. */
@@ -148,12 +162,16 @@ const hora = actualizada
     z-index: 5;
     display: flex;
     gap: 1.25rem;
-    margin: 1rem calc(var(--hueco) * -1) 2rem;
+    margin: 1.25rem calc(var(--hueco) * -1) 2.25rem;
     padding: 0 var(--hueco);
     overflow-x: auto;
     background: var(--crema);
     border-bottom: 1px solid var(--burdeos);
     scrollbar-width: none;
+  }
+
+  .carta__pestanas::-webkit-scrollbar {
+    display: none;
   }
 
   .carta__pestanas a {
@@ -178,8 +196,12 @@ const hora = actualizada
   }
 
   .carta__grupo {
-    margin-top: 2rem;
+    margin-top: 1.5rem;
     border-bottom: 1px solid var(--burdeos);
+  }
+
+  .pizarra + .carta__grupo {
+    margin-top: 2.75rem;
   }
 
   .carta__grupo summary {
@@ -187,7 +209,7 @@ const hora = actualizada
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    min-height: 3.5rem;
+    min-height: 3.75rem;
     list-style: none;
     cursor: pointer;
     color: var(--burdeos);
@@ -216,10 +238,12 @@ const hora = actualizada
     font-size: 1.375rem;
   }
 
+  /* Abierto, el título lleva debajo el filete fino de las listas. */
   .carta__platos {
     list-style: none;
-    margin: 0 0 1rem;
-    padding: 0;
+    margin: 0 0 1.25rem;
+    padding: 0.25rem 0 0;
+    border-top: 1px solid var(--ocre);
   }
 
   .carta__plato {
@@ -250,7 +274,7 @@ const hora = actualizada
   }
 
   .carta__aviso {
-    margin-top: 2rem;
+    margin-top: 2.75rem;
   }
 
   .carta__aviso p {
@@ -265,5 +289,6 @@ const hora = actualizada
 
   .carta__llamar {
     margin: 0;
+    padding: 0 0.1875rem;
   }
 </style>
