@@ -16,8 +16,9 @@
   --fuente-serifa-pila: var(--fuente-serifa), Georgia, serif;
   --fuente-versalitas-pila: var(--fuente-versalitas), var(--fuente-serifa), Georgia, serif;
 
-  /* Grano de papel: ruido muy tenue en el tono de la madera, sobre la crema. Sin archivos: va en la propia hoja. */
-  --papel: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .37 0 0 0 0 .25 0 0 0 0 .12 0 0 0 .6 -.2'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23p)'/%3E%3C/svg%3E");
+  /* Grano de papel: baldosa PNG de 48 px con ruido muy tenue en el tono de la madera (paleta con transparencia,
+     generada con semilla fija). Va en la propia hoja: sin petición aparte y sin filtros que pintar. */
+  --papel: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAMAAABg3Am1AAAAElBMVEVeQB9eQB9eQB9eQB9eQB9eQB9D5aqhAAAABnRSTlMAAAYMFB6WdksfAAADr0lEQVR42jWVCW7DQAwDSUr6/5eD4ToFWrhxvKZ4SRnHu16dx3cz0m5uNNbxcXy5mbm1tTrNKZPdcJHbk2NltXvru11Hp5tb3elymR1Luh3PZWPur22eSrxWRs5Z0Y5Wsb3c5mllZs/Dg15vEWi15h3aXU466Xg6PoD1ZB7ci8UZmtXcWObt3PKYu1xkzKAG5TJ+CiF7E2VnVuZSmqx7bDk7fkoA5/HSDuVdJQMv4fZBw408cyPATmnKZcXF5IYhsgNBho01sONxJudNNjqGOTE82CHxyqAsa8fhJdEdlIXJ9bHfl0xWEifn0EsSkAG3iGa4Of4LY+buplRvdscMwOiZ0fHHgakBQMAgO2JmLfJ5zwd+xkC7mYu8MFmZarIBunc3htbBMEjuQdnnhSyeuakKz4GQyOmBXFSBD/TK+Fwb4QeMgynmZmfhxDjQVr0HhEEBAaMjQzGiwW5wXr16xkpXZ400DpOGj+cYG6B8gvGY1Ah8DD8zCsSC/OpezWJACKntBuHCl2+CJZqdGpc0TTr2Lqzxve0XynmyDY/xJuLuHCxXCM2oL0mzTaRVVseVmONX+DIEuJkW1iTMNQIZT5mZU6fiGB7C5MYpWoaXoYHpAn63GUrMYbRkAe3Eafal4aiU822cox7G66WtJNjHhm8v0x7/kgkI2EUWlBYxrcM8JJNfnBthJJTFkWWqAdfZpwaEzO09OQLJerVFfjGBFOAf1fRaEOldNsrafhk8WhQEkEE46FZrDLFXow1upXVTp6chp3mlXqQHEKS7waRTJ8Ol5oAgZKlLQxZ9U6fG3lNJv6Er1Cg/CwKCqXw0KL5mdJ4qi35hhhwIJyl6W4Cw47EaW3UnpjgQt5HoT5GroxpFlWBA9fPHKWUx6NASQnay/6yjdVvIHfjBodhuWzo076HosqlSjyHjkdyTKWvsYIog1F4oKPYHya91l+oXocQlrnnuqgPEKQevN7tDRKmPDqZ2Hrk9Qv0ik39amNTS2wyspHZpkeE4IAD31l90wBpanzziMgMHF4gUb8XfI7pXjcM+UWlhHVVIQoyvoSgn/u61AUHF7NNdg+WIg66RYI2BhDvqzts2+VeebXikJWM8TxkEX+Qpv3Q39ck2g1gvZcNWqpkRjRSHugQxIT9CRYYIFa5gwbaqBlNg4lsRuYa7WRo6IjTUTRtQfm3V6uGVGnhoT7Th2Ivba1QaCoL1x144N9TbxYpXiCQa4Cw1LdvFxubRpOkqre84NVi8BCXw5g+LVBY64IiWkAAAAABJRU5ErkJggg==");
 
   --hueco: 1rem;
   --ancho: 40rem;
