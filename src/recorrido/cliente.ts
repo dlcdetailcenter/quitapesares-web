@@ -4,7 +4,8 @@
 // Progresivo: la portada de F1 está completa en el HTML. El script de <head> (Recorrido.astro) solo marca
 // `recorrido-pendiente` si no hay «reducir movimiento», ahorro de datos ni red lenta. Aquí:
 //   1. se pregunta al Worker (/recorrido/estado), que dice que no si llega la cabecera Save-Data;
-//   2. se carga el primer tramo; si no está en 3 s desde el inicio de la navegación, versión estática;
+//   2. se carga el primer tramo; si no está en 3 s desde el inicio de la navegación, versión estática (no cuenta lo
+//      que se haya esperado al primer pintado del navegador: el plazo mide la red);
 //   3. con el primer tramo listo, `recorrido-activo`: la sección crece por debajo de la pantalla (sin CLS).
 // Carga por tramos: el siguiente se pide cuando empieza el actual. Memoria: solo el tramo visible tiene fotogramas
 // decodificados, y solo una ventana alrededor del actual (reproductor.ts); las transiciones usan un fotograma más.
@@ -112,9 +113,10 @@ function avance(ritmo: [number, number][] | undefined, t: number): number {
   return f0;
 }
 
-async function iniciar(): Promise<void> {
+/** `espera`: milisegundos que se ha esperado al primer pintado antes de empezar; no cuentan en el plazo. */
+async function iniciar(espera: number): Promise<void> {
   if (!seccion || !pista || !canvas) return estatico('sin-seccion');
-  const plazo = setTimeout(() => estatico('lento'), Math.max(0, PLAZO_MS - performance.now()));
+  const plazo = setTimeout(() => estatico('lento'), Math.max(0, PLAZO_MS + espera - performance.now()));
   let config: ConfigRecorrido;
   let aire: Aire;
   try {
@@ -336,4 +338,30 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
   actualizar();
 }
 
-if (html.classList.contains('recorrido-pendiente')) void iniciar();
+// El primer pintado va antes: el nombre, la cabecera y la barra ya están en el HTML. El recorrido empieza a pedir su
+// material cuando el navegador avisa de que ya ha pintado contenido (o, sin ese aviso, en el segundo fotograma), para
+// no competir con él. Lo que dure esa espera no cuenta en el plazo de 3 s (iniciar): ese plazo decide entre recorrido
+// y versión estática según la red, no según cuándo pinta el navegador. Con la pestaña oculta no se pinta nada: empieza
+// ya. Y si el aviso no llegara, empieza al acabar la espera máxima.
+const ESPERA_PINTADO_MS = 2500;
+if (html.classList.contains('recorrido-pendiente')) {
+  const alCargar = performance.now();
+  let arrancado = false;
+  const arrancar = () => {
+    if (arrancado) return;
+    arrancado = true;
+    void iniciar(performance.now() - alCargar);
+  };
+  if (document.visibilityState !== 'visible') arrancar();
+  else {
+    if (typeof PerformanceObserver !== 'undefined' && (PerformanceObserver.supportedEntryTypes ?? []).includes('paint')) {
+      new PerformanceObserver((lista, observador) => {
+        if (lista.getEntriesByName('first-contentful-paint').length === 0) return;
+        observador.disconnect();
+        arrancar();
+      }).observe({ type: 'paint', buffered: true });
+    } else requestAnimationFrame(() => requestAnimationFrame(arrancar));
+    document.addEventListener('visibilitychange', arrancar, { once: true });
+    setTimeout(arrancar, ESPERA_PINTADO_MS);
+  }
+}

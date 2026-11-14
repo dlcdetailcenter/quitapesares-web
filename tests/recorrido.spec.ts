@@ -462,7 +462,8 @@ for (const { ruta, carta, barra, botones } of PORTADAS) {
         await r.continue().catch(() => {});
       });
       await page.goto(ruta);
-      await expect(page.locator('html')).toHaveClass(/recorrido-estatico/, { timeout: 6000 });
+      // 3 s de plazo, más lo que el navegador tarde en pintar por primera vez (2,5 s como mucho), que no cuenta.
+      await expect(page.locator('html')).toHaveClass(/recorrido-estatico/, { timeout: 9000 });
       expect((await estado(page)).motivo).toBe('lento');
       await expect(page.locator('[data-recorrido]')).toBeHidden();
       await mismasFunciones(page, botones);
