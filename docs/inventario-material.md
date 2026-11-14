@@ -256,3 +256,70 @@ Efecto de la entrada: **empuje a través de la puerta**, solo en el canvas y sob
 pasan en las primeras 0,75 pantallas con un zoom que llega al 160 % y dos copias semitransparentes algo más grandes
 mientras va rápido, que hacen de desenfoque de movimiento; en el último cuarto queda quieto. No crea ni cambia ningún
 archivo: las sumas son las de `scripts/media/manifiesto-real.json`, y una prueba de `test:datos` lo comprueba.
+
+## F2: pasada final de la demo (rama `f2-fable`)
+
+Estado al 2026-11-14. Sustituye a la lista de piezas del ajuste del 2026-11-05, que queda arriba como historial.
+Excepciones de la maqueta, solo para la demo privada (`CLAUDE.md`). **Producción sigue solo con material real y la
+maqueta se retira después de la demo al dueño.** `recorrido-maqueta/` no entra en git (107 archivos, 2,94 MB de 8); sumas
+en `scripts/media/manifiesto-maqueta.json`, proceso en `scripts/media/tramos-maqueta.json`. Aire y nubes, los del material
+real, con las mismas sumas. Longitud: 3,5 pantallas de scroll.
+
+Decisiones de Kara del 2026-11-10 que cambian este inventario:
+- **La página no lleva ninguna etiqueta ni texto de IA**, tampoco en los créditos. La IA queda registrada en
+  `recorrido.json` (`"ia": "local"`, `"origen": "creada"` y la lista `ia` de las nubes) y en esta tabla. Las barreras de
+  producción no cambian: `build:produccion` falla con la maqueta y con cualquier pieza creada.
+- Dentro de la maqueta se pueden subir a Higgsfield fotogramas reales, referencias y fotogramas de inicio y final sin
+  pedir su OK por cada subida, con el filtro de privacidad y anotando aquí cada una.
+- Tope de 350 créditos para toda la pasada, sin compras.
+
+| Pieza | Origen | Real o IA | Fotogramas | Pantallas de scroll | Panel fijo | Dónde queda registrada la IA |
+|---|---|---|---|---|---|---|
+| Aire | Ortofoto y nubes del material real | Ortofoto real; nubes con IA | Sin cambios | 0,8 | Cómo llegar, con la dirección | Atribución del PNOA, visible; nubes: lista `ia` de `recorrido.json` y este inventario |
+| `puerta` | `recorrido-real/puerta`, uno de cada dos, mismos nombres y sumas | **Real**, sin IA | 27 de 53 | 1 | Menú del día con su precio, platos de hoy y Ver carta | — |
+| `barra` | Vídeo `barra-1`, trabajo `e8273960-bc05-439b-a4a1-1909654f37ed`, a 8 fps | **IA** | 32 | 0,8 | Llamar, con el teléfono y el horario de hoy | `"ia": "local"`, `"origen": "creada"` y este inventario |
+| `cafetera` | Vídeo `cafetera-1`, trabajo `1aa445c3-4070-407b-a506-4b958bfd0838`, a 8 fps | **IA** | 40 | 0,9 | Dejar reseña | Ídem |
+
+`barrido-salida` sale del recorrido: la cafetera es la última pieza y después solo quedan el horario y el pie. Su vídeo
+no se ha borrado de la carpeta de material. `barra` y `cafetera` son los mismos vídeos aceptados el 2026-11-05, con el
+mismo recorte y más fotogramas (de 24 a 32 y de 30 a 40).
+
+Transiciones, todas **sin IA**, hechas en el canvas con píxeles que ya existen:
+- **Del aire a la entrada**: cierran las nubes y, debajo, la ortofoto deja paso al primer fotograma real de la puerta.
+- **En la entrada**: los fotogramas reales avanzan hasta el 0043, se detienen ahí bajo el panel del menú y los últimos,
+  que ya giran, pasan justo antes de la barra. El empuje es solo un zoom del 12 %: sin copias de desenfoque encima.
+- **De la entrada a la barra**: barrido de cámara en el canvas. La imagen que se va y la que llega se desplazan de lado
+  con estela horizontal y se cruzan a mitad de camino; la estela se hace encogiendo y estirando la propia imagen.
+- **De la barra a la cafetera**: sin corte. El vídeo de la barra acaba en el fotograma con el que empieza el de la cafetera.
+
+### Subidas a Higgsfield del 2026-11-14
+
+Filtro de privacidad comprobado antes de subir: sin caras, matrículas, pantallas de la barra ni lista de especialidades;
+PNG de 8 bits en SDR, sin metadatos ni GPS (exiftool 13.60: solo la cabecera del PNG). Ningún vídeo entero y nada de
+IMG_4592.
+
+| Archivo | Qué es | SHA-256 | Fecha |
+|---|---|---|---|
+| `e-puerta-0053.png` | Último fotograma real de `puerta` (`0053.webp`, de IMG_4595), a 720×1280. Ya lleva barrido: el texto del cristal no se lee | `fdee20989574f972732735264f3a3995be2848372f7b9f42610eb828669863b5` | 2026-11-14 |
+| `e-barra-0001.png` | Primer fotograma de la pieza `barra` (creado con IA el 2026-11-05), a 720×1280 | `e6525f231a7eeb6ca11166bba1ba0b017453c356222ee62587af0ff922a98b34` | 2026-11-14 |
+
+Se preparó además `e-puerta-0043.png` (fotograma real 0043) y **no se subió**.
+
+### Intentos: transición generada de la entrada a la barra (`giro`)
+
+Modelo `kling4_0`, imagen a vídeo con fotograma inicial `e-puerta-0053.png` y final `e-barra-0001.png`, 720p, 9:16,
+3 s. Coste pedido antes de cada generación: 6,75 créditos.
+
+| Intento | Trabajo | Resultado | Lista de rechazo | Coste | Prompt |
+|---|---|---|---|---|---|
+| giro 1 | `ade4acd0-913e-4843-bb8d-b50f5113b2b5` | **Rechazado** | Falla 3 y 5: entre la puerta y la barra aparece un salón con sillas rojas, ventanas con persianas y una cocina con estantes, que no están en ningún fotograma | 6,75 | The camera continues one very fast whip pan to the left with heavy horizontal motion blur streaking the whole frame, then settles sharply on the granite counter. Single continuous move, camera only. |
+| giro 2 | `4e06449e-98d5-4d38-97ef-303ddd17c0c3` | **Rechazado** | Falla 3, 4 y 5: estantes con vajilla y botellas detrás de la cafetera y una pared lisa que no está filmada; además, vuelve nítido el fotograma inicial, que estaba barrido | 6,75 | Extreme whip pan to the left. Instantly the whole frame smears into pure abstract horizontal streaks of colour with no recognizable shapes, stays fully streaked, then snaps sharp onto the granite counter. Camera only. |
+
+Se paró en 2 intentos de los 6 posibles. La entrada y la barra no se filmaron juntas, así que cualquier giro generado
+tiene que inventar lo que hay en medio, que es lo que prohíbe la lista. La pieza no se usa: en su lugar va el barrido
+del canvas descrito arriba, que hace el mismo gesto sin inventar nada. Los dos vídeos quedan en la carpeta de material,
+sin usar.
+
+Gasto de la pasada: **13,5 créditos** de 350 (2 vídeos). Saldo: 708 el 2026-11-10; 699,5 antes de la primera
+generación, porque el 2026-11-11 hubo dos generaciones de GPT Image 2.6 (8,5 créditos) que no son de esta pasada; 686 al
+terminar.
