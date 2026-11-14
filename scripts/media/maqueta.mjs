@@ -137,6 +137,7 @@ function ensamblar() {
       ...(p.empuje ? { empuje: p.empuje } : {}),
       ...(p.paso ? { paso: p.paso } : {}),
       ...(p.encadenado ? { encadenado: p.encadenado } : {}),
+      ...(p.barrido ? { barrido: p.barrido } : {}),
     });
   }
   const recorrido = {

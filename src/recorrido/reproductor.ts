@@ -185,6 +185,55 @@ export class SecuenciaCanvas implements Reproductor {
     this.ctx.globalAlpha = 1;
   }
 
+  /** Lienzo auxiliar de la estela del barrido. */
+  private estela?: HTMLCanvasElement;
+
+  /**
+   * Pinta una imagen como en un barrido de cámara: desplazada de lado y con estela horizontal. La estela se hace con
+   * la propia imagen: se encoge a lo ancho en un lienzo auxiliar y se estira otra vez, y el suavizado del navegador
+   * mezcla cada fila de lado. Solo se mueven sus píxeles, nada se inventa.
+   * `desplazamiento` y `estela`, en anchos del lienzo; `alfa`, cuánto pesa sobre lo que ya hay; `zoom`, el que
+   * tenía la imagen antes del barrido.
+   */
+  pintarBarrido(fuente: ImageBitmap, desplazamiento: number, estela: number, alfa = 1, zoom = 1): void {
+    const a = Math.min(1, Math.max(0, alfa));
+    if (a === 0) return;
+    const { width: w, height: h } = this.canvas;
+    // Más grande que el lienzo, para que desplazada lo siga cubriendo.
+    const escala = Math.max(w / fuente.width, h / fuente.height) * (zoom + 2 * Math.abs(desplazamiento));
+    const dw = fuente.width * escala;
+    const dh = fuente.height * escala;
+    const x = (w - dw) / 2 + desplazamiento * w;
+    const y = (h - dh) / 2;
+    // Columnas del lienzo auxiliar: cuantas menos, más larga la estela. Con muy poca estela, la imagen tal cual.
+    const columnas = Math.round(1 / Math.max(estela, 0.001));
+    this.ctx.globalAlpha = a;
+    if (columnas >= w / 4) this.ctx.drawImage(fuente, x, y, dw, dh);
+    else {
+      const aux = (this.estela ??= document.createElement('canvas'));
+      const cw = Math.max(2, columnas);
+      if (aux.width !== cw || aux.height !== h) {
+        aux.width = cw;
+        aux.height = h;
+      }
+      const ctx = aux.getContext('2d');
+      if (ctx) {
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(fuente, (x * cw) / w, y, (dw * cw) / w, dh);
+        this.ctx.drawImage(aux, 0, 0, cw, h, 0, 0, w, h);
+      }
+    }
+    this.ctx.globalAlpha = 1;
+  }
+
+  /** El fotograma que se acaba de pintar, otra vez, como en un barrido (pintarBarrido). */
+  barrerActual(desplazamiento: number, estela: number): void {
+    const bitmap = this.decodificados.get(this.pintado);
+    if (!bitmap) return;
+    const p = this.urls.length > 1 ? this.pintado / (this.urls.length - 1) : 0;
+    this.pintarBarrido(bitmap, desplazamiento, estela, 1, 1 + this.empuje * p * p);
+  }
+
   /** Cuántos fotogramas hay decodificados ahora mismo (para comprobar la ventana). */
   get enMemoria(): number {
     return this.decodificados.size;

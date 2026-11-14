@@ -38,6 +38,11 @@ interface ConfigTramo {
   paso?: number;
   /** Parte del tramo en la que el último fotograma del tramo anterior se disuelve sobre este. */
   encadenado?: number;
+  /**
+   * Con «encadenado»: el paso es un barrido de cámara hecho en el lienzo, con estela (reproductor.ts). 1, la imagen
+   * se va hacia la derecha; -1, hacia la izquierda.
+   */
+  barrido?: 1 | -1;
 }
 
 /** Grupo de acciones de cada zona cuando el material no lo dice. */
@@ -50,6 +55,9 @@ const AIRE_ABIERTO = 0.85;
 const NUBES_ABREN = 0.16;
 /** Tope del velo blanco entre el aire y la puerta: entre las nubes siempre se ve algo. */
 const VELO = 0.5;
+/** Barrido entre dos piezas: cuánto se desplaza cada imagen y cuánto mide la estela, en anchos del lienzo. */
+const BARRIDO_PASO = 0.4;
+const BARRIDO_ESTELA = 0.22;
 
 export interface ConfigRecorrido {
   material: 'real' | 'sintetico' | 'maqueta';
@@ -278,20 +286,29 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
         aire.pintar(AIRE_DETENIDO + (1 - AIRE_DETENIDO) * cierre, 0.05 + 0.95 * cierre, puerta && { fuente: puerta, alfa: suave((cierre - 0.3) / 0.7) }, VELO);
       }
     } else {
-      const { rep, encadenado = 0, ritmo } = tramos[tramo];
-      // Al empezar el primer tramo, las nubes se abren sobre él; en los demás, el anterior se disuelve.
+      const { rep, encadenado = 0, barrido, ritmo } = tramos[tramo];
+      // Al empezar el primer tramo, las nubes se abren sobre él; en los demás, el anterior se disuelve o se barre.
       const nubes = tramo === 0 ? 1 - suave(t / NUBES_ABREN) : 0;
-      const mezcla = tramo > 0 && encadenado > 0 && t < encadenado ? 1 - suave(t / encadenado) : 0;
-      const anterior = mezcla > 0 ? pedirPuente(tramo - 1, -1) : undefined;
-      if (mezcla === 0) soltarPuente();
+      const paso = tramo > 0 && encadenado > 0 && t < encadenado ? t / encadenado : 1;
+      const anterior = paso < 1 ? pedirPuente(tramo - 1, -1) : undefined;
+      if (paso === 1) soltarPuente();
       // Lo que va encima se pinta con cada fotograma, también con los que llegan al terminar de decodificarse.
-      rep.encima =
-        nubes > 0 || anterior
-          ? () => {
-              if (anterior) rep.pintarEncima(anterior, mezcla);
-              if (nubes > 0) aire.pintarNubes(1 + t, nubes, VELO);
-            }
-          : undefined;
+      if (paso < 1 && barrido) {
+        // Barrido: la imagen que se va y la que llega se desplazan con estela y se cruzan a mitad de camino.
+        const avanzado = suave(paso);
+        const estela = Math.sin(Math.PI * paso) * BARRIDO_ESTELA;
+        const sale = 1 - suave((paso - 0.3) / 0.4);
+        const zoomAnterior = 1 + (tramos[tramo - 1].empuje ?? 0);
+        rep.encima = () => {
+          rep.barrerActual(-barrido * (1 - avanzado) * BARRIDO_PASO, estela);
+          if (anterior) rep.pintarBarrido(anterior, barrido * avanzado * BARRIDO_PASO, estela, sale, zoomAnterior);
+        };
+      } else if (nubes > 0 || anterior) {
+        rep.encima = () => {
+          if (anterior) rep.pintarEncima(anterior, 1 - suave(paso));
+          if (nubes > 0) aire.pintarNubes(1 + t, nubes, VELO);
+        };
+      } else rep.encima = undefined;
       if (rep.encima) rep.invalidar();
       rep.mostrar(avance(ritmo, t) * (rep.fotogramas - 1));
     }

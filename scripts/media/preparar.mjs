@@ -67,7 +67,7 @@ function sintetico() {
   // La misma estructura que la maqueta: el aire y tres tramos, cada uno con su panel fijo. La cafetera es el último.
   const bases = {
     puerta: { color: [142, 27, 42], pantallas: 1, zona: 'puerta', panel: 'menu', ritmo: [[0.62, 0.8], [0.88, 0.8], [1, 1]], empuje: 0.12 },
-    barra: { color: [110, 70, 40], pantallas: 0.8, zona: 'barra', panel: 'llamar', encadenado: 0.18, ritmo: [[0.8, 1]] },
+    barra: { color: [110, 70, 40], pantallas: 0.8, zona: 'barra', panel: 'llamar', encadenado: 0.22, barrido: 1, ritmo: [[0.8, 1]] },
     cafetera: { color: [60, 60, 70], pantallas: 0.9, zona: 'barra', panel: 'resena', ritmo: [[0.85, 1]] },
   };
   const tramos = Object.entries(bases).map(([id, { color: [r, g, b], ...resto }]) => {
