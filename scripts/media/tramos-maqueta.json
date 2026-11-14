@@ -6,7 +6,7 @@
   },
   "piezas": [
     { "id": "puerta", "origen": "real", "paso": 2, "zona": "puerta", "panel": "menu", "pantallas": 1, "ritmo": [[0.62, 0.808], [0.88, 0.808], [1, 1]], "empuje": 0.12 },
-    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "llamar", "pantallas": 0.8, "encadenado": 0.22, "barrido": 1, "ritmo": [[0.3, 0.5], [0.75, 1]], "fps": 8, "calidad": 62 },
+    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "llamar", "pantallas": 0.8, "encadenado": 0.22, "barrido": 1, "ritmo": [[0.2, 0.5], [0.75, 1]], "fps": 8, "calidad": 62 },
     { "id": "cafetera", "origen": "creada", "ia": "local", "video": "cafetera-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "resena", "pantallas": 0.9, "ritmo": [[0.85, 1]], "fps": 8, "calidad": 62 }
   ]
 }
