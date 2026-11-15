@@ -8,9 +8,9 @@ Reglas de este archivo:
 
 | | |
 |---|---|
-| Actualizado | 2026-11-05 (demo final, ajuste tras la revisión de Kara: recorrido más corto y acciones integradas) |
+| Actualizado | 2026-11-15 (pasada final de la demo en `f2-fable`) |
 | `main` al escribirlo | `06312b0` |
-| Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido` y, para la demo final, en `f2-demo-final` |
+| Fase | **F2** (recorrido con el scroll, demo privada, material provisional), en curso en `f2-recorrido`; demo final en `f2-demo-final` y su pasada final en `f2-fable` |
 
 ## Ramas y PR
 
@@ -18,6 +18,8 @@ Reglas de este archivo:
 - `f0-base`, `f0-contexto` y `f1-carta`: fusionadas (PR #1, #5 y #6). VERIFICADO
 - `f2-recorrido`: en curso (PR #7). Se fusiona sin aplastar, después de la sesión de comprobación de Kara.
 - `f2-demo-final`: demo final para el dueño, PR #8 en borrador con base `f2-recorrido`. Sin fusionar. VERIFICADO
+
+- `f2-fable`: pasada final de la demo, PR #9 en borrador con base `f2-demo-final`. Sin fusionar. La CI no se ejecuta en PR con esa base (solo con base `main` o `f2-recorrido`): sin comprobar. NO VERIFICABLE AÚN
 
 ## F0: cerrada
 
@@ -84,6 +86,28 @@ Hecho en `f2-recorrido`:
   50 ms en local, justo en el límite, y 78 ms en la demo, por encima.** Con el mismo código, la diferencia es de servir
   por red; sin arreglar, se decide con el iPhone real. VERIFICADO; móviles reales, NO VERIFICABLE AÚN.
 
+## F2: pasada final de la demo, en `f2-fable`
+
+Sobre `f2-demo-final`, para la demo privada al dueño. No es producción: `build:produccion` sigue fallando con la maqueta.
+- Recorrido de 3,45 pantallas de scroll; la cafetera es la última pieza y después solo quedan el horario y el pie. Un panel con su
+  dato en cada zona, fijo mientras se ve; sin rótulos de zona. Transiciones hechas en el canvas, sin IA. Con «reducir movimiento»,
+  la portada estática con todas las acciones. VERIFICADO en local y contra la demo (Chromium y WebKit, 390 y 360 px).
+- Sin etiqueta ni créditos de IA en la página, decisión de Kara del 10-11: la IA queda en `recorrido.json` y en el inventario. La
+  atribución del PNOA se queda. Barrido contra la demo, ES y EN: 0 apariciones. VERIFICADO
+- Identidad elevada, sin rehacer (papel, doble filete, toldo, orla, horario con el día de hoy). `/carta` con lo mismo y sin
+  JavaScript nuevo. VERIFICADO
+- Pruebas: `npm test` 332 de 332 con el sintético y con la maqueta; `test:datos` 62 de 62; `check`, `media:check`,
+  `media:check:maqueta` y `check:media` en verde; `build:produccion` falla con la maqueta. VERIFICADO
+- Lighthouse en local con la maqueta: portada rendimiento 0,98, accesibilidad 1,00, LCP 2,27 s, CLS 0, TBT 0 ms, 386 KB, JS 15 KB;
+  `/carta` 1,00 y 1,00, LCP 1,81 s, 134 KB. VERIFICADO
+- Intervalo entre fotogramas al bajar (`npm run lab:recorrido`), p95: Chromium 34 ms, en local y en la demo. **WebKit 55–64 ms,
+  en local y en la demo, por encima de los 50 ms.** `lab:medir` en WebKit da 83 ms en local y 159 ms en la demo, con el mismo
+  resultado con el reproductor anterior. Móviles reales, NO VERIFICABLE AÚN.
+- Maqueta: 107 archivos, 3,31 MB de 8. La barra es un vídeo nuevo creado con IA; la cafetera, el de antes con un ajuste de color.
+  35,5 créditos de Higgsfield en esta pasada.
+- Revisión independiente: dos rondas, media 3,9 y 4,0, **no pasa** (calidad de las imágenes, 3: ortofoto ampliada y entrada,
+  blandas frente a barra y cafetera, más nítidas). Detalle de lo que quedó sin resolver en el informe de la pasada.
+
 ## F2: demo final, en `f2-demo-final`
 
 - Diseño nuevo de portada, recorrido y /carta: crema y burdeos, marcos, tarjetas con flecha, cabecera con Llamar, carta con
@@ -114,7 +138,10 @@ Hecho en `f2-recorrido`:
   pendiente de F1 (VoiceOver y los botones).
 - Probar las paradas con el material real.
 - **Retirar la maqueta después de la demo al dueño.**
-- Decidir con Kara qué del diseño de `f2-demo-final` pasa a `f2-recorrido`.
+- Decidir con Kara qué del diseño de `f2-demo-final` y de `f2-fable` pasa a `f2-recorrido`.
+- Ver `f2-fable` en móviles reales; decidir si se mejora la ortofoto ampliada y la entrada (lo que más pesa en la revisión) y si el
+  intervalo de WebKit, por encima de 50 ms, se arregla o se acepta.
+- Antes de producción, decidir dónde se declara la IA: ninguna barrera lo comprueba.
 - Las coordenadas de la ortofoto son las de `src/data/restaurante.json`, sin confirmar: si cambian, se regenera.
 
 ## Siguiente paso
