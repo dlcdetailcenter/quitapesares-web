@@ -11,7 +11,11 @@
 //     Con «imagen», fija y con el mismo recorte progresivo, desde $MATERIAL/f2/maqueta/creadas/intentos/<imagen>.png.
 //     Con «video», fotogramas del vídeo aceptado en $MATERIAL/f2/maqueta/final/intentos/<video>.mp4.
 //   - «real»: fotogramas del tramo de recorrido-real/, tal cual (mismos nombres y sumas), uno de cada «paso». Sin IA:
-//     con "ia" en la configuración, el ensamblado falla.
+//     con "ia" en la configuración, el ensamblado falla. Con «reprocesada», los fotogramas salen del MISMO original, con
+//     el mismo proceso (procesar.mjs, sin IA) pero a más resolución, de $MATERIAL/f2/hd/<id>/ (los nombres cambian de
+//     sumas, no de contenido); el material real de recorrido-real/ no se toca.
+//   - «salida» de la configuración: tamaño de los fotogramas de toda la maqueta (por defecto el de tramos.json), y
+//     «aire.hd», la ortofoto con más detalle de $MATERIAL/f2/aire-hd/ (scripts/media/ortofoto.mjs).
 //
 // Uso:
 //   node scripts/media/maqueta.mjs pieza <id>     vídeo aceptado → fotogramas WebP 540×960 (sin audio ni metadatos)
@@ -32,7 +36,7 @@ const REAL = join(RAIZ, 'recorrido-real');
 const DESTINO = join(RAIZ, 'recorrido-maqueta');
 const config = JSON.parse(readFileSync(process.env.MAQUETA_CONFIG ? resolve(process.env.MAQUETA_CONFIG) : join(RAIZ, 'scripts', 'media', 'tramos-maqueta.json'), 'utf8'));
 const tramos = JSON.parse(readFileSync(join(RAIZ, 'scripts', 'media', 'tramos.json'), 'utf8'));
-const { ancho, alto } = tramos.salida;
+const { ancho, alto } = config.salida ?? tramos.salida;
 const SIN_EXTRAS = ['-an', '-sn', '-dn', '-map_metadata', '-1', '-map_chapters', '-1', '-fflags', '+bitexact'];
 
 function fallar(m) {
@@ -97,6 +101,8 @@ function sinIa(id) {
 
 /** Una pieza creada con IA sin «"ia": "local"» no se ensambla: es lo que bloquea producción y enciende la etiqueta. */
 function validarPiezas() {
+  const reprocesadasNoReales = config.piezas.filter((p) => p.reprocesada && p.origen !== 'real').map((p) => p.id);
+  if (reprocesadasNoReales.length > 0) fallar(`«reprocesada» solo vale en piezas reales: ${reprocesadasNoReales.join(', ')}`);
   const realesConTono = config.piezas.filter((p) => p.origen === 'real' && p.tono).map((p) => p.id);
   if (realesConTono.length > 0) fallar(`pieza real con "tono": ${realesConTono.join(', ')} (el material real no se retoca)`);
   const sinDeclarar = config.piezas.filter((p) => p.origen === 'creada' && p.ia !== 'local').map((p) => p.id);
@@ -111,17 +117,27 @@ function ensamblar() {
   const real = JSON.parse(readFileSync(join(REAL, 'recorrido.json'), 'utf8'));
   rmSync(DESTINO, { recursive: true, force: true });
   mkdirSync(DESTINO, { recursive: true });
-  // Aire y nubes: los mismos archivos que el material real (mismas sumas).
-  for (const carpeta of ['aire', 'nubes']) if (existsSync(join(REAL, carpeta))) cpSync(join(REAL, carpeta), join(DESTINO, carpeta), { recursive: true });
+  // Aire y nubes: los mismos archivos que el material real (mismas sumas), salvo la ortofoto con más detalle.
+  const aireHd = config.aire.hd ? join(MATERIAL, 'f2', 'aire-hd') : null;
+  if (aireHd && !existsSync(join(aireHd, 'meta.json'))) fallar(`falta la ortofoto con más detalle ${aireHd} (node scripts/media/ortofoto.mjs --destino aire-hd …)`);
+  const metaHd = aireHd ? JSON.parse(readFileSync(join(aireHd, 'meta.json'), 'utf8')) : null;
+  if (metaHd && (metaHd.centro.lat !== real.aire.centro.lat || metaHd.centro.lng !== real.aire.centro.lng)) fallar('la ortofoto con más detalle se hizo con otras coordenadas que el aire real: regenérala');
+  for (const carpeta of ['aire', 'nubes']) {
+    if (carpeta === 'aire' && aireHd) {
+      cpSync(aireHd, join(DESTINO, 'aire'), { recursive: true, filter: (f) => !f.endsWith('meta.json') });
+    } else if (existsSync(join(REAL, carpeta))) cpSync(join(REAL, carpeta), join(DESTINO, carpeta), { recursive: true });
+  }
   const piezas = [];
   for (const p of config.piezas) {
     let fotogramas;
     if (p.origen === 'real') {
-      // Del material real, tal cual: mismos nombres y sumas.
+      // Del material real, tal cual (mismos nombres y sumas) o reprocesado a más resolución desde el mismo original.
       const paso = p.paso ?? 1;
-      const elegidos = readdirSync(join(REAL, p.id)).filter((f) => f.endsWith('.webp')).sort().filter((_, i) => i % paso === 0);
+      const origenReal = p.reprocesada ? join(MATERIAL, 'f2', 'hd', p.id) : join(REAL, p.id);
+      if (!existsSync(origenReal)) fallar(`falta ${origenReal}`);
+      const elegidos = readdirSync(origenReal).filter((f) => f.endsWith('.webp')).sort().filter((_, i) => i % paso === 0);
       mkdirSync(join(DESTINO, p.id), { recursive: true });
-      for (const f of elegidos) cpSync(join(REAL, p.id, f), join(DESTINO, p.id, f));
+      for (const f of elegidos) cpSync(join(origenReal, f), join(DESTINO, p.id, f));
       fotogramas = elegidos.length;
     } else {
       const origen = join(DIR, '05-export', p.id);
@@ -149,7 +165,12 @@ function ensamblar() {
     material: 'maqueta',
     ancho,
     alto,
-    aire: { ...real.aire, pantallas: config.aire.pantallas, ...(config.aire.panel ? { panel: config.aire.panel } : {}) },
+    aire: {
+      ...real.aire,
+      ...(metaHd ? { niveles: metaHd.niveles, pnoa: { anio: metaHd.anio } } : {}),
+      pantallas: config.aire.pantallas,
+      ...(config.aire.panel ? { panel: config.aire.panel } : {}),
+    },
     tramos: piezas,
     ia: real.ia,
   };

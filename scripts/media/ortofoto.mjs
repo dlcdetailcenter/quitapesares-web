@@ -9,6 +9,8 @@
 //
 // Uso: node scripts/media/ortofoto.mjs --anio <AAAA> [--zoom 15] [--niveles 4] [--calidad 70]
 //      → $MATERIAL/f2/aire/nivel-0.webp… y meta.json
+// Con más detalle (maqueta de la demo privada): --ancho 720 --alto 1280 --zoom 15 --niveles 5 --destino aire-hd --limite 1.4
+//      → $MATERIAL/f2/aire-hd/. El material real sigue con el aire de siempre (540×960, zooms 15 a 18).
 import { spawnSync } from 'node:child_process';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -21,7 +23,6 @@ const SERVICIO = 'https://www.ign.es/wmts/pnoa-ma';
 const CAPA = 'OI.OrthoimageCoverage';
 const MATRIZ = 'GoogleMapsCompatible';
 const TESELA = 256;
-const LIMITE = 0.8 * 1024 * 1024;
 
 const opcion = (nombre, porDefecto) => {
   const i = process.argv.indexOf(`--${nombre}`);
@@ -31,13 +32,17 @@ const anio = opcion('anio');
 const zoom = Number(opcion('zoom', 15));
 const niveles = Number(opcion('niveles', 4));
 const calidad = Number(opcion('calidad', 70));
+const LIMITE_MB = Number(opcion('limite', 0.8));
+const LIMITE = LIMITE_MB * 1024 * 1024;
+const nombreDestino = opcion('destino', 'aire');
 if (!/^\d{4}$/.test(anio ?? '')) {
   console.error('✗ Falta --anio <AAAA>: el año del producto PNOA, de la tabla de productos de scne.es o de los metadatos del servicio.');
   process.exit(2);
 }
 
 const tramos = JSON.parse(readFileSync(join(RAIZ, 'scripts', 'media', 'tramos.json'), 'utf8'));
-const { ancho, alto } = tramos.salida;
+const ancho = Number(opcion('ancho', tramos.salida.ancho));
+const alto = Number(opcion('alto', tramos.salida.alto));
 const datos = JSON.parse(readFileSync(join(RAIZ, 'src', 'data', 'restaurante.json'), 'utf8'));
 const { lat, lng } = datos.coordenadas.valor;
 
@@ -58,7 +63,7 @@ function pixel(z) {
   return { x: ((lng + 180) / 360) * n, y: (0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)) * n };
 }
 
-const destino = join(MATERIAL, 'f2', 'aire');
+const destino = join(MATERIAL, 'f2', nombreDestino);
 mkdirSync(destino, { recursive: true });
 const salidas = [];
 for (let k = 0; k < niveles; k++) {
@@ -96,10 +101,10 @@ for (let k = 0; k < niveles; k++) {
 const peso = salidas.reduce((t, a) => t + statSync(join(destino, a)).size, 0);
 writeFileSync(
   join(destino, 'meta.json'),
-  `${JSON.stringify({ servicio: SERVICIO, capa: CAPA, matriz: MATRIZ, zooms: salidas.map((_, k) => zoom + k), centro: { lat, lng }, anio, licencia: 'CC-BY 4.0 scne.es', niveles: salidas.map((a) => `aire/${a}`), fecha: new Date().toISOString() }, null, 2)}\n`,
+  `${JSON.stringify({ servicio: SERVICIO, capa: CAPA, matriz: MATRIZ, zooms: salidas.map((_, k) => zoom + k), centro: { lat, lng }, anio, licencia: 'CC-BY 4.0 scne.es', niveles: salidas.map((a) => `aire/${a}`), ancho, alto, fecha: new Date().toISOString() }, null, 2)}\n`,
 );
-console.log(`Peso del tramo aéreo: ${(peso / 1024 / 1024).toFixed(2)} MB (máximo 0,8 MB)`);
+console.log(`Peso del tramo aéreo: ${(peso / 1024 / 1024).toFixed(2)} MB (máximo ${LIMITE_MB} MB)`);
 if (peso > LIMITE) {
-  console.error('✗ Pasa de 0,8 MB: baja --calidad o --niveles.');
+  console.error(`✗ Pasa de ${LIMITE_MB} MB: baja --calidad o --niveles.`);
   process.exit(1);
 }
