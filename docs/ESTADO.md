@@ -103,10 +103,12 @@ Sobre `f2-demo-final`, para la demo privada al dueño. No es producción: `build
 - Intervalo entre fotogramas al bajar (`npm run lab:recorrido`), p95: Chromium 34 ms, en local y en la demo. **WebKit 55–64 ms,
   en local y en la demo, por encima de los 50 ms.** `lab:medir` en WebKit da 83 ms en local y 159 ms en la demo, con el mismo
   resultado con el reproductor anterior. Móviles reales, NO VERIFICABLE AÚN.
-- Maqueta: 107 archivos, 3,31 MB de 8. La barra es un vídeo nuevo creado con IA; la cafetera, el de antes con un ajuste de color.
+- Maqueta: 108 archivos, 4,81 MB de 8, fotogramas de 720×1280. La aérea llega al zoom 19 del PNOA y la entrada se reprocesó desde el
+  original, ambas reales y sin IA. La barra es un vídeo nuevo creado con IA; la cafetera, el de antes con un ajuste de color.
   35,5 créditos de Higgsfield en esta pasada.
-- Revisión independiente: dos rondas, media 3,9 y 4,0, **no pasa** (calidad de las imágenes, 3: ortofoto ampliada y entrada,
-  blandas frente a barra y cafetera, más nítidas). Detalle de lo que quedó sin resolver en el informe de la pasada.
+- Revisión independiente: tres rondas, medias 3,9, 4,0 y 3,75, **no pasa** (calidad de las imágenes, 3: la entrada, metraje de móvil,
+  es blanda frente a barra y cafetera; y un instante de bruma al pasar del aire a la entrada). Con red lenta y un scroll muy rápido
+  se puede ver un momento el primer nivel de la ortofoto ampliado. Detalle en el informe de la pasada.
 
 ## F2: demo final, en `f2-demo-final`
 
