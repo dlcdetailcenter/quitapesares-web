@@ -350,3 +350,18 @@ En el vídeo en uso, el borde metálico de arriba queda en el 1 % superior del f
 Gasto de la pasada: **35,5 créditos** de 350 (4 vídeos y 2 imágenes). Saldo: 708 el 2026-11-10; 699,5 antes de la
 primera generación, porque el 2026-11-11 hubo dos generaciones de GPT Image 2.6 (8,5 créditos) que no son de esta
 pasada; 664 al terminar.
+
+### Más resolución en la aérea y la entrada (2026-11-15)
+
+Pedido por la revisión independiente (calidad de las imágenes, nota 3). Solo en la maqueta: el material real y su manifiesto no
+se tocan. **No se generó nada con IA ni se subió nada a Higgsfield**: 0 créditos.
+
+| Pieza | Qué cambia | Cómo | Real o IA |
+|---|---|---|---|
+| Aire | Cinco niveles (zooms 15 a 19) a 720×1280, en lugar de cuatro a 540×960. El último nivel enseña la nave, los tejados y los coches con el detalle nativo del PNOA (unos 23 cm por píxel) | `node scripts/media/ortofoto.mjs --anio 2023 --ancho 720 --alto 1280 --zoom 15 --niveles 5 --calidad 68 --destino aire-hd --limite 1.4`, mismo servicio y capa que el aire real; 0,73 MB. El año (2023) es el que se comprobó para el mosaico del centro; no se ha vuelto a consultar para el zoom 19 | **Real**, sin IA. CC-BY 4.0 scne.es, atribución visible |
+| `puerta` | Los mismos fotogramas del mismo original (IMG_4595, fotogramas 40 a 126), a 720×1280 y WebP 74, uno de cada dos (27) | Mismo proceso de `procesar.mjs` (HDR a SDR, estabilizado, mismo ajuste de color, barrido final con fotogramas reales) con `salida` 720×1280, en un directorio aparte. Pasan a `$MATERIAL/f2/hd/puerta/`. 1,5 MB | **Real**, sin IA, sin tono. Revisada con las mismas reglas que la de 540 (sin placa de especialidades ni personas: mismo tramo) |
+| `barra`, `cafetera` | Se exportan a 720×1280 (antes 540×960) | Mismos vídeos; el de la barra es nativo de 712×1276 | IA, como antes |
+
+`recorrido-maqueta/`: 108 archivos, 4,81 MB de 8. Las sumas de la entrada ya no son las de `manifiesto-real.json`, porque es el
+mismo contenido reprocesado; la prueba de `test:datos` sigue exigiendo que sea real, sin IA y sin tono. `procesar.mjs` ahora
+ejecuta ffmpeg desde la carpeta del archivo de estabilización: la `C:` de la ruta de Windows rompía el filtro.
