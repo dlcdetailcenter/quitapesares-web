@@ -26,6 +26,7 @@
     "media:ensamblar": "node scripts/media/ensamblar.mjs",
     "lab:preparar": "node scripts/lab/preparar-lab.mjs",
     "lab:medir": "node scripts/lab/medir.mjs",
+    "lab:recorrido": "node scripts/lab/medir-recorrido.mjs",
     "demo:desplegar": "node scripts/desplegar-demo.mjs"
   },
   "dependencies": {

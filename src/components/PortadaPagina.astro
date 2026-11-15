@@ -5,6 +5,7 @@
 import { Picture } from 'astro:assets';
 import entrada from '../assets/portada/entrada.jpg';
 import Base from '../layouts/Base.astro';
+import Pie from './Pie.astro';
 import Pizarra from './Pizarra.astro';
 import { NOMBRES_DIAS, TEXTOS, palabraDatos } from '../i18n/textos.ts';
 import type { Idioma } from '../lib/carta/hoja.ts';
@@ -34,7 +35,7 @@ const acciones = [
 
 <Base idioma={idioma} rutaOtroIdioma={rutaOtroIdioma}>
   {RECORRIDO_ENCENDIDO && <Decision slot="head" />}
-  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} rutaOtroIdioma={rutaOtroIdioma} />}
+  {RECORRIDO_ENCENDIDO && <Recorrido idioma={idioma} />}
   <div class="contenedor portada">
     <!-- «Restaurante» en versalitas y el nombre en gótica, como en la placa de la fachada (los dos trozos, de local.ts). -->
     <h1 class="portada__nombre">
@@ -43,46 +44,45 @@ const acciones = [
     </h1>
     <!-- Con el recorrido activo sus acciones ya están en los paneles: debajo solo quedan el horario y el pie. -->
     <div class="portada__resto">
-    <p class="portada__direccion">{local.direccion}</p>
+      <p class="portada__direccion">{local.direccion}</p>
 
-    <figure class="marco portada__foto">
-      <div class="marco__imagen">
-        <Picture
-          src={entrada}
-          formats={['avif', 'webp']}
-          widths={[480, 720, 1080]}
-          sizes="(min-width: 40rem) 38rem, calc(100vw - 2rem)"
-          alt={t.fotoPortada}
-          loading="eager"
-          fetchpriority="high"
-        />
-      </div>
-    </figure>
+      <figure class="marco portada__foto">
+        <div class="marco__imagen">
+          <Picture
+            src={entrada}
+            formats={['avif', 'webp']}
+            widths={[480, 720, 1080]}
+            sizes="(min-width: 40rem) 38rem, calc(100vw - 2rem)"
+            alt={t.fotoPortada}
+            loading="eager"
+            fetchpriority="high"
+          />
+        </div>
+      </figure>
 
-    <ul class="portada__acciones">
+      <ul class="portada__acciones">
+        {
+          acciones.map(({ href, texto }) => (
+            <li>
+              <a class="tarjeta" href={href}>
+                {texto}
+                <Flecha />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+
+      <Pizarra idioma={idioma} id="menu-del-dia" />
+
       {
-        acciones.map(({ href, texto }) => (
-          <li>
-            <a class="tarjeta" href={href}>
-              {texto}
-              <Flecha />
-            </a>
-          </li>
-        ))
+        RECORRIDO_ENCENDIDO && (
+          <section class="portada__hoy" aria-labelledby="platos-hoy">
+            <h2 id="platos-hoy">{t.platosHoy}</h2>
+            <PlatosHoy idioma={idioma} />
+          </section>
+        )
       }
-    </ul>
-
-    <Pizarra idioma={idioma} id="menu-del-dia" />
-
-    {
-      RECORRIDO_ENCENDIDO && (
-        <section class="portada__hoy" aria-labelledby="platos-hoy">
-          <h2 id="platos-hoy">{t.platosHoy}</h2>
-          <PlatosHoy idioma={idioma} />
-        </section>
-      )
-    }
-
     </div>
 
     <section class="portada__horario" aria-labelledby="horario">
@@ -90,7 +90,7 @@ const acciones = [
       <dl>
         {
           local.horario.map(({ dia, horas }) => (
-            <div class="portada__dia">
+            <div class="portada__dia" data-dia-en={NOMBRES_DIAS.en[dia].toLowerCase()}>
               <dt>{NOMBRES_DIAS[idioma][dia]}</dt>
               <dd>{palabraDatos(horas, idioma)}</dd>
             </div>
@@ -99,22 +99,18 @@ const acciones = [
       </dl>
     </section>
   </div>
-  <footer class="pie">
-    <p class="pie__nombre">{local.nombreCorto}</p>
-    <p class="pie__direccion">{local.direccion}</p>
-  </footer>
+  <Pie />
   {RECORRIDO_ENCENDIDO && <BarraCarta idioma={idioma} />}
 </Base>
 
 <style>
   .portada {
-    padding-top: calc(var(--alto-cabecera) + 2.5rem);
-    padding-bottom: 3rem;
+    padding-top: calc(var(--alto-cabecera) + 2.75rem);
+    padding-bottom: 2.5rem;
   }
 
   :global(html.recorrido-activo) .portada {
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-top: 2.75rem;
   }
 
   :global(html.recorrido-activo) .portada__resto {
@@ -150,14 +146,16 @@ const acciones = [
     display: block;
     margin-top: 0.25rem;
     font-family: var(--fuente-rotulo-pila);
-    font-size: clamp(3.25rem, 16vw, 4.75rem);
+    font-size: clamp(3.5rem, 17vw, 5rem);
     line-height: 1;
   }
 
   .portada__direccion {
-    margin: 0.75rem auto 2rem;
-    max-width: 22rem;
+    margin: 0.875rem auto 2.25rem;
+    max-width: 21rem;
     color: var(--texto-suave);
+    font-size: 1.0625rem;
+    line-height: 1.45;
     text-align: center;
   }
 
@@ -181,13 +179,13 @@ const acciones = [
     list-style: none;
     display: grid;
     gap: 0.75rem;
-    margin: -3.25rem 0 3.5rem;
+    margin: -3.25rem 0 3.75rem;
     padding: 0 1.25rem;
   }
 
   .portada__hoy,
   .portada__horario {
-    margin-top: 3.5rem;
+    margin-top: 3.75rem;
   }
 
   .portada__hoy {
@@ -202,19 +200,56 @@ const acciones = [
   }
 
   .portada__horario dl {
-    margin: 0;
+    margin: 0.5rem 0 0;
   }
 
+  /* Cada día, como una línea de carta: el nombre, los puntos y las horas. */
   .portada__dia {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--ocre);
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.4375rem 0;
+  }
+
+  .portada__dia dt {
+    display: flex;
+    flex: 1;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+
+  .portada__dia dt::after {
+    content: '';
+    flex: 1;
+    min-width: 1rem;
+    border-bottom: 2px dotted rgb(94 74 60 / 0.45);
+    transform: translateY(-0.25em);
   }
 
   .portada__dia dd {
     margin: 0;
-    font-variant-numeric: tabular-nums;
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* Hoy (lo marca src/recorrido/hoy.ts con la hora de Madrid): en burdeos y versalitas, con un rombo delante. */
+  .portada__dia[aria-current] {
+    color: var(--burdeos);
+    font-family: var(--fuente-versalitas-pila);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .portada__dia[aria-current] dt::before {
+    content: '';
+    flex: none;
+    align-self: center;
+    width: 0.4375rem;
+    height: 0.4375rem;
+    background: currentColor;
+    transform: rotate(45deg);
+  }
+
+  .portada__dia[aria-current] dt::after {
+    border-bottom-color: rgb(142 27 42 / 0.5);
   }
 </style>

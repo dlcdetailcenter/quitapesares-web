@@ -103,8 +103,12 @@ export class Aire {
     };
   }
 
-  /** t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta). */
-  pintar(t: number, densidad = 0.35 + 0.65 * suave((t - 0.7) / 0.3)): void {
+  /**
+   * t de 0 a 1 a lo largo del tramo. Al final, las nubes lo cubren todo (el paso a la puerta).
+   * `debajo`: imagen que aparece bajo las nubes, sobre la ortofoto (el primer fotograma de la puerta), con su opacidad.
+   * `velo`: tope del velo blanco; por debajo de 1, entre las nubes siempre se ve algo.
+   */
+  pintar(t: number, densidad = 0.35 + 0.65 * suave((t - 0.7) / 0.3), debajo?: { fuente: ImageBitmap; alfa: number }, velo = 1): void {
     ajustarLienzo(this.canvas, 1080, 1920);
     const ctx = this.ctx;
     ctx.globalCompositeOperation = 'source-over';
@@ -118,17 +122,57 @@ export class Aire {
       const nivel = this.niveles.indexOf(actual);
       pintarCubriendo(ctx, actual, actual.width, actual.height, 2 ** (z - nivel));
       const siguiente = this.niveles[k + 1];
-      if (siguiente && nivel === k) {
-        ctx.globalAlpha = suave((z - k) * 2 - 1);
-        pintarCubriendo(ctx, siguiente, siguiente.width, siguiente.height, 2 ** (z - k - 1));
-        ctx.globalAlpha = 1;
-      }
+      if (siguiente && nivel === k) this.pintarCentro(siguiente, 2 ** (z - k - 1));
     }
-    this.pintarNubes(t, densidad);
+    if (debajo && debajo.alfa > 0) {
+      ctx.globalAlpha = Math.min(1, debajo.alfa);
+      pintarCubriendo(ctx, debajo.fuente, debajo.fuente.width, debajo.fuente.height);
+      ctx.globalAlpha = 1;
+    }
+    this.pintarNubes(t, densidad, velo);
+  }
+
+  /** Lienzo auxiliar del nivel siguiente, con el borde difuminado. */
+  private centro?: HTMLCanvasElement;
+
+  /**
+   * El nivel siguiente de la ortofoto, el doble de nítido, ocupa solo el centro del encuadre. Se pinta entero sobre el
+   * nivel actual con el borde difuminado: el centro se ve siempre con la mejor imagen que hay y no se nota dónde acaba.
+   * El difuminado se estrecha a medida que el nivel llena el encuadre, para que no haya salto cuando pasa a ser el actual.
+   */
+  private pintarCentro(imagen: ImageBitmap, escala: number): void {
+    const { width: w, height: h } = this.canvas;
+    const cubre = Math.max(w / imagen.width, h / imagen.height) * escala;
+    const dw = imagen.width * cubre;
+    const dh = imagen.height * cubre;
+    const x = (w - dw) / 2;
+    const y = (h - dh) / 2;
+    const aux = (this.centro ??= document.createElement('canvas'));
+    if (aux.width !== w || aux.height !== h) {
+      aux.width = w;
+      aux.height = h;
+    }
+    const c = aux.getContext('2d');
+    if (!c) return;
+    // «copy»: lo que no es la imagen queda transparente, sin borrar antes.
+    c.globalCompositeOperation = 'copy';
+    c.drawImage(imagen, x, y, dw, dh);
+    c.globalCompositeOperation = 'destination-in';
+    const borde = 0.18 * suave((1 - escala) / 0.3);
+    for (const [x0, y0, x1, y1] of [[x, 0, x + dw, 0], [0, y, 0, y + dh]]) {
+      const g = c.createLinearGradient(x0, y0, x1, y1);
+      g.addColorStop(0, 'rgba(0,0,0,0)');
+      g.addColorStop(borde, '#000');
+      g.addColorStop(1 - borde, '#000');
+      g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g;
+      c.fillRect(0, 0, w, h);
+    }
+    this.ctx.drawImage(aux, 0, 0);
   }
 
   /** Nubes encima de cualquier cosa ya pintada (también al empezar la puerta, para destaparla). */
-  pintarNubes(t: number, densidad: number): void {
+  pintarNubes(t: number, densidad: number, veloMax = 1): void {
     if (densidad <= 0.01 || this.capas.length === 0) return;
     const ctx = this.ctx;
     const { width: w, height: h } = this.canvas;
@@ -143,7 +187,7 @@ export class Aire {
       ctx.drawImage(capa, (w - dw) / 2, y, dw, dh);
     });
     // Con densidad alta, un velo blanco termina de tapar: es el «dentro de la nube».
-    const velo = suave((densidad - 0.75) / 0.25);
+    const velo = suave((densidad - 0.75) / 0.25) * veloMax;
     if (velo > 0) {
       ctx.globalCompositeOperation = 'source-over';
       ctx.globalAlpha = velo;

@@ -48,9 +48,9 @@ const SIN_EXTRAS = ['-an', '-sn', '-dn', '-map_metadata', '-1', '-map_chapters',
 // Intermedios casi sin pérdida: cada paso parte del anterior sin degradarlo.
 const INTERMEDIO = ['-c:v', 'libx264', '-preset', 'medium', '-crf', '8', '-pix_fmt', 'yuv420p', '-flags:v', '+bitexact'];
 
-function ffmpeg(argumentos) {
+function ffmpeg(argumentos, cwd) {
   console.log(`$ ffmpeg ${argumentos.join(' ')}`);
-  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...argumentos], { stdio: 'inherit' });
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...argumentos], { stdio: 'inherit', cwd });
   if (r.error || r.status !== 0) fallar(`ffmpeg ha fallado (${r.error?.message ?? `código ${r.status}`})`);
 }
 
@@ -129,10 +129,14 @@ function limpiar(clip) {
 function estabilizar(id) {
   const t = tramo(id);
   const entrada = join(F2, '02-limpio', `${t.clip}.mkv`);
-  const trf = carpeta(F2, '03-estable', `${id}.trf`);
+  // El archivo de estabilización va dentro de un filtro de ffmpeg, que no admite bien la unidad de una ruta de Windows
+  // (`C:`): ffmpeg se ejecuta desde su carpeta y el filtro lleva solo el nombre.
+  const rutaTrf = carpeta(F2, '03-estable', `${id}.trf`);
+  const trf = `${id}.trf`;
+  const carpetaTrf = dirname(rutaTrf);
   const { shakiness, accuracy, smoothing } = config.estabilizacion;
   const corte = ['-ss', String(t.inicio), '-to', String(t.fin), '-i', entrada];
-  ffmpeg([...corte, '-vf', `vidstabdetect=shakiness=${shakiness}:accuracy=${accuracy}:result=${trf}`, '-f', 'null', '-']);
+  ffmpeg([...corte, '-vf', `vidstabdetect=shakiness=${shakiness}:accuracy=${accuracy}:result=${trf}`, '-f', 'null', '-'], carpetaTrf);
 
   // Recorte 9:16: el del tramo (x, y, ancho, alto en píxeles del clip girado) o el centrado más grande posible.
   const r = t.recorte;
@@ -166,7 +170,7 @@ function estabilizar(id) {
     grafo += `;[d${i}a][d${i}c]overlay=${d.x}:${d.y}:enable='between(t,${d.desde},${d.hasta})'[d${i}]`;
     ultimo = `d${i}`;
   });
-  ffmpeg([...corte, '-filter_complex', grafo, '-map', `[${ultimo}]`, ...INTERMEDIO, ...SIN_EXTRAS, carpeta(F2, '03-estable', `${id}.mkv`)]);
+  ffmpeg([...corte, '-filter_complex', grafo, '-map', `[${ultimo}]`, ...INTERMEDIO, ...SIN_EXTRAS, carpeta(F2, '03-estable', `${id}.mkv`)], carpetaTrf);
 }
 
 /** El mismo ajuste de color para todos los tramos, reducción de ruido y nitidez suave. */

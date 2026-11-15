@@ -142,11 +142,14 @@ test('una pieza creada sin «"ia": "local"» hace fallar el ensamblado, sin toca
   }
 });
 
-test('la entrada de la maqueta es material real: sin IA y con las sumas del material real', () => {
+test('la entrada de la maqueta es material real: sin IA, sin tono y, si no está reprocesada, con las sumas del material real', () => {
   const config = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'tramos-maqueta.json'), 'utf8'));
   const entrada = config.piezas[0];
   assert.equal(entrada.origen, 'real');
   assert.equal(entrada.ia, undefined);
+  assert.equal(entrada.tono, undefined);
+  // Reprocesada: el mismo original con el mismo proceso a más resolución. Sus sumas ya no son las del real, pero sigue sin IA.
+  if (entrada.reprocesada) return;
   const maqueta = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'manifiesto-maqueta.json'), 'utf8')).archivos;
   const real = JSON.parse(readFileSync(join(raiz, 'scripts', 'media', 'manifiesto-real.json'), 'utf8')).archivos;
   const fotogramas = Object.keys(maqueta).filter((f) => f.startsWith(`${entrada.id}/`));
@@ -163,6 +166,23 @@ test('una pieza real con "ia" hace fallar el ensamblado', () => {
     const r = spawnSync(process.execPath, [script, 'ensamblar'], { cwd: raiz, encoding: 'utf8', env: { ...process.env, MAQUETA_CONFIG: config } });
     assert.equal(r.status, 1);
     assert.match(r.stderr, /pieza real con "ia": puerta/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('una pieza real con "tono" hace fallar el ensamblado: el material real no se retoca', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'maqueta-'));
+  const config = join(dir, 'tramos.json');
+  writeFileSync(config, JSON.stringify({ aire: { pantallas: 1 }, piezas: [{ id: 'puerta', origen: 'real', tono: 'eq=saturation=1.1', zona: 'puerta', pantallas: 1 }] }));
+  const destino = join(raiz, 'recorrido-maqueta', 'recorrido.json');
+  const antes = existsSync(destino) ? readFileSync(destino) : null;
+  try {
+    const script = join(raiz, 'scripts', 'media', 'maqueta.mjs');
+    const r = spawnSync(process.execPath, [script, 'ensamblar'], { cwd: raiz, encoding: 'utf8', env: { ...process.env, MAQUETA_CONFIG: config } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /pieza real con "tono": puerta/);
+    assert.deepEqual(existsSync(destino) ? readFileSync(destino) : null, antes);
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }

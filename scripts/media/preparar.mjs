@@ -64,12 +64,11 @@ function sintetico() {
     return `aire/nivel-${i}.png`;
   });
   // Tramos: 24 fotogramas lisos cada uno, el tono cambia de un fotograma a otro para ver que se mueven.
-  // La misma estructura que la maqueta: el aire y cuatro tramos, con sus paneles fijos por zona.
+  // La misma estructura que la maqueta: el aire y tres tramos, cada uno con su panel fijo. La cafetera es el último.
   const bases = {
-    puerta: { color: [142, 27, 42], pantallas: 1, panel: 'menu', fin: 0.75, empuje: 0.6 },
-    barra: { color: [110, 70, 40], pantallas: 0.4, panel: 'llamar' },
-    cafetera: { color: [60, 60, 70], pantallas: 0.6, panel: 'llamar' },
-    salida: { color: [200, 180, 140], pantallas: 1, panel: 'resena', fundido: true },
+    puerta: { color: [142, 27, 42], pantallas: 1, zona: 'puerta', panel: 'menu', ritmo: [[0.62, 0.8], [0.88, 0.8], [1, 1]], empuje: 0.12 },
+    barra: { color: [110, 70, 40], pantallas: 0.8, zona: 'barra', panel: 'llamar', encadenado: 0.22, barrido: 1, ritmo: [[0.8, 1]] },
+    cafetera: { color: [60, 60, 70], pantallas: 0.9, zona: 'barra', panel: 'resena', ritmo: [[0.85, 1]] },
   };
   const tramos = Object.entries(bases).map(([id, { color: [r, g, b], ...resto }]) => {
     for (let i = 0; i < 24; i++) {
@@ -82,7 +81,7 @@ function sintetico() {
     material: 'sintetico',
     ancho: 720,
     alto: 1280,
-    aire: { niveles, nubes: [], pantallas: 1, pnoa: null, panel: 'llegar' },
+    aire: { niveles, nubes: [], pantallas: 0.8, pnoa: null, panel: 'llegar' },
     tramos,
     ia: [],
   };

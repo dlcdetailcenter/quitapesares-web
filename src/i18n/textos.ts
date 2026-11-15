@@ -34,17 +34,8 @@ const es = {
   irALaCarta: 'Ir a la carta',
   navCarta: 'Acceso a la carta',
   recorrido: 'Recorrido por el local',
-  rotuloEntrada: 'La entrada',
-  rotuloBarra: 'La barra',
-  rotuloComedor: 'El comedor',
-  creditosSoloReal: 'El local sale solo en vídeo real.',
-  creditosIa: 'Generado con IA:',
-  creditosIaLocal: 'Creado con IA a partir de fotogramas reales del local (Higgsfield).',
   creditosSintetico: 'Recorrido de prueba con imágenes sintéticas: todavía no es el material del local.',
   pnoaPrefijo: 'Obra derivada de PNOA',
-  etiquetaIaLocal: 'Creado con IA a partir de fotogramas reales del local',
-  paradaPuerta: 'Cómo llegar o llamar',
-  paradaBarra: 'Platos de hoy y menú del día',
 };
 
 type Textos = Record<keyof typeof es, string>;
@@ -79,17 +70,8 @@ const en: Textos = {
   irALaCarta: 'Go to the menu',
   navCarta: 'Menu shortcut',
   recorrido: 'Walk through the restaurant',
-  rotuloEntrada: 'The entrance',
-  rotuloBarra: 'The bar',
-  rotuloComedor: 'The dining room',
-  creditosSoloReal: 'The restaurant is shown only in real video.',
-  creditosIa: 'AI-generated:',
-  creditosIaLocal: 'Created with AI from real frames of the venue (Higgsfield).',
   creditosSintetico: 'Test walk-through with synthetic images: not the restaurant footage yet.',
   pnoaPrefijo: 'Derived from PNOA',
-  etiquetaIaLocal: 'Created with AI from real frames of the venue',
-  paradaPuerta: 'Directions or call',
-  paradaBarra: 'Today’s dishes and the set menu',
 };
 
 export const TEXTOS: Record<Idioma, Textos> = { es, en };
