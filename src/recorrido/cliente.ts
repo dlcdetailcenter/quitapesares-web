@@ -48,12 +48,14 @@ interface ConfigTramo {
 
 /** Grupo de acciones de cada zona cuando el material no lo dice. */
 const PANEL_DE_ZONA: Record<string, string> = { aire: 'llegar', puerta: 'menu', barra: 'llamar' };
-/** El descenso se queda aquí, con el suelo a la vista, hasta que cierran las nubes. */
-const AIRE_DETENIDO = 0.72;
+/** El descenso se queda aquí, en el nivel más cercano de la ortofoto y sin mezclar con otro, hasta que cierran las nubes. */
+const AIRE_DETENIDO = 0.85;
 /** Parte del aire con el suelo a la vista; en el resto cierran las nubes. */
-const AIRE_ABIERTO = 0.85;
+const AIRE_ABIERTO = 0.88;
 /** Parte del primer tramo en la que las nubes terminan de abrirse sobre él. */
-const NUBES_ABREN = 0.16;
+const NUBES_ABREN = 0.13;
+/** Bruma sobre la ortofoto al empezar: poca, para que el nombre se lea. */
+const BRUMA = 0.2;
 /** Tope del velo blanco entre el aire y la puerta: entre las nubes siempre se ve algo. */
 const VELO = 0.5;
 /** Barrido entre dos piezas: cuánto se desplaza cada imagen y cuánto mide la estela, en anchos del lienzo. */
@@ -280,7 +282,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
     if (tramo < 0) {
       if (t < AIRE_ABIERTO) {
         soltarPuente();
-        aire.pintar((t / AIRE_ABIERTO) * AIRE_DETENIDO, 0.35 - 0.3 * suave(t / AIRE_ABIERTO / 0.8));
+        aire.pintar((t / AIRE_ABIERTO) * AIRE_DETENIDO, BRUMA - (BRUMA - 0.05) * suave(t / AIRE_ABIERTO / 0.8));
       } else {
         // Cierran las nubes y, debajo, la ortofoto deja paso al primer fotograma de la puerta.
         const cierre = suave((t - AIRE_ABIERTO) / (1 - AIRE_ABIERTO));
