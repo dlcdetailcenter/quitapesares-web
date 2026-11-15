@@ -57,7 +57,7 @@ const NUBES_ABREN = 0.13;
 /** Bruma sobre la ortofoto al empezar: poca, para que el nombre se lea. */
 const BRUMA = 0.2;
 /** Tope del velo blanco entre el aire y la puerta: entre las nubes siempre se ve algo. */
-const VELO = 0.5;
+const VELO = 0.3;
 /** Barrido entre dos piezas: cuánto se desplaza cada imagen y cuánto mide la estela, en anchos del lienzo. */
 const BARRIDO_PASO = 0.4;
 const BARRIDO_ESTELA = 0.22;
@@ -287,7 +287,7 @@ function activar(config: ConfigRecorrido, aire: Aire): void {
         // Cierran las nubes y, debajo, la ortofoto deja paso al primer fotograma de la puerta.
         const cierre = suave((t - AIRE_ABIERTO) / (1 - AIRE_ABIERTO));
         const puerta = tramos.length > 0 ? pedirPuente(0, 0) : undefined;
-        aire.pintar(AIRE_DETENIDO + (1 - AIRE_DETENIDO) * cierre, 0.05 + 0.95 * cierre, puerta && { fuente: puerta, alfa: suave((cierre - 0.3) / 0.7) }, VELO);
+        aire.pintar(AIRE_DETENIDO + (1 - AIRE_DETENIDO) * cierre, 0.05 + 0.95 * cierre, puerta && { fuente: puerta, alfa: suave(cierre / 0.55) }, VELO);
       }
     } else {
       const { rep, encadenado = 0, barrido, ritmo } = tramos[tramo];
