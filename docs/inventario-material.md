@@ -261,9 +261,9 @@ archivo: las sumas son las de `scripts/media/manifiesto-real.json`, y una prueba
 
 Estado al 2026-11-14. Sustituye a la lista de piezas del ajuste del 2026-11-05, que queda arriba como historial.
 Excepciones de la maqueta, solo para la demo privada (`CLAUDE.md`). **Producción sigue solo con material real y la
-maqueta se retira después de la demo al dueño.** `recorrido-maqueta/` no entra en git (107 archivos, 2,94 MB de 8); sumas
+maqueta se retira después de la demo al dueño.** `recorrido-maqueta/` no entra en git (107 archivos, 3,31 MB de 8); sumas
 en `scripts/media/manifiesto-maqueta.json`, proceso en `scripts/media/tramos-maqueta.json`. Aire y nubes, los del material
-real, con las mismas sumas. Longitud: 3,5 pantallas de scroll.
+real, con las mismas sumas. Longitud: 3,45 pantallas de scroll.
 
 Decisiones de Kara del 2026-11-10 que cambian este inventario:
 - **La página no lleva ninguna etiqueta ni texto de IA**, tampoco en los créditos. La IA queda registrada en
@@ -277,12 +277,15 @@ Decisiones de Kara del 2026-11-10 que cambian este inventario:
 |---|---|---|---|---|---|---|
 | Aire | Ortofoto y nubes del material real | Ortofoto real; nubes con IA | Sin cambios | 0,8 | Cómo llegar, con la dirección | Atribución del PNOA, visible; nubes: lista `ia` de `recorrido.json` y este inventario |
 | `puerta` | `recorrido-real/puerta`, uno de cada dos, mismos nombres y sumas | **Real**, sin IA | 27 de 53 | 1 | Menú del día con su precio, platos de hoy y Ver carta | — |
-| `barra` | Vídeo `barra-1`, trabajo `e8273960-bc05-439b-a4a1-1909654f37ed`, a 8 fps | **IA** | 32 | 0,8 | Llamar, con el teléfono y el horario de hoy | `"ia": "local"`, `"origen": "creada"` y este inventario |
-| `cafetera` | Vídeo `cafetera-1`, trabajo `1aa445c3-4070-407b-a506-4b958bfd0838`, a 8 fps | **IA** | 40 | 0,9 | Dejar reseña | Ídem |
+| `barra` | Vídeo `barra-3`, trabajo `1da81197-10b6-4d80-be0f-f757a4f97903` (2026-11-15), a 8 fps: de la barra de granito a la cafetera de frente | **IA** | 32 | 0,85 | Llamar, con el teléfono y el horario de hoy | `"ia": "local"`, `"origen": "creada"` y este inventario |
+| `cafetera` | Vídeo `cafetera-1`, trabajo `1aa445c3-4070-407b-a506-4b958bfd0838`, a 8 fps, con tono cálido | **IA** | 40 | 0,8 | Dejar reseña | Ídem |
 
-`barrido-salida` sale del recorrido: la cafetera es la última pieza y después solo quedan el horario y el pie. Su vídeo
-no se ha borrado de la carpeta de material. `barra` y `cafetera` son los mismos vídeos aceptados el 2026-11-05, con el
-mismo recorte y más fotogramas (de 24 a 32 y de 30 a 40).
+`barrido-salida` sale del recorrido: la cafetera es la última pieza y después solo quedan el horario y el pie. La `barra`
+del 2026-11-05 (`barra-1`) se sustituye: la revisión independiente la rechazó por el salto de luz con la entrada y porque
+no enseñaba la barra. Ninguno de los dos vídeos se ha borrado de la carpeta de material. `cafetera` es el vídeo aceptado
+el 2026-11-05, con el mismo recorte, más fotogramas (de 30 a 40) y un ajuste de color en el pipeline
+(`colortemperature` a 5200 K) para que tenga la calidez de la barra nueva. El material real no lleva ningún ajuste: el
+ensamblado falla si una pieza real lo pide.
 
 Transiciones, todas **sin IA**, hechas en el canvas con píxeles que ya existen:
 - **Del aire a la entrada**: cierran las nubes y, debajo, la ortofoto deja paso al primer fotograma real de la puerta.
@@ -291,6 +294,8 @@ Transiciones, todas **sin IA**, hechas en el canvas con píxeles que ya existen:
 - **De la entrada a la barra**: barrido de cámara en el canvas. La imagen que se va y la que llega se desplazan de lado
   con estela horizontal y se cruzan a mitad de camino; la estela se hace encogiendo y estirando la propia imagen.
 - **De la barra a la cafetera**: sin corte. El vídeo de la barra acaba en el fotograma con el que empieza el de la cafetera.
+- **En la aérea**: el nivel siguiente de la ortofoto se pinta en el centro con el borde difuminado. Son los mismos
+  archivos del PNOA; no se ha regenerado nada.
 
 ### Subidas a Higgsfield del 2026-11-14
 
@@ -303,7 +308,10 @@ IMG_4592.
 | `e-puerta-0053.png` | Último fotograma real de `puerta` (`0053.webp`, de IMG_4595), a 720×1280. Ya lleva barrido: el texto del cristal no se lee | `fdee20989574f972732735264f3a3995be2848372f7b9f42610eb828669863b5` | 2026-11-14 |
 | `e-barra-0001.png` | Primer fotograma de la pieza `barra` (creado con IA el 2026-11-05), a 720×1280 | `e6525f231a7eeb6ca11166bba1ba0b017453c356222ee62587af0ff922a98b34` | 2026-11-14 |
 
-Se preparó además `e-puerta-0043.png` (fotograma real 0043) y **no se subió**.
+| `e-cafetera-0001-calida.png` | Primer fotograma de la pieza `cafetera` con su tono cálido (creado con IA el 2026-11-05), a 720×1280 | `5155f69c18ef87c618435f8d8ab8a2121a645450f1c15d8ea25dea4726b65a68` | 2026-11-15 |
+
+Se preparó además `e-puerta-0043.png` (fotograma real 0043) y **no se subió**. De material real solo se ha subido un
+fotograma, `e-puerta-0053.png`.
 
 ### Intentos: transición generada de la entrada a la barra (`giro`)
 
@@ -320,6 +328,25 @@ tiene que inventar lo que hay en medio, que es lo que prohíbe la lista. La piez
 del canvas descrito arriba, que hace el mismo gesto sin inventar nada. Los dos vídeos quedan en la carpeta de material,
 sin usar.
 
-Gasto de la pasada: **13,5 créditos** de 350 (2 vídeos). Saldo: 708 el 2026-11-10; 699,5 antes de la primera
-generación, porque el 2026-11-11 hubo dos generaciones de GPT Image 2.6 (8,5 créditos) que no son de esta pasada; 686 al
-terminar.
+### Barra nueva (2026-11-14 y 15)
+
+Imágenes con `nano_banana_2_1`, 2k, 9:16, `thinking_level` alto; vídeos con `kling4_0`, imagen a vídeo, 720p, 9:16, 4 s.
+Solo entran imágenes que ya estaban en Higgsfield y el fotograma `e-cafetera-0001-calida.png`.
+
+| Intento | Entradas | Trabajo | Resultado | Lista de rechazo | Coste |
+|---|---|---|---|---|---|
+| barra-nitida 1 (imagen) | `barra` aceptada (`674600b8…`) y `cafetera-frente` (`39eb5a67…`); semilla 14112026 | `89cef6a2-2df2-44cb-86a9-03f11f70cd7d` | **Aceptada**, sustituida por la 2 | Pasa: granito, acero, esmalte blanco y pared de piedra; sin texto, personas ni oferta. Arriba asoma un borde metálico | 2 |
+| barra 2 (vídeo) | Inicio barra-nitida 1; final `e-cafetera-0001-calida.png` | `2d87a6b8-f415-4797-8656-f0672db61749` | **Rechazado** | Falla 6: la taza de debajo del grupo aparece de la nada a mitad del movimiento (el inicio no la tenía y el final sí) | 9 |
+| barra-nitida 2 (imagen) | barra-nitida 1 y `cafetera-frente`; semilla 15112026 | `ce8d8882-63df-4933-86b4-3389961c0ce7` | **Aceptada** | Pasa: la misma escena con la taza ya puesta | 2 |
+| barra 3 (vídeo) | Inicio barra-nitida 2; final `e-cafetera-0001-calida.png` | `1da81197-10b6-4d80-be0f-f757a4f97903` | **Aceptado**, en uso | Pasa los 8 puntos, revisado fotograma a fotograma: la taza está desde el principio, sin texto, personas ni zonas nuevas, y acaba en el primer fotograma de la cafetera | 9 |
+
+Prompts:
+- **barra-nitida 1**: «Recreate image 1 from the same camera position: the same speckled pink-and-black granite counter in the foreground and the same white espresso machine with white cups on top against the same dark grey stone wall. Change only two things. Deep focus: the espresso machine and the wall are as sharp as the granite; take the machine's exact shape from image 2. Light: warm late-morning daylight from the left, soft warm highlights on the granite and the white enamel. Realistic photograph, vertical 9:16. Exclude text, letters, numbers, logos, signs, people, hands, plates, food, drinks, labelled bottles, screens, boards, shelves.»
+- **barra-nitida 2**: «Keep image 1 unchanged in every detail (…) Add only one thing: a single empty white espresso cup standing on the drip tray under the middle group head, as in image 2.» Mismo final.
+- **barra 2 y 3**: «Slow steady push-in over the granite counter toward the white espresso machine while the camera arcs gently to face it head-on, stopping steady in front of it. One continuous shot, camera only, nothing else moves.»
+
+En el vídeo en uso, el borde metálico de arriba queda en el 1 % superior del fotograma, bajo la cabecera de la página.
+
+Gasto de la pasada: **35,5 créditos** de 350 (4 vídeos y 2 imágenes). Saldo: 708 el 2026-11-10; 699,5 antes de la
+primera generación, porque el 2026-11-11 hubo dos generaciones de GPT Image 2.6 (8,5 créditos) que no son de esta
+pasada; 664 al terminar.
