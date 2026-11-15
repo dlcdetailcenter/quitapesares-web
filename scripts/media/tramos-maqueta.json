@@ -1,12 +1,12 @@
 {
-  "$comentario": "MAQUETA de la demo al dueño (excepciones de Kara, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. origen «real»: fotogramas de recorrido-real/, tal cual, uno de cada «paso», sin IA. origen «creada»: vídeo creado con IA a partir de fotogramas reales y aceptado en la revisión; lleva \"ia\": \"local\" y, sin él, el ensamblado falla. «panel»: el grupo de acciones que queda fijo en la zona. «ritmo»: puntos [parte del scroll, parte de los fotogramas]; dos seguidos con los mismos fotogramas son una pausa. «encadenado»: parte de la pieza en la que la anterior se disuelve sobre ella; con «barrido» (1 o -1), el paso es un barrido de cámara hecho en el lienzo, sin IA. Longitud: 3,5 pantallas de scroll; la cafetera es la última pieza.",
+  "$comentario": "MAQUETA de la demo al dueño (excepciones de Kara, CLAUDE.md). Lo lee scripts/media/maqueta.mjs. origen «real»: fotogramas de recorrido-real/, tal cual, uno de cada «paso», sin IA. origen «creada»: imagen o vídeo creados con IA a partir de fotogramas reales y aceptados en la revisión; llevan \"ia\": \"local\" y, sin él, el ensamblado falla. Con «imagen», fija con recorte progresivo («acercamiento», parte del encuadre que se gana); con «video», sus fotogramas. «tono»: ajuste de color de una pieza creada para que no salte de luz con la anterior (las reales no lo llevan). «panel»: el grupo de acciones que queda fijo en la zona. «ritmo»: puntos [parte del scroll, parte de los fotogramas]; dos seguidos con los mismos fotogramas son una pausa. «encadenado»: parte de la pieza en la que la anterior se disuelve sobre ella; con «barrido» (1 o -1), el paso es un barrido de cámara hecho en el lienzo, sin IA. Longitud: 3,45 pantallas de scroll; la cafetera es la última pieza.",
   "aire": {
     "pantallas": 0.8,
     "panel": "llegar"
   },
   "piezas": [
-    { "id": "puerta", "origen": "real", "paso": 2, "zona": "puerta", "panel": "menu", "pantallas": 1, "ritmo": [[0.62, 0.808], [0.88, 0.808], [1, 1]], "empuje": 0.12 },
-    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "llamar", "pantallas": 0.8, "encadenado": 0.22, "barrido": 1, "ritmo": [[0.2, 0.5], [0.75, 1]], "fps": 8, "calidad": 62 },
-    { "id": "cafetera", "origen": "creada", "ia": "local", "video": "cafetera-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "zona": "barra", "panel": "resena", "pantallas": 0.9, "ritmo": [[0.85, 1]], "fps": 8, "calidad": 62 }
+    { "id": "puerta", "origen": "real", "paso": 2, "zona": "puerta", "panel": "menu", "pantallas": 1, "ritmo": [[0.6, 0.808], [0.9, 0.808], [1, 1]], "empuje": 0.12 },
+    { "id": "barra", "origen": "creada", "ia": "local", "video": "barra-3", "zona": "barra", "panel": "llamar", "pantallas": 0.85, "encadenado": 0.16, "barrido": 1, "ritmo": [[0.85, 1]], "fps": 8, "calidad": 62 },
+    { "id": "cafetera", "origen": "creada", "ia": "local", "video": "cafetera-1", "recorte": { "x": 31, "y": 110, "ancho": 650, "alto": 1156 }, "tono": "colortemperature=temperature=5200:pl=0.4", "zona": "barra", "panel": "resena", "pantallas": 0.8, "ritmo": [[0.85, 1]], "fps": 8, "calidad": 62 }
   ]
 }

@@ -67,13 +67,16 @@ function exportarPieza(id) {
   if (!existsSync(entrada)) fallar(`falta el vídeo aceptado ${entrada}`);
   const { eq, nitidez } = tramos.color;
   const recorte = p.recorte ? [`crop=${p.recorte.ancho}:${p.recorte.alto}:${p.recorte.x}:${p.recorte.y}`] : [];
-  const filtro = [...recorte, `scale=${ancho}:${alto}:force_original_aspect_ratio=increase:flags=lanczos`, `crop=${ancho}:${alto}`, `eq=${eq}`, nitidez, `fps=${p.fps}`].join(',');
+  // «tono»: ajuste de color propio de una pieza creada, para que no salte de luz con la anterior. Las reales no lo llevan.
+  const tono = p.tono ? [p.tono] : [];
+  const filtro = [...recorte, `scale=${ancho}:${alto}:force_original_aspect_ratio=increase:flags=lanczos`, `crop=${ancho}:${alto}`, `eq=${eq}`, ...tono, nitidez, `fps=${p.fps}`].join(',');
   ffmpeg(['-i', entrada, '-vf', filtro, '-c:v', 'libwebp', '-quality', String(p.calidad ?? 60), '-compression_level', '6', '-preset', 'photo', ...SIN_EXTRAS, join(salida(id), '%04d.webp')]);
 }
 
 /**
  * Sin IA: la foto real con un acercamiento y un desplazamiento lentos, hechos recortando una ventana que se mueve y
- * encoge sobre la propia foto (del 100 % al 88 % del encuadre). Solo se reescalan píxeles de la foto: nada se inventa.
+ * encoge sobre la propia foto (del 100 % al 88 % del encuadre, o lo que diga «acercamiento»). Solo se reescalan píxeles
+ * de la foto: nada se inventa.
  * Una pieza «creada» sigue el mismo camino desde su imagen aceptada, con su recorte 9:16 (la IA ya está en la imagen).
  */
 function sinIa(id) {
@@ -83,7 +86,7 @@ function sinIa(id) {
   if (!existsSync(entrada)) fallar(creada ? `falta la imagen aceptada ${entrada}` : `falta la foto ${entrada} (npm run media:procesar -- foto ${p.foto})`);
   const recorte = creada ? [`crop=${p.recorte.ancho}:${p.recorte.alto}:${p.recorte.x}:${p.recorte.y}`] : [];
   const n = Math.round((p.segundos ?? 5) * p.fps);
-  const zoom = `(1-0.12*on/${n - 1})`;
+  const zoom = `(1-${p.acercamiento ?? 0.12}*on/${n - 1})`;
   const filtro = [
     ...recorte,
     `scale=${ancho * 2}:${alto * 2}:flags=lanczos`,
@@ -94,6 +97,8 @@ function sinIa(id) {
 
 /** Una pieza creada con IA sin «"ia": "local"» no se ensambla: es lo que bloquea producción y enciende la etiqueta. */
 function validarPiezas() {
+  const realesConTono = config.piezas.filter((p) => p.origen === 'real' && p.tono).map((p) => p.id);
+  if (realesConTono.length > 0) fallar(`pieza real con "tono": ${realesConTono.join(', ')} (el material real no se retoca)`);
   const sinDeclarar = config.piezas.filter((p) => p.origen === 'creada' && p.ia !== 'local').map((p) => p.id);
   if (sinDeclarar.length > 0) fallar(`pieza creada con IA sin "ia": "local": ${sinDeclarar.join(', ')}`);
   const realesConIa = config.piezas.filter((p) => p.origen === 'real' && p.ia).map((p) => p.id);

@@ -167,3 +167,20 @@ test('una pieza real con "ia" hace fallar el ensamblado', () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test('una pieza real con "tono" hace fallar el ensamblado: el material real no se retoca', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'maqueta-'));
+  const config = join(dir, 'tramos.json');
+  writeFileSync(config, JSON.stringify({ aire: { pantallas: 1 }, piezas: [{ id: 'puerta', origen: 'real', tono: 'eq=saturation=1.1', zona: 'puerta', pantallas: 1 }] }));
+  const destino = join(raiz, 'recorrido-maqueta', 'recorrido.json');
+  const antes = existsSync(destino) ? readFileSync(destino) : null;
+  try {
+    const script = join(raiz, 'scripts', 'media', 'maqueta.mjs');
+    const r = spawnSync(process.execPath, [script, 'ensamblar'], { cwd: raiz, encoding: 'utf8', env: { ...process.env, MAQUETA_CONFIG: config } });
+    assert.equal(r.status, 1);
+    assert.match(r.stderr, /pieza real con "tono": puerta/);
+    assert.deepEqual(existsSync(destino) ? readFileSync(destino) : null, antes);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

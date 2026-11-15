@@ -295,7 +295,8 @@ const rutaCarta = idioma === 'es' ? '/carta' : '/en/carta';
 
   .recorrido__dato {
     color: var(--madera);
-    font-size: 1.125rem;
+    /* Un punto menos a 360 px: la dirección cabe en dos líneas. */
+    font-size: clamp(1rem, 4.7vw, 1.125rem);
     line-height: 1.35;
     font-variant-numeric: lining-nums tabular-nums;
     text-wrap: balance;
